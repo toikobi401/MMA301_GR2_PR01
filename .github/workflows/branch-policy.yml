@@ -1,0 +1,32 @@
+name: Branch policy
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  source-branch:
+    name: main only accepts development
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject pull requests not coming from development
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
+            echo "::error::main only accepts pull requests from the development branch of $BASE_REPO, not from fork $HEAD_REPO."
+            exit 1
+          fi
+
+          if [ "$HEAD_BRANCH" != "development" ]; then
+            echo "::error::main only accepts pull requests from development, but this one comes from '$HEAD_BRANCH'. Merge '$HEAD_BRANCH' into development first, then open a development -> main pull request."
+            exit 1
+          fi
+
+          echo "Source branch 'development' is allowed to target main."
