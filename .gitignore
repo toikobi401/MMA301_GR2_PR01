@@ -1,5 +1,3 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
 # dependencies
 node_modules/
 
@@ -8,6 +6,15 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+
+# Next.js
+.next/
+out/
+.vercel/
+
+# build output
+apps/server/dist/
+packages/design-tokens/dist/
 
 # Native
 .kotlin/
@@ -30,7 +37,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# env files
+.env
+.env.local
 .env*.local
 
 # typescript
@@ -39,3 +48,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+apps/mobile/ios/
+apps/mobile/android/
+
+# local media library (streaming topic)
+infra/media/*
+!infra/media/.gitkeep

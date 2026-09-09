@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1.7
+# Development image: source is bind-mounted, tsx restarts on change.
+FROM node:24-alpine
+
+RUN apk add --no-cache ffmpeg tini
+WORKDIR /repo
+
+COPY package.json package-lock.json* ./
+COPY apps/server/package.json apps/server/
+COPY packages/shared/package.json packages/shared/
+COPY packages/design-tokens/package.json packages/design-tokens/
+
+RUN npm install --workspaces --include-workspace-root
+
+ENV NODE_ENV=development
+EXPOSE 4000
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["npm", "run", "dev", "--workspace", "@app/server"]

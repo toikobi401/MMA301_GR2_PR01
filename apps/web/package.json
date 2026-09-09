@@ -1,0 +1,24 @@
+{
+  "name": "@app/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@app/design-tokens": "*",
+    "@app/shared": "*",
+    "next": "^16.3.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "~19.2.4",
+    "@types/react-dom": "~19.2.4",
+    "typescript": "~6.0.3"
+  }
+}
