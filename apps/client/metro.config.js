@@ -1,5 +1,5 @@
 // Metro must be told about the monorepo: watch the repo root so workspace
-// packages resolve, and allow hoisted node_modules at the root.
+// packages resolve, and allow the hoisted node_modules at the root.
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('node:path');
 

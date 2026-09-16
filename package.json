@@ -10,11 +10,12 @@
     "node": ">=22"
   },
   "scripts": {
-    "mobile": "npm run start --workspace @app/mobile",
-    "mobile:android": "npm run android --workspace @app/mobile",
-    "mobile:ios": "npm run ios --workspace @app/mobile",
+    "dev": "npm run start --workspace @app/client",
+    "android": "npm run android --workspace @app/client",
+    "ios": "npm run ios --workspace @app/client",
+    "web": "npm run web --workspace @app/client",
+    "build:web": "npm run build:web --workspace @app/client",
     "server:dev": "npm run dev --workspace @app/server",
-    "web:dev": "npm run dev --workspace @app/web",
     "docker:up": "docker compose -f infra/docker-compose.yml up -d",
     "docker:down": "docker compose -f infra/docker-compose.yml down",
     "docker:logs": "docker compose -f infra/docker-compose.yml logs -f",

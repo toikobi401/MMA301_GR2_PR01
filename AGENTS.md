@@ -4,18 +4,20 @@
 
 Expo SDK 57 has changed significantly from earlier versions. Read the exact
 versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any
-mobile code. `expo-video` and `expo-audio` are the current APIs; `expo-av` is
+client code. `expo-video` and `expo-audio` are the current APIs; `expo-av` is
 legacy.
 
 ## Repository layout
 
-This is an npm workspaces monorepo, not a single Expo app:
+npm workspaces monorepo with one client for every platform:
 
-- `apps/mobile` — Expo app
+- `apps/client` — Expo app for iOS, Android, and web (Expo Router)
 - `apps/server` — Fastify API, runs in Docker, never on Vercel
-- `apps/web` — Next.js, deploys to Vercel
-- `packages/shared` — API contracts shared by server and clients
-- `packages/design-tokens` — colours and spacing for both platforms
+- `packages/shared` — API contracts shared by server and client
+- `packages/design-tokens` — colours and spacing for every platform
+
+There is no separate web app. Screens in `apps/client/src/app` render natively
+on device and as browser routes on web.
 
 Read `docs/ARCHITECTURE.md` before adding a feature.
 
@@ -25,8 +27,15 @@ Read `docs/ARCHITECTURE.md` before adding a feature.
   implemented. Both sides must compile against the same schema.
 - Colours and spacing come from `packages/design-tokens`. No hex codes inside
   components.
-- Every new environment variable goes in three places: `packages/shared/src/env.ts`,
-  `.env.example`, and `infra/docker-compose.yml`.
+- Workspace packages use extensionless relative imports (`./api`, not
+  `./api.js`). Metro cannot resolve the `.js` form. The server uses
+  `moduleResolution: "bundler"` for the same reason.
+- Write one component for every platform. Only add `.web.tsx` or `.native.tsx`
+  variants when the platforms genuinely need different code.
+- Every new environment variable goes in three places:
+  `packages/shared/src/env.ts`, `.env.example`, and
+  `infra/docker-compose.yml`. Client variables must be prefixed
+  `EXPO_PUBLIC_`.
 - Run `npm run typecheck` before committing.
 
 ## Topic status

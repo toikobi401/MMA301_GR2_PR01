@@ -3,9 +3,33 @@
 ## Why this shape
 
 Two people work in parallel without blocking each other. One owns the server,
-the other owns the clients. The contract between them is `packages/shared`:
+the other owns the client. The contract between them is `packages/shared`:
 when it changes, both sides fail to compile rather than failing at runtime in
 front of the examiner.
+
+## One client, three platforms
+
+`apps/client` renders on iOS, Android, and web from the same source. Expo
+Router maps `src/app/index.tsx` to the home screen on device and to `/` in a
+browser; React Native primitives become DOM elements through
+`react-native-web`.
+
+This is the main reason to use React Native at all. A screen, a component, and
+a piece of state are written once. There is no second implementation of the
+same feature to keep in sync.
+
+When a platform genuinely needs different code, add a suffixed file next to the
+shared one:
+
+```
+VideoPlayer.tsx        shared implementation
+VideoPlayer.web.tsx    browser-only override
+VideoPlayer.native.tsx iOS and Android override
+```
+
+Metro picks the right one at build time. Reach for this only when the platforms
+really differ, such as native video decoding versus an HTML video element.
+Runtime branching with `Platform.OS` is fine for small differences.
 
 ## The contract rule
 
@@ -69,14 +93,30 @@ Vercel runs serverless functions with an execution time limit, no persistent
 disk, and no long-lived connections. Both candidate topics need the opposite:
 either FFmpeg transcoding sessions that run for minutes, or WebSocket
 connections that stay open for an entire game. The API therefore runs as a
-container. Vercel hosts the web surface only.
+container. Vercel serves the static web export only.
+
+## Module resolution
+
+Workspace packages use extensionless relative imports (`./api`, not
+`./api.js`) because Metro cannot resolve the `.js` form when the source is
+TypeScript. The server therefore uses `moduleResolution: "bundler"` rather
+than `NodeNext`. Server-internal imports still carry `.js`, which is what Node
+needs at runtime.
+
+Changing either half breaks the other, so leave both as they are.
 
 ## Adding a feature
 
 1. Define request and response schemas in `packages/shared/src/`.
 2. Add the route under `apps/server/src/routes/`, register it in `app.ts`.
-3. Call it from the client through `api.get` / `api.post`.
-4. Run `npm run typecheck` before pushing.
+3. Add the screen under `apps/client/src/app/`, which routes it on every
+   platform at once.
+4. Put reusable pieces in `apps/client/src/components/`, feature logic in
+   `apps/client/src/features/`.
+5. Run `npm run typecheck` before pushing.
+
+Check a new screen in a browser with `npm run web` before testing on a phone.
+The feedback loop is faster and most layout problems show up there first.
 
 ## Design tokens
 
