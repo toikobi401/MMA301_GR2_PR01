@@ -24,7 +24,14 @@ export async function buildApp(): Promise<FastifyInstance> {
     bodyLimit: 5 * 1024 * 1024,
   });
 
-  await app.register(helmet, { contentSecurityPolicy: false });
+  await app.register(helmet, {
+    // This is a JSON API consumed from another origin (the web client, and
+    // native apps which send no Origin at all). The default
+    // Cross-Origin-Resource-Policy of `same-origin` makes browsers discard
+    // the response even when CORS itself allows it.
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  });
 
   await app.register(cors, {
     origin: config.CORS_ORIGINS.includes('*') ? true : config.CORS_ORIGINS,

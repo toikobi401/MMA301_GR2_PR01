@@ -1,5 +1,5 @@
-import type { ApiError, Envelope } from './api.js';
-import { ErrorCode } from './api.js';
+import type { ApiError, Envelope } from './api';
+import { ErrorCode } from './api';
 
 export class ApiClientError extends Error {
   readonly code: string;
@@ -45,7 +45,10 @@ export class ApiClient {
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
     this.getAccessToken = options.getAccessToken;
     this.onUnauthorized = options.onUnauthorized;
-    this.fetchImpl = options.fetchImpl ?? globalThis.fetch;
+    // `fetch` must be called with `window` as its receiver in browsers.
+    // Assigning it to a property and calling `this.fetchImpl(...)` would make
+    // the receiver this client, which throws "Illegal invocation".
+    this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {

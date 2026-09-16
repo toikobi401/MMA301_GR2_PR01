@@ -1,7 +1,7 @@
 # MMA301 GR2 PR01
 
-Cross-platform application built with Expo (React Native), a Fastify API, and a
-Next.js web surface, sharing one set of types and design tokens.
+Cross-platform application built with Expo (React Native). iOS, Android, and
+web all render from a single `src/app` directory, backed by a Fastify API.
 
 The project topic is not fixed yet. Everything here is topic-agnostic
 infrastructure that both candidate ideas (media streaming / realtime multiplayer)
@@ -11,15 +11,22 @@ need anyway.
 
 ```
 apps/
-  mobile/     Expo SDK 57 app (iOS, Android, web)
+  client/     Expo SDK 57 — iOS, Android, and web from one source tree
+    src/app/        File-based routes (Expo Router)
+    src/components/ Shared UI, renders on every platform
+    src/features/   Feature modules
+    src/theme/      Token bindings
   server/     Fastify API — runs in Docker
-  web/        Next.js app — deploys to Vercel
 packages/
   shared/         API contracts, Zod schemas, HTTP client
-  design-tokens/  Colours, spacing, typography — one source for RN and web
+  design-tokens/  Colours, spacing, typography — one source for all platforms
 infra/
   docker-compose.yml   Postgres + Redis + API
 ```
+
+There is no separate web app. Expo Router compiles the same screens to a
+native stack on device and to browser routes on web, so a screen written once
+runs in three places.
 
 ## Requirements
 
@@ -46,17 +53,21 @@ curl http://localhost:4000/health/ready
 Start the clients in separate terminals:
 
 ```bash
-npm run mobile     # Expo dev server, scan the QR code
-npm run web:dev    # http://localhost:3000
+npm run dev     # Expo dev server — press w for web, scan the QR for a phone
+npm run web     # web only, opens the browser directly
 ```
 
-Both surfaces show the same service-status panel. Green means the whole chain
-works end to end.
+Every platform shows the same service-status panel. Green means the whole
+chain works end to end.
 
 ## Scripts
 
 | Command | Purpose |
 |---|---|
+| `npm run dev` | Expo dev server for all platforms |
+| `npm run web` | Open the app in a browser |
+| `npm run android` / `npm run ios` | Launch on a device or simulator |
+| `npm run build:web` | Static web export into `apps/client/dist` |
 | `npm run docker:up` | Start Postgres, Redis, and the API |
 | `npm run docker:logs` | Tail all container logs |
 | `npm run docker:down` | Stop containers, keep data |
@@ -86,9 +97,13 @@ Wi-Fi network.
 
 ## Deployment
 
-**Web** goes to Vercel. Import the repository, leave the build settings alone
-since `vercel.json` already describes them, and set `NEXT_PUBLIC_API_URL` to the
-public API address.
+**Web** goes to Vercel as a static export. Import the repository, leave the
+build settings alone since `vercel.json` already describes them, and set
+`EXPO_PUBLIC_API_URL` to the public API address.
+
+Static export means there is no server-side rendering. Pages are pre-rendered
+at build time and fetch live data in the browser, which suits an app whose
+content sits behind a login anyway.
 
 **API** does not go to Vercel. It needs a long-lived process, a persistent disk,
 and possibly FFmpeg, none of which fit a serverless function. Deploy the Docker

@@ -1,9 +1,11 @@
 import { ApiClient } from '@app/shared';
 
 /**
- * On a physical device `localhost` points at the phone, not your machine.
- * Set EXPO_PUBLIC_API_URL to your computer's LAN address, for example
- * http://192.168.1.10:4000
+ * EXPO_PUBLIC_ variables are inlined at build time on every platform, so the
+ * same file works in the browser and on device.
+ *
+ * On a physical phone `localhost` points at the phone itself — set
+ * EXPO_PUBLIC_API_URL to your computer's LAN address, e.g. http://192.168.1.10:4000
  */
 const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
 

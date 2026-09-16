@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    // `bundler` resolution lets workspace packages use extensionless
+    // relative imports, which Metro requires for the Expo client.
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "lib": ["ES2023"],
     "types": ["node"],
     "strict": true,
