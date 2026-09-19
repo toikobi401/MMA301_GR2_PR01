@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { sql } from './db.js';
+import { ObjectId } from 'mongodb';
+import { refreshTokens } from './db.js';
 import { config } from '../config.js';
 
 /**
@@ -23,51 +24,64 @@ function parseDuration(value: string): number {
 
   const amount = Number(match[1]);
   const unit = match[2];
-  const seconds =
-    unit === 's' ? 1 : unit === 'm' ? 60 : unit === 'h' ? 3600 : 86_400;
+  const seconds = unit === 's' ? 1 : unit === 'm' ? 60 : unit === 'h' ? 3600 : 86_400;
 
   return amount * seconds * 1000;
 }
 
-export async function storeRefreshToken(userId: string, hash: string): Promise<void> {
-  const expiresAt = new Date(Date.now() + parseDuration(config.REFRESH_TOKEN_TTL));
-  await sql`
-    INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
-    VALUES (${userId}, ${hash}, ${expiresAt})
-  `;
+export async function storeRefreshToken(userId: ObjectId, hash: string): Promise<void> {
+  await refreshTokens().insertOne({
+    _id: new ObjectId(),
+    userId,
+    tokenHash: hash,
+    expiresAt: new Date(Date.now() + parseDuration(config.REFRESH_TOKEN_TTL)),
+    revokedAt: null,
+    createdAt: new Date(),
+  });
 }
 
 export interface StoredRefreshToken {
-  id: string;
-  userId: string;
+  id: ObjectId;
+  userId: ObjectId;
 }
 
-/** Returns the token row only when it is live: not expired, not revoked. */
+/**
+ * Returns the token row only when it is live: not expired, not revoked.
+ *
+ * The TTL index eventually removes expired documents, but deletion is not
+ * immediate, so the expiry is still checked here.
+ */
 export async function findLiveRefreshToken(token: string): Promise<StoredRefreshToken | null> {
-  const rows = await sql<Array<{ id: string; user_id: string }>>`
-    SELECT id, user_id
-    FROM refresh_tokens
-    WHERE token_hash = ${hashToken(token)}
-      AND revoked_at IS NULL
-      AND expires_at > now()
-    LIMIT 1
-  `;
+  const doc = await refreshTokens().findOne({
+    tokenHash: hashToken(token),
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  });
 
-  const row = rows[0];
-  return row ? { id: row.id, userId: row.user_id } : null;
+  return doc ? { id: doc._id, userId: doc.userId } : null;
 }
 
-export async function revokeRefreshToken(id: string): Promise<void> {
-  await sql`UPDATE refresh_tokens SET revoked_at = now() WHERE id = ${id}`;
+/**
+ * Revokes a token and reports whether this call was the one that did it.
+ *
+ * Returning the count matters for rotation: two concurrent refreshes with the
+ * same token must not both succeed, and only the caller whose update actually
+ * modified the document may issue a new session.
+ */
+export async function revokeRefreshToken(id: ObjectId): Promise<boolean> {
+  const result = await refreshTokens().updateOne(
+    { _id: id, revokedAt: null },
+    { $set: { revokedAt: new Date() } },
+  );
+  return result.modifiedCount === 1;
 }
 
 /** Used on logout-everywhere and on password change. */
-export async function revokeAllForUser(userId: string): Promise<void> {
-  await sql`
-    UPDATE refresh_tokens
-    SET revoked_at = now()
-    WHERE user_id = ${userId} AND revoked_at IS NULL
-  `;
+export async function revokeAllForUser(userId: ObjectId): Promise<void> {
+  await refreshTokens().updateMany(
+    { userId, revokedAt: null },
+    { $set: { revokedAt: new Date() } },
+  );
 }
 
 export function accessTokenTtlSeconds(): number {

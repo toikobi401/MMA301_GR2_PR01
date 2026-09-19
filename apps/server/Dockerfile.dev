@@ -2,7 +2,7 @@
 # Development image: source is bind-mounted, tsx restarts on change.
 FROM node:24-alpine
 
-RUN apk add --no-cache ffmpeg tini
+RUN apk add --no-cache tini
 WORKDIR /repo
 
 COPY package.json package-lock.json* ./

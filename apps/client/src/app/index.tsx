@@ -35,7 +35,7 @@ export default function HomeScreen() {
 
   const services: ServiceStatus[] = [
     { name: 'API server', up: phase === 'up' },
-    { name: 'PostgreSQL', up: readiness?.database ?? false },
+    { name: 'MongoDB', up: readiness?.database ?? false },
     { name: 'Redis', up: readiness?.cache ?? false },
   ];
 

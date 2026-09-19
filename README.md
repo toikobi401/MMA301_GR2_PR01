@@ -22,7 +22,8 @@ packages/
   shared/         API contracts, Zod schemas, HTTP client
   design-tokens/  Colours, spacing, typography — one source for all platforms
 infra/
-  docker-compose.yml   Postgres + Redis + API
+  docker-compose.yml   MongoDB + Redis + API
+  mongo/init/          Collections, validators, and indexes
 ```
 
 There is no separate web app. Expo Router compiles the same screens to a
@@ -69,21 +70,21 @@ chain works end to end.
 | `npm run web` | Open the app in a browser |
 | `npm run android` / `npm run ios` | Launch on a device or simulator |
 | `npm run build:web` | Static web export into `apps/client/dist` |
-| `npm run docker:up` | Start Postgres, Redis, and the API |
+| `npm run docker:up` | Start MongoDB, Redis, and the API |
 | `npm run docker:logs` | Tail all container logs |
 | `npm run docker:down` | Stop containers, keep data |
-| `npm run docker:reset` | Stop and delete volumes (wipes the database) |
+| `npm run docker:reset` | Stop and delete volumes (wipes the database and re-runs the index setup) |
 | `npm run typecheck` | Typecheck every workspace |
 | `npm test` | Run the rules-engine tests |
 | `npm run tokens` | Regenerate `tokens.css` from the TypeScript tokens |
 
-Adminer, a database browser, is available on demand:
+A database browser is available on demand:
 
 ```bash
-docker compose -f infra/docker-compose.yml --profile tools up -d adminer
+docker compose -f infra/docker-compose.yml --profile tools up -d mongo-express
 ```
 
-It runs at http://localhost:8080.
+It runs at http://localhost:8081.
 
 ## Testing on a physical phone
 

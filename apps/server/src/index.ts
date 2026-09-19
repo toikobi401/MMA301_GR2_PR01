@@ -1,7 +1,11 @@
 import { buildApp } from './app.js';
 import { config } from './config.js';
-import { closeDatabase } from './lib/db.js';
+import { closeDatabase, connectDatabase } from './lib/db.js';
 import { closeRedis } from './lib/redis.js';
+
+// Connect before the server accepts traffic, so the first request does not
+// race the initial connection handshake.
+await connectDatabase();
 
 const app = await buildApp();
 

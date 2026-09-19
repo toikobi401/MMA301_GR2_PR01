@@ -44,11 +44,15 @@ npm test
 
 Both must pass. CI will reject the pull request otherwise.
 
-## When the database schema changes
+## When the database setup changes
 
-Migrations go in `infra/postgres/migrations/` numbered in order. Tell your
-teammate in the pull request description, because they need to run
-`npm run docker:reset` to pick up a changed initial schema.
+Collections, validators, and indexes live in `infra/mongo/init/`. The script is
+idempotent, so it is safe to re-run, but existing collections keep the
+validator they were created with.
+
+Say so in the pull request description: your teammate needs
+`npm run docker:reset` to pick up a changed validator, and that wipes their
+local data.
 
 ## Environment variables
 

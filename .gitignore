@@ -51,10 +51,6 @@ yarn-error.*
 apps/client/ios/
 apps/client/android/
 
-# local media library (streaming topic)
-infra/media/*
-!infra/media/.gitkeep
-
 # Expo web export
 apps/client/dist/
 apps/client/.expo/

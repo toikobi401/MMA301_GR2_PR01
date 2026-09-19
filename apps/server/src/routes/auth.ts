@@ -1,5 +1,6 @@
 import argon2 from 'argon2';
 import type { FastifyInstance } from 'fastify';
+import { ObjectId } from 'mongodb';
 import {
   loginBodySchema,
   refreshBodySchema,
@@ -7,7 +8,14 @@ import {
   type AuthSession,
   type User,
 } from '@app/shared';
-import { sql } from '../lib/db.js';
+import {
+  chipTransactions,
+  EMAIL_COLLATION,
+  isDuplicateKeyError,
+  playerStats,
+  users,
+  type UserDoc,
+} from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
 import {
   accessTokenTtlSeconds,
@@ -18,22 +26,15 @@ import {
   storeRefreshToken,
 } from '../lib/tokens.js';
 
-interface UserRow {
-  id: string;
-  email: string;
-  display_name: string;
-  role: 'user' | 'admin';
-  chips: string;
-  created_at: Date;
-}
+const STARTING_CHIPS = 10_000;
 
-function toUser(row: UserRow): User {
+function toUser(doc: UserDoc): User {
   return {
-    id: row.id,
-    email: row.email,
-    displayName: row.display_name,
-    role: row.role,
-    createdAt: row.created_at.toISOString(),
+    id: doc._id.toHexString(),
+    email: doc.email,
+    displayName: doc.displayName,
+    role: doc.role,
+    createdAt: doc.createdAt.toISOString(),
   };
 }
 
@@ -49,67 +50,81 @@ const ARGON_OPTIONS = {
 } as const;
 
 export async function authRoutes(app: FastifyInstance) {
-  async function issueSession(user: User): Promise<AuthSession> {
+  async function issueSession(doc: UserDoc): Promise<AuthSession> {
+    const user = toUser(doc);
     const accessToken = app.jwt.sign({ sub: user.id, role: user.role });
     const { token, hash } = generateRefreshToken();
-    await storeRefreshToken(user.id, hash);
+    await storeRefreshToken(doc._id, hash);
 
     return {
       user,
-      tokens: {
-        accessToken,
-        refreshToken: token,
-        expiresIn: accessTokenTtlSeconds(),
-      },
+      tokens: { accessToken, refreshToken: token, expiresIn: accessTokenTtlSeconds() },
     };
   }
 
   app.post('/register', async (request, reply) => {
     const body = registerBodySchema.parse(request.body);
 
-    const existing = await sql<Array<{ id: string }>>`
-      SELECT id FROM users WHERE email = ${body.email} LIMIT 1
-    `;
-    if (existing.length > 0) {
-      throw AppError.conflict('An account with that email already exists');
+    const now = new Date();
+    const doc: UserDoc = {
+      _id: new ObjectId(),
+      email: body.email,
+      passwordHash: await argon2.hash(body.password, ARGON_OPTIONS),
+      displayName: body.displayName,
+      role: 'user',
+      chips: STARTING_CHIPS,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    try {
+      // Let the unique index decide. Checking first and inserting after would
+      // leave a window where two concurrent registrations both pass the check.
+      await users().insertOne(doc);
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw AppError.conflict('An account with that email already exists');
+      }
+      throw error;
     }
 
-    const passwordHash = await argon2.hash(body.password, ARGON_OPTIONS);
-
-    const rows = await sql<UserRow[]>`
-      INSERT INTO users (email, password_hash, display_name)
-      VALUES (${body.email}, ${passwordHash}, ${body.displayName})
-      RETURNING id, email, display_name, role, chips, created_at
-    `;
-
-    const row = rows[0];
-    if (!row) throw AppError.internal('Failed to create the account');
-
     // Seed the ledger so the starting balance has a transaction behind it.
-    await sql`
-      INSERT INTO chip_transactions (user_id, kind, amount, balance_after, reference)
-      VALUES (${row.id}, 'bonus', ${Number(row.chips)}, ${Number(row.chips)}, 'welcome')
-    `;
-    await sql`INSERT INTO player_stats (user_id) VALUES (${row.id})`;
+    await chipTransactions().insertOne({
+      _id: new ObjectId(),
+      userId: doc._id,
+      kind: 'bonus',
+      amount: STARTING_CHIPS,
+      balanceAfter: STARTING_CHIPS,
+      reference: 'welcome',
+      createdAt: now,
+    });
+
+    await playerStats().insertOne({
+      _id: new ObjectId(),
+      userId: doc._id,
+      handsPlayed: 0,
+      handsWon: 0,
+      biggestPot: 0,
+      netChips: 0,
+      updatedAt: now,
+    });
 
     reply.status(201);
-    return { ok: true as const, data: await issueSession(toUser(row)) };
+    return { ok: true as const, data: await issueSession(doc) };
   });
 
   app.post('/login', async (request) => {
     const body = loginBodySchema.parse(request.body);
 
-    const rows = await sql<Array<UserRow & { password_hash: string }>>`
-      SELECT id, email, display_name, role, chips, created_at, password_hash
-      FROM users WHERE email = ${body.email} LIMIT 1
-    `;
-
-    const row = rows[0];
+    const doc = await users().findOne(
+      { email: body.email },
+      { collation: EMAIL_COLLATION },
+    );
 
     // Verify against a dummy hash when the user is missing, so the response
     // time does not reveal whether the email is registered.
     const hash =
-      row?.password_hash ??
+      doc?.passwordHash ??
       '$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHR2YWx1ZQ$0000000000000000000000000000000000000000000';
 
     let valid = false;
@@ -119,11 +134,11 @@ export async function authRoutes(app: FastifyInstance) {
       valid = false;
     }
 
-    if (!row || !valid) {
+    if (!doc || !valid) {
       throw AppError.unauthorized('Incorrect email or password');
     }
 
-    return { ok: true as const, data: await issueSession(toUser(row)) };
+    return { ok: true as const, data: await issueSession(doc) };
   });
 
   app.post('/refresh', async (request) => {
@@ -133,19 +148,15 @@ export async function authRoutes(app: FastifyInstance) {
     if (!stored) throw AppError.unauthorized('Invalid or expired refresh token');
 
     // Rotate: the old token dies the moment a new one is issued, so a stolen
-    // token is usable at most once before the real user's next refresh
-    // invalidates it.
-    await revokeRefreshToken(stored.id);
+    // token is usable at most once. The revoke reports whether this call won,
+    // so two concurrent refreshes cannot both mint a session.
+    const revoked = await revokeRefreshToken(stored.id);
+    if (!revoked) throw AppError.unauthorized('Invalid or expired refresh token');
 
-    const rows = await sql<UserRow[]>`
-      SELECT id, email, display_name, role, chips, created_at
-      FROM users WHERE id = ${stored.userId} LIMIT 1
-    `;
+    const doc = await users().findOne({ _id: stored.userId });
+    if (!doc) throw AppError.unauthorized('Account no longer exists');
 
-    const row = rows[0];
-    if (!row) throw AppError.unauthorized('Account no longer exists');
-
-    return { ok: true as const, data: await issueSession(toUser(row)) };
+    return { ok: true as const, data: await issueSession(doc) };
   });
 
   app.post('/logout', { onRequest: [app.requireAuth] }, async (request) => {
@@ -155,7 +166,7 @@ export async function authRoutes(app: FastifyInstance) {
       const stored = await findLiveRefreshToken(body.refreshToken);
       if (stored) await revokeRefreshToken(stored.id);
     } else if (request.claims) {
-      await revokeAllForUser(request.claims.sub);
+      await revokeAllForUser(new ObjectId(request.claims.sub));
     }
 
     return { ok: true as const, data: { loggedOut: true } };
@@ -165,14 +176,9 @@ export async function authRoutes(app: FastifyInstance) {
     const userId = request.claims?.sub;
     if (!userId) throw AppError.unauthorized();
 
-    const rows = await sql<UserRow[]>`
-      SELECT id, email, display_name, role, chips, created_at
-      FROM users WHERE id = ${userId} LIMIT 1
-    `;
+    const doc = await users().findOne({ _id: new ObjectId(userId) });
+    if (!doc) throw AppError.notFound('Account not found');
 
-    const row = rows[0];
-    if (!row) throw AppError.notFound('Account not found');
-
-    return { ok: true as const, data: { ...toUser(row), chips: Number(row.chips) } };
+    return { ok: true as const, data: { ...toUser(doc), chips: doc.chips } };
   });
 }

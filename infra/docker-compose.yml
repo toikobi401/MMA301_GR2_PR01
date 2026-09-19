@@ -2,24 +2,31 @@
 name: mma301-gr2-pr01
 
 services:
-  postgres:
-    image: postgres:17-alpine
+  mongo:
+    image: mongo:8
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_dev_password}
-      POSTGRES_DB: ${POSTGRES_DB:-app_dev}
+    # A replica set is required for multi-document transactions, which the
+    # wallet needs. One node is enough locally; it still provides the oplog
+    # and session support a standalone server lacks.
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - mongo-data:/data/db
+      # Not mounted at /docker-entrypoint-initdb.d: the entrypoint runs those
+      # before the replica set is initiated, and creating collections fails
+      # at that point. The mongo-init service below applies it afterwards.
+      - ./mongo/init:/init:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app_dev}"]
+      # Reports healthy only once the replica set has a primary, so dependent
+      # services do not start against a server that cannot accept writes.
+      test:
+        - CMD-SHELL
+        - mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }" | grep -q 1
       interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
 
   redis:
     image: redis:8-alpine
@@ -35,21 +42,40 @@ services:
       timeout: 3s
       retries: 10
 
+  # One-shot: creates collections, validators, and indexes once the replica set
+  # has a primary. Safe to re-run — every step is idempotent.
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./mongo/init:/init:ro
+    command:
+      - mongosh
+      - "mongodb://mongo:27017/?replicaSet=rs0&directConnection=true"
+      - --quiet
+      - --file
+      - /init/01-indexes.js
+
   server:
     build:
       context: ..
       dockerfile: apps/server/Dockerfile.dev
     restart: unless-stopped
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     environment:
       NODE_ENV: development
       PORT: 4000
       HOST: 0.0.0.0
-      DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app_dev_password}@postgres:5432/${POSTGRES_DB:-app_dev}
+      DATABASE_URL: ${DATABASE_URL:-mongodb://mongo:27017/poker?replicaSet=rs0&directConnection=true}
       REDIS_URL: redis://redis:6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev_access_secret_change_me_at_least_32_chars}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me_at_least_32_chars}
@@ -62,9 +88,6 @@ services:
       # Bind-mount source for hot reload, but keep container node_modules.
       - ../apps/server/src:/repo/apps/server/src
       - ../packages:/repo/packages
-      # Media library for the streaming variant. Point MEDIA_PATH at your files.
-      - ${MEDIA_PATH:-./media}:/media:ro
-      - transcode-cache:/tmp/transcode
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:4000/health"]
       interval: 15s
@@ -72,18 +95,19 @@ services:
       retries: 5
       start_period: 30s
 
-  # Database GUI at http://localhost:8080 — start with: --profile tools
-  adminer:
-    image: adminer:5
+  # Database GUI at http://localhost:8081 — start with: --profile tools
+  mongo-express:
+    image: mongo-express:1
     restart: unless-stopped
     profiles: ["tools"]
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
     ports:
-      - "${ADMINER_PORT:-8080}:8080"
+      - "${MONGO_EXPRESS_PORT:-8081}:8081"
     environment:
-      ADMINER_DEFAULT_SERVER: postgres
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/?replicaSet=rs0&directConnection=true
+      ME_CONFIG_BASICAUTH: "false"
 
   # Cloudflare Tunnel. Opt in with: --profile tunnel
   #
@@ -101,6 +125,5 @@ services:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
 
 volumes:
-  postgres-data:
+  mongo-data:
   redis-data:
-  transcode-cache:

@@ -36,6 +36,12 @@ Read `docs/ARCHITECTURE.md` before adding a feature.
   `packages/shared/src/env.ts`, `.env.example`, and
   `infra/docker-compose.yml`. Client variables must be prefixed
   `EXPO_PUBLIC_`.
+- The database is MongoDB. Never read a value and write it back — use a
+  conditional atomic update (`findOneAndUpdate` with a guard in the filter),
+  or two concurrent requests will lose one of the writes. This matters most
+  for chips.
+- Let unique indexes reject duplicates. Checking first and inserting after
+  leaves a race window.
 - Run `npm run typecheck` before committing.
 
 ## The project
