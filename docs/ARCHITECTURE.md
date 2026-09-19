@@ -77,23 +77,66 @@ Passwords are hashed with Argon2id. Never store or log a plaintext password.
 
 ## Data access
 
-`postgres` uses tagged templates:
+MongoDB through the official driver. Collections are typed helpers in
+`apps/server/src/lib/db.ts`:
 
 ```ts
-const rows = await sql`select * from users where email = ${email}`;
+const user = await users().findOne({ _id: new ObjectId(id) });
 ```
 
-Values are parameterised automatically. Building SQL by string concatenation is
-the one thing that will get the project marked down on security, so do not do
-it.
+Three rules matter more than the rest.
+
+**Never read a balance and then write it back.** Two concurrent requests would
+both read the old value and one update would be lost. Use a conditional atomic
+update instead, so the check and the change happen in one operation:
+
+```ts
+await users().findOneAndUpdate(
+  { _id: userId, chips: { $gte: amount } },  // guard
+  { $inc: { chips: -amount } },              // change
+  { returnDocument: 'after' },
+);
+```
+
+A debit that would overdraw matches no document and fails, rather than going
+negative. This is verified by a test that fires twenty concurrent withdrawals
+against a balance covering only fifteen.
+
+**Let unique indexes decide, not a prior lookup.** Checking whether an email
+exists and inserting afterwards leaves a window where two registrations both
+pass. Insert and catch the duplicate-key error.
+
+**Paginate on `_id`, not on a timestamp.** ObjectIds are monotonic and unique,
+so two documents written in the same millisecond cannot make a cursor skip or
+repeat a row.
+
+## Schema validation
+
+Collections carry JSON Schema validators, applied by `infra/mongo/init`. They
+are not decoration: without them a typo in a field name silently writes a new
+field instead of failing, which is the main way a document database loses data.
+
+The validators reject an unknown role, a negative chip balance, a missing
+required field, and an invalid transaction kind. After changing them, run
+`npm run docker:reset`.
+
+## Why a replica set locally
+
+Multi-document transactions and change streams need one, and a standalone
+server provides neither. `infra/docker-compose.yml` runs a single-node set
+named `rs0`; the healthcheck initiates it on first boot.
+
+Collection creation happens in a separate one-shot `mongo-init` service rather
+than through the image's own init directory, because that directory runs
+before the replica set exists and collection creation fails there.
 
 ## Why the API is not on Vercel
 
-Vercel runs serverless functions with an execution time limit, no persistent
-disk, and no long-lived connections. Both candidate topics need the opposite:
-either FFmpeg transcoding sessions that run for minutes, or WebSocket
-connections that stay open for an entire game. The API therefore runs as a
-container. Vercel serves the static web export only.
+Vercel runs serverless functions with an execution time limit and no
+long-lived connections. A poker table needs the opposite: WebSocket
+connections that stay open for an entire session. The API therefore runs as a
+container behind a Cloudflare Tunnel. Vercel serves the static web export
+only.
 
 ## Module resolution
 

@@ -34,9 +34,7 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # ---------- runtime ----------
 FROM node:24-alpine AS runtime
-# FFmpeg is here for the streaming variant of the project. Drop this line if
-# the group settles on a topic that does not transcode media.
-RUN apk add --no-cache ffmpeg tini && \
+RUN apk add --no-cache tini && \
     addgroup -g 1001 -S nodejs && \
     adduser -S -u 1001 -G nodejs appuser
 
@@ -52,6 +50,6 @@ COPY --chown=appuser:nodejs packages ./packages
 USER appuser
 EXPOSE 4000
 
-# tini reaps zombie processes — important once FFmpeg children are spawned.
+# tini reaps zombie processes and forwards signals for a clean shutdown.
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "apps/server/dist/index.js"]

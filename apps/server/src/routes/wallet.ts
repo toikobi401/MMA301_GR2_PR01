@@ -1,99 +1,97 @@
 import type { FastifyInstance } from 'fastify';
+import { ObjectId } from 'mongodb';
 import {
   depositBodySchema,
   withdrawBodySchema,
   type ChipTransaction,
   type Wallet,
 } from '@app/shared';
-import { sql } from '../lib/db.js';
+import {
+  chipTransactions,
+  users,
+  type ChipTransactionDoc,
+  type ChipTransactionKind,
+} from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
 
-interface TransactionRow {
-  id: string;
-  kind: ChipTransaction['kind'];
-  amount: string;
-  balance_after: string;
-  reference: string | null;
-  created_at: Date;
-}
-
-function toTransaction(row: TransactionRow): ChipTransaction {
+function toTransaction(doc: ChipTransactionDoc): ChipTransaction {
   return {
-    id: row.id,
-    kind: row.kind,
-    amount: Number(row.amount),
-    balanceAfter: Number(row.balance_after),
-    reference: row.reference,
-    createdAt: row.created_at.toISOString(),
+    id: doc._id.toHexString(),
+    kind: doc.kind,
+    amount: doc.amount,
+    balanceAfter: doc.balanceAfter,
+    reference: doc.reference,
+    createdAt: doc.createdAt.toISOString(),
   };
 }
 
 /**
- * Applies a chip movement atomically.
+ * Applies a chip movement.
  *
- * The balance update and the ledger row must land together — a crash between
- * them would leave a balance no transaction explains. `SELECT ... FOR UPDATE`
- * locks the row so two concurrent requests cannot both read the old balance
- * and each write their own total.
+ * Read-then-write would be a race: two concurrent withdrawals could both read
+ * the old balance and each write their own total, losing one of them. Instead
+ * `findOneAndUpdate` does the check and the change in a single atomic
+ * operation — the `$gte` guard means a debit that would overdraw simply
+ * matches no document, so it fails rather than going negative.
+ *
+ * The returned balance is the real post-update value, so the ledger entry
+ * always records what actually happened rather than what we predicted.
  */
 async function applyChipChange(
-  userId: string,
-  kind: ChipTransaction['kind'],
+  userId: ObjectId,
+  kind: ChipTransactionKind,
   amount: number,
   reference: string | null,
 ): Promise<{ balance: number; transaction: ChipTransaction }> {
-  return sql.begin(async (tx) => {
-    const locked = await tx<Array<{ chips: string }>>`
-      SELECT chips FROM users WHERE id = ${userId} FOR UPDATE
-    `;
+  const guard = amount < 0 ? { chips: { $gte: -amount } } : {};
 
-    const current = locked[0];
-    if (!current) throw AppError.notFound('Account not found');
+  const updated = await users().findOneAndUpdate(
+    { _id: userId, ...guard },
+    { $inc: { chips: amount }, $set: { updatedAt: new Date() } },
+    { returnDocument: 'after' },
+  );
 
-    const balance = Number(current.chips) + amount;
-    if (balance < 0) {
-      throw AppError.badRequest('Insufficient chips');
-    }
+  if (!updated) {
+    // Either the account is gone or the guard rejected the debit. Tell them
+    // apart so the error is accurate.
+    const exists = await users().countDocuments({ _id: userId }, { limit: 1 });
+    if (exists === 0) throw AppError.notFound('Account not found');
+    throw AppError.badRequest('Insufficient chips');
+  }
 
-    await tx`UPDATE users SET chips = ${balance} WHERE id = ${userId}`;
+  const doc: ChipTransactionDoc = {
+    _id: new ObjectId(),
+    userId,
+    kind,
+    amount,
+    balanceAfter: updated.chips,
+    reference,
+    createdAt: new Date(),
+  };
 
-    const inserted = await tx<TransactionRow[]>`
-      INSERT INTO chip_transactions (user_id, kind, amount, balance_after, reference)
-      VALUES (${userId}, ${kind}, ${amount}, ${balance}, ${reference})
-      RETURNING id, kind, amount, balance_after, reference, created_at
-    `;
+  await chipTransactions().insertOne(doc);
 
-    const row = inserted[0];
-    if (!row) throw AppError.internal('Failed to record the transaction');
-
-    return { balance, transaction: toTransaction(row) };
-  }) as Promise<{ balance: number; transaction: ChipTransaction }>;
+  return { balance: updated.chips, transaction: toTransaction(doc) };
 }
 
 export async function walletRoutes(app: FastifyInstance) {
   app.addHook('onRequest', app.requireAuth);
 
   app.get('/', async (request) => {
-    const userId = request.claims?.sub;
-    if (!userId) throw AppError.unauthorized();
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+    const userId = new ObjectId(claim);
 
-    const [balanceRows, transactionRows] = await Promise.all([
-      sql<Array<{ chips: string }>>`SELECT chips FROM users WHERE id = ${userId}`,
-      sql<TransactionRow[]>`
-        SELECT id, kind, amount, balance_after, reference, created_at
-        FROM chip_transactions
-        WHERE user_id = ${userId}
-        ORDER BY created_at DESC
-        LIMIT 20
-      `,
+    const [user, recent] = await Promise.all([
+      users().findOne({ _id: userId }, { projection: { chips: 1 } }),
+      chipTransactions().find({ userId }).sort({ createdAt: -1 }).limit(20).toArray(),
     ]);
 
-    const balance = balanceRows[0];
-    if (!balance) throw AppError.notFound('Account not found');
+    if (!user) throw AppError.notFound('Account not found');
 
     const wallet: Wallet = {
-      chips: Number(balance.chips),
-      recentTransactions: transactionRows.map(toTransaction),
+      chips: user.chips,
+      recentTransactions: recent.map(toTransaction),
     };
 
     return { ok: true as const, data: wallet };
@@ -104,58 +102,65 @@ export async function walletRoutes(app: FastifyInstance) {
    * the endpoint credits play chips so the flow can be demonstrated.
    */
   app.post('/deposit', async (request) => {
-    const userId = request.claims?.sub;
-    if (!userId) throw AppError.unauthorized();
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
 
     const body = depositBodySchema.parse(request.body);
-    const result = await applyChipChange(userId, 'deposit', body.amount, 'simulated');
+    const result = await applyChipChange(
+      new ObjectId(claim),
+      'deposit',
+      body.amount,
+      'simulated',
+    );
 
     return { ok: true as const, data: result };
   });
 
   app.post('/withdraw', async (request) => {
-    const userId = request.claims?.sub;
-    if (!userId) throw AppError.unauthorized();
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
 
     const body = withdrawBodySchema.parse(request.body);
-    const result = await applyChipChange(userId, 'withdrawal', -body.amount, 'simulated');
+    const result = await applyChipChange(
+      new ObjectId(claim),
+      'withdrawal',
+      -body.amount,
+      'simulated',
+    );
 
     return { ok: true as const, data: result };
   });
 
   app.get('/transactions', async (request) => {
-    const userId = request.claims?.sub;
-    if (!userId) throw AppError.unauthorized();
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+    const userId = new ObjectId(claim);
 
     const query = request.query as { limit?: string; cursor?: string };
     const limit = Math.min(Number(query.limit ?? 20) || 20, 100);
-    const cursor = query.cursor ? new Date(query.cursor) : null;
 
-    const rows = cursor
-      ? await sql<TransactionRow[]>`
-          SELECT id, kind, amount, balance_after, reference, created_at
-          FROM chip_transactions
-          WHERE user_id = ${userId} AND created_at < ${cursor}
-          ORDER BY created_at DESC
-          LIMIT ${limit + 1}
-        `
-      : await sql<TransactionRow[]>`
-          SELECT id, kind, amount, balance_after, reference, created_at
-          FROM chip_transactions
-          WHERE user_id = ${userId}
-          ORDER BY created_at DESC
-          LIMIT ${limit + 1}
-        `;
+    // Paginate on _id rather than createdAt: ObjectIds are monotonic and
+    // unique, so two documents written in the same millisecond cannot make a
+    // cursor skip or repeat a row.
+    const filter = query.cursor
+      ? { userId, _id: { $lt: new ObjectId(query.cursor) } }
+      : { userId };
 
-    const hasMore = rows.length > limit;
-    const page = hasMore ? rows.slice(0, limit) : rows;
+    const docs = await chipTransactions()
+      .find(filter)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
+      .toArray();
+
+    const hasMore = docs.length > limit;
+    const page = hasMore ? docs.slice(0, limit) : docs;
     const last = page[page.length - 1];
 
     return {
       ok: true as const,
       data: {
         items: page.map(toTransaction),
-        nextCursor: hasMore && last ? last.created_at.toISOString() : null,
+        nextCursor: hasMore && last ? last._id.toHexString() : null,
       },
     };
   });
