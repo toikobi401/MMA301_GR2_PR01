@@ -5,7 +5,9 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { config, isDevelopment } from './config.js';
 import { authPlugin } from './plugins/auth.js';
 import { errorHandler } from './plugins/error-handler.js';
+import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
+import { walletRoutes } from './routes/wallet.js';
 import { redis } from './lib/redis.js';
 
 /**
@@ -51,9 +53,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
 
-  // Feature routes land here once the project topic is chosen:
-  // await app.register(authRoutes,    { prefix: '/api/v1/auth' });
-  // await app.register(libraryRoutes, { prefix: '/api/v1/library' });
+  await app.register(authRoutes, { prefix: '/api/v1/auth' });
+  await app.register(walletRoutes, { prefix: '/api/v1/wallet' });
 
   return app;
 }
