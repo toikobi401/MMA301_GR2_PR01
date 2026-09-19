@@ -97,3 +97,23 @@ decides money or cards.
   predictable from a handful of observed hands.
 - Validate every action against `legalActions` on the server, whatever the
   client shows.
+
+## Realtime
+
+- Hand state lives in memory in `apps/server/src/game`. Only the finished hand
+  is written to Mongo. This is single-process by design: two server instances
+  would each hold their own copy of the same table.
+- A player action triggers exactly one broadcast, from the engine's `onChange`
+  callback. Do not broadcast again from the socket handler — clients that act
+  on the first state while a second is in flight read a stale turn.
+- Reconnects get a full snapshot, never a replay of missed messages. Clients
+  ignore any state whose sequence is not newer than the last one applied.
+
+## Deal animation
+
+The animation is entirely client-side. The server sends the finished state and
+`DealtCard` replays the deal visually.
+
+Driving it from the server — one card per message — would leave the table in a
+half-dealt state if the connection dropped mid-deal, with no way to recover.
+A player joining mid-hand skips the animation and renders immediately.

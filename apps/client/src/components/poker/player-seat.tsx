@@ -3,7 +3,8 @@ import { cn } from '@/lib/cn';
 import { Avatar } from '@/components/ui/avatar';
 import { Text } from '@/components/ui/text';
 import { ChipStack, formatChips } from './chip-stack';
-import { CardRow, type CardCode } from './playing-card';
+import { DealtCard } from './dealt-card';
+import type { CardCode } from './playing-card';
 
 export type SeatStatus = 'active' | 'folded' | 'all_in' | 'sitting_out' | 'empty';
 
@@ -16,6 +17,10 @@ export interface PlayerSeatProps {
   committed?: number;
   /** Two cards when known, two nulls for face-down, empty when not in the hand. */
   holeCards?: (CardCode | null)[];
+  /** Animates the hole cards in. Set only for the hand currently being dealt. */
+  dealing?: boolean;
+  /** Seat position in the deal order, so cards arrive one seat at a time. */
+  dealIndex?: number;
   isActing?: boolean;
   isDealer?: boolean;
   isSelf?: boolean;
@@ -31,6 +36,8 @@ export function PlayerSeat({
   status,
   committed = 0,
   holeCards = [],
+  dealing = false,
+  dealIndex = 0,
   isActing = false,
   isDealer = false,
   isSelf = false,
@@ -60,7 +67,21 @@ export function PlayerSeat({
       {committed > 0 && <ChipStack amount={committed} />}
 
       {holeCards.length > 0 && (
-        <CardRow cards={holeCards} size="sm" className={cn(folded && 'opacity-30')} />
+        <View className={cn('flex-row gap-1.5', folded && 'opacity-30')}>
+          {holeCards.map((card, position) => (
+            <DealtCard
+              key={`${card ?? 'back'}-${position}`}
+              card={card}
+              size="sm"
+              // Cards go round the table one per player per pass, the order a
+              // real dealer uses, so the seat index decides the delay.
+              index={position * 6 + dealIndex}
+              stagger={55}
+              fromY={-70}
+              instant={!dealing}
+            />
+          ))}
+        </View>
       )}
 
       <View

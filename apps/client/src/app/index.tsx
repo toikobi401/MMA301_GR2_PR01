@@ -1,6 +1,7 @@
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
+import type { TableSummary } from '@app/shared';
 import {
   Badge,
   Button,
@@ -8,51 +9,20 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  StatusDot,
+  Input,
   Text,
 } from '@/components/ui';
-import { api, apiBaseUrl } from '@/lib/api';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
-type Readiness = { database: boolean; cache: boolean };
-type Phase = 'loading' | 'up' | 'down';
-
-/** Lobby. Neutral shadcn styling; the felt is reserved for the table. */
-export default function HomeScreen() {
+export default function LobbyScreen() {
   const { isDark, toggle } = useTheme();
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [readiness, setReadiness] = useState<Readiness | null>(null);
-
-  const check = useCallback(async () => {
-    setPhase('loading');
-    try {
-      const data = await api.get<Readiness>('/health/ready');
-      setReadiness(data);
-      setPhase('up');
-    } catch {
-      setReadiness(null);
-      setPhase('down');
-    }
-  }, []);
-
-  useEffect(() => {
-    void check();
-  }, [check]);
-
-  const services = [
-    { name: 'API server', up: phase === 'up' },
-    { name: 'MongoDB', up: readiness?.database ?? false },
-    { name: 'Redis', up: readiness?.cache ?? false },
-  ];
+  const { user, token, busy, error, login, register, logout } = useSession();
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="p-6 items-center"
-    >
-      {/* Capped width so the layout reads as a column on a desktop browser
-          rather than stretching across the viewport. */}
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-6 items-center">
       <View className="w-full max-w-[680px] gap-6">
         <View className="flex-row items-start justify-between">
           <View className="gap-1">
@@ -73,54 +43,222 @@ export default function HomeScreen() {
           </Button>
         </View>
 
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Service status</CardTitle>
-            {phase === 'loading' ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <Badge
-                label={phase === 'up' ? 'Online' : 'Offline'}
-                variant={phase === 'up' ? 'success' : 'destructive'}
-              />
-            )}
-          </CardHeader>
+        {token && user ? (
+          <TableList user={user.displayName} onSignOut={logout} />
+        ) : (
+          <SignIn busy={busy} error={error} onLogin={login} onRegister={register} />
+        )}
+      </View>
+    </ScrollView>
+  );
+}
 
-          <CardContent className="gap-0">
-            {services.map((service, index) => (
+function SignIn({
+  busy,
+  error,
+  onLogin,
+  onRegister,
+}: {
+  busy: boolean;
+  error: string | null;
+  onLogin: (email: string, password: string) => Promise<boolean>;
+  onRegister: (email: string, password: string, name: string) => Promise<boolean>;
+}) {
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+
+  const submit = () => {
+    if (mode === 'login') void onLogin(email, password);
+    else void onRegister(email, password, displayName);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{mode === 'login' ? 'Sign in' : 'Create an account'}</CardTitle>
+      </CardHeader>
+
+      <CardContent className="gap-3">
+        {mode === 'register' && (
+          <Input
+            label="Display name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            autoCapitalize="words"
+            placeholder="Your name at the table"
+          />
+        )}
+
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholder="you@example.com"
+        />
+
+        <Input
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholder="At least 8 characters"
+          onSubmitEditing={submit}
+        />
+
+        {error && (
+          <Text variant="caption" tone="destructive">
+            {error}
+          </Text>
+        )}
+
+        <Button
+          label={mode === 'login' ? 'Sign in' : 'Create account'}
+          loading={busy}
+          onPress={submit}
+          block
+        />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          label={mode === 'login' ? 'Need an account?' : 'Already have one?'}
+          onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+function TableList({ user, onSignOut }: { user: string; onSignOut: () => void }) {
+  const [tables, setTables] = useState<TableSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const page = await api.get<{ items: TableSummary[] }>('/api/v1/tables');
+      setTables(page.items);
+      setError(null);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not load tables');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  async function createTable() {
+    setError(null);
+    try {
+      const created = await api.post<TableSummary>('/api/v1/tables', {
+        name: `${user}'s table`,
+        maxSeats: 6,
+        smallBlind: 10,
+        bigBlind: 20,
+        minBuyIn: 400,
+        maxBuyIn: 2000,
+        isPrivate: false,
+      });
+      await joinTable(created.id);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not create the table');
+    }
+  }
+
+  async function joinTable(tableId: string) {
+    setJoining(tableId);
+    setError(null);
+    try {
+      await api.post(`/api/v1/tables/${tableId}/join`, { buyIn: 1000 });
+      router.push(`/table?id=${tableId}`);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Could not join';
+      // Already seated is not a failure — go to the table.
+      if (message.toLowerCase().includes('already seated')) {
+        router.push(`/table?id=${tableId}`);
+      } else {
+        setError(message);
+      }
+    } finally {
+      setJoining(null);
+    }
+  }
+
+  return (
+    <View className="gap-4">
+      <View className="flex-row items-center justify-between">
+        <Text tone="muted">
+          Signed in as <Text className="font-medium text-foreground">{user}</Text>
+        </Text>
+        <Button variant="ghost" size="sm" label="Sign out" onPress={onSignOut} />
+      </View>
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Tables</CardTitle>
+          <Button variant="outline" size="sm" label="Refresh" onPress={() => void refresh()} />
+        </CardHeader>
+
+        <CardContent className="gap-0">
+          {loading ? (
+            <View className="py-6">
+              <ActivityIndicator size="small" />
+            </View>
+          ) : tables.length === 0 ? (
+            <Text tone="muted" className="py-4">
+              No tables yet. Create one to start playing.
+            </Text>
+          ) : (
+            tables.map((table, index) => (
               <View
-                key={service.name}
+                key={table.id}
                 className={cn(
                   'flex-row items-center justify-between py-3',
                   index > 0 && 'border-t border-border',
                 )}
               >
-                <Text>{service.name}</Text>
-                <View className="flex-row items-center gap-2">
-                  <StatusDot className={service.up ? 'bg-success' : 'bg-muted-foreground'} />
-                  <Text variant="caption" tone={service.up ? 'success' : 'muted'}>
-                    {service.up ? 'Up' : 'Down'}
+                <View className="flex-1 gap-0.5">
+                  <Text className="font-medium">{table.name}</Text>
+                  <Text variant="caption" tone="muted">
+                    {table.smallBlind}/{table.bigBlind} · {table.seatedCount}/{table.maxSeats}{' '}
+                    seated
                   </Text>
                 </View>
+
+                <View className="flex-row items-center gap-2">
+                  <Badge
+                    label={table.status === 'in_hand' ? 'Playing' : 'Open'}
+                    variant={table.status === 'in_hand' ? 'success' : 'secondary'}
+                  />
+                  <Button
+                    size="sm"
+                    label="Join"
+                    loading={joining === table.id}
+                    onPress={() => void joinTable(table.id)}
+                  />
+                </View>
               </View>
-            ))}
-          </CardContent>
-        </Card>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
-        <View className="flex-row gap-2">
-          <Button variant="outline" label="Check again" onPress={() => void check()} className="flex-1" />
-          <Link href="/table" asChild>
-            <Button label="View table" className="flex-1" />
-          </Link>
-        </View>
+      {error && (
+        <Text variant="caption" tone="destructive">
+          {error}
+        </Text>
+      )}
 
-        {phase === 'down' && (
-          <Text variant="caption" tone="muted">
-            Cannot reach {apiBaseUrl}. On a physical device set EXPO_PUBLIC_API_URL to your
-            computer's address on the local network.
-          </Text>
-        )}
-      </View>
-    </ScrollView>
+      <Button label="Create a table" onPress={() => void createTable()} block />
+    </View>
   );
 }
