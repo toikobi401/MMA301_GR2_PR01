@@ -290,6 +290,15 @@ export function applyAction(state: HandState, action: Action, now?: number): Han
   return state;
 }
 
+/**
+ * Reads the current street without the narrowing TypeScript applies after an
+ * early `return` on a street comparison. The state is mutated by
+ * `dealNextStreet` between those checks, so the narrowed type is wrong.
+ */
+function currentStreet(state: HandState): StreetValue {
+  return state.street;
+}
+
 /** Moves to the next actor, the next street, or the end of the hand. */
 function advance(state: HandState, now?: number): void {
   const live = livePlayers(state);
@@ -331,7 +340,15 @@ function advance(state: HandState, now?: number): void {
       (player) => player.committed < state.currentBet,
     );
     if (!stillBetting) {
-      while (state.street !== Street.River) dealNextStreet(state);
+      // `currentStreet` is read through a widened local because TypeScript
+      // narrowed `state.street` at the early return above and cannot see that
+      // dealNextStreet reassigns it.
+      while (
+        currentStreet(state) !== Street.River &&
+        currentStreet(state) !== Street.Showdown
+      ) {
+        dealNextStreet(state);
+      }
       finish(state, now);
       return;
     }
@@ -340,7 +357,7 @@ function advance(state: HandState, now?: number): void {
   const first = nextToAct(state);
   state.actingPlayerId = first?.id ?? null;
   if (!first) {
-    if (state.street === Street.River) finish(state, now);
+    if (currentStreet(state) === Street.River) finish(state, now);
     else advance(state, now);
   }
 }
