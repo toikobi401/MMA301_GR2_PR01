@@ -85,6 +85,23 @@ docker compose -f infra/docker-compose.yml --profile tools up -d mongo-express
 
 It runs at http://localhost:8081.
 
+## If the dev server floods with ENOENT errors
+
+Expo Router writes `.expo/types/router.d.ts` but does not create the directory
+first, so a fresh clone crashes on every file change. The `start`, `web`,
+`android`, and `ios` scripts create it beforehand, which is why they should be
+run through npm:
+
+```bash
+npm run dev      # not: npx expo start
+```
+
+If you hit it anyway, create the directory and restart:
+
+```bash
+mkdir -p apps/client/.expo/types
+```
+
 ## Testing on a physical phone
 
 `localhost` inside the app points at the phone itself, not your computer. Find
