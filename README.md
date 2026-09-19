@@ -1,11 +1,11 @@
 # MMA301 GR2 PR01
 
-Cross-platform application built with Expo (React Native). iOS, Android, and
-web all render from a single `src/app` directory, backed by a Fastify API.
+Online Texas Hold'em with play money, built with Expo (React Native) and a
+Fastify API. iOS, Android, and web all render from a single `src/app`
+directory.
 
-The project topic is not fixed yet. Everything here is topic-agnostic
-infrastructure that both candidate ideas (media streaming / realtime multiplayer)
-need anyway.
+No real money is involved anywhere. Deposits and withdrawals are simulated so
+the payment flow can be demonstrated without handling currency.
 
 ## Layout
 
@@ -18,6 +18,7 @@ apps/
     src/theme/      Token bindings
   server/     Fastify API — runs in Docker
 packages/
+  poker/          Rules engine: hand evaluation, pots, betting state machine
   shared/         API contracts, Zod schemas, HTTP client
   design-tokens/  Colours, spacing, typography — one source for all platforms
 infra/
@@ -73,6 +74,7 @@ chain works end to end.
 | `npm run docker:down` | Stop containers, keep data |
 | `npm run docker:reset` | Stop and delete volumes (wipes the database) |
 | `npm run typecheck` | Typecheck every workspace |
+| `npm test` | Run the rules-engine tests |
 | `npm run tokens` | Regenerate `tokens.css` from the TypeScript tokens |
 
 Adminer, a database browser, is available on demand:
@@ -105,9 +107,9 @@ Static export means there is no server-side rendering. Pages are pre-rendered
 at build time and fetch live data in the browser, which suits an app whose
 content sits behind a login anyway.
 
-**API** does not go to Vercel. It needs a long-lived process, a persistent disk,
-and possibly FFmpeg, none of which fit a serverless function. Deploy the Docker
-image to Railway, Render, Fly.io, or a VPS.
+**API** does not go to Vercel. Serverless functions cannot hold the WebSocket
+connections a poker table needs. It runs as a container behind a Cloudflare
+Tunnel; see `docs/DEPLOYMENT.md`.
 
 **Mobile** builds through EAS when you need an installable file:
 

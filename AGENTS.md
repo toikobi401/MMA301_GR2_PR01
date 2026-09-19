@@ -38,8 +38,45 @@ Read `docs/ARCHITECTURE.md` before adding a feature.
   `EXPO_PUBLIC_`.
 - Run `npm run typecheck` before committing.
 
-## Topic status
+## The project
 
-The project topic is not decided yet. Candidates are a personal media
-streaming system and an online poker game with play money. The infrastructure
-here serves either one.
+Online Texas Hold'em with play money. No real currency anywhere; deposits and
+withdrawals are simulated.
+
+Scope: accounts, simulated payments, realtime leaderboard, private and public
+tables, friends, in-game chat, hand history, and per-action replay.
+
+- `packages/poker` holds the rules engine: cards, hand evaluation, pot
+  splitting, and the betting state machine. It is pure logic with no
+  networking, and it is tested. Change it only with tests alongside.
+- Deployment runs through Cloudflare Tunnel to a domain. See
+  `docs/DEPLOYMENT.md`.
+
+## Poker rules that are easy to get wrong
+
+These are already handled and covered by tests. Do not "simplify" them.
+
+- The wheel (A-2-3-4-5) is a five-high straight, so the ace plays low and the
+  hand ranks below a six-high straight.
+- Heads-up, the button posts the small blind and acts first preflop, then
+  last on every later street.
+- The big blind keeps an option to raise after callers, so the preflop street
+  does not end merely because everyone has matched.
+- An all-in for less than a full raise does not reopen the betting.
+- Side pots come from commitment levels. A player can only win, from each
+  opponent, up to what they themselves put in.
+
+## Security rules for the game
+
+The server is the only authority. Never trust the client for anything that
+decides money or cards.
+
+- Hole cards belong to one player. The server removes other players' cards
+  before sending state; it never sends everything and relies on the client to
+  hide the rest. `redactForPlayer` does this.
+- The deck never leaves the server. It is the remainder of the shuffle, so
+  leaking it reveals every future card.
+- Shuffle with a cryptographically secure random source. `Math.random` is
+  predictable from a handful of observed hands.
+- Validate every action against `legalActions` on the server, whatever the
+  client shows.
