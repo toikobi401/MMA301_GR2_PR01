@@ -55,6 +55,7 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me_at_least_32_chars}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:4000}
     ports:
       - "${SERVER_PORT:-4000}:4000"
     volumes:
@@ -83,6 +84,21 @@ services:
       - "${ADMINER_PORT:-8080}:8080"
     environment:
       ADMINER_DEFAULT_SERVER: postgres
+
+  # Cloudflare Tunnel. Opt in with: --profile tunnel
+  #
+  # It dials out to Cloudflare, so the host needs no open inbound port and no
+  # public IP. That is what makes this workable from a home machine.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    depends_on:
+      server:
+        condition: service_healthy
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
 
 volumes:
   postgres-data:

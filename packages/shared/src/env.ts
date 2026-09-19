@@ -26,6 +26,13 @@ export const serverEnvSchema = z.object({
     ),
 
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+
+  /**
+   * Public origin the clients reach, e.g. https://poker.example.com.
+   * Behind Cloudflare Tunnel this differs from HOST/PORT, and WebSocket
+   * upgrade URLs are derived from it.
+   */
+  PUBLIC_URL: z.string().default('http://localhost:4000'),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
