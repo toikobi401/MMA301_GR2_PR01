@@ -76,6 +76,7 @@ chain works end to end.
 | `npm run docker:reset` | Stop and delete volumes (wipes the database and re-runs the index setup) |
 | `npm run typecheck` | Typecheck every workspace |
 | `npm test` | Run the rules-engine tests |
+| `node scripts/play-hand.mjs` | Play a full hand over the socket, end to end |
 
 A database browser is available on demand:
 
