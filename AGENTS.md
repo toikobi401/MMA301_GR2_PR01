@@ -50,6 +50,10 @@ Read `docs/ARCHITECTURE.md` before adding a feature.
 - Let unique indexes reject duplicates. Checking first and inserting after
   leaves a race window.
 - Run `npm run typecheck` before committing.
+- Start the client through npm (`npm run dev`, `npm run web`), not `npx expo
+  start` directly. A pre-hook creates `.expo/types`, which Expo Router writes
+  into but does not create; without it the dev server errors on every file
+  change. Never delete `.expo` while the server is running.
 
 ## The project
 
