@@ -80,6 +80,12 @@ export interface FriendshipDoc extends Document {
 export interface SeatDoc {
   seat: number;
   userId: ObjectId | null;
+  /**
+   * Denormalised from the user document. Every table broadcast needs it, and
+   * looking it up each time would mean a query several times a second during
+   * a hand. Names change rarely enough that staleness is not a concern.
+   */
+  displayName: string | null;
   stack: number;
   sittingOut: boolean;
   joinedAt: Date;
@@ -99,6 +105,8 @@ export interface PokerTableDoc extends Document {
   status: 'open' | 'in_hand' | 'closed';
   seats: SeatDoc[];
   handNumber: number;
+  /** Seat holding the dealer button; advances one occupied seat per hand. */
+  buttonSeat: number;
   createdAt: Date;
 }
 

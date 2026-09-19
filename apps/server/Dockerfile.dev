@@ -8,7 +8,7 @@ WORKDIR /repo
 COPY package.json package-lock.json* ./
 COPY apps/server/package.json apps/server/
 COPY packages/shared/package.json packages/shared/
-COPY packages/design-tokens/package.json packages/design-tokens/
+COPY packages/poker/package.json packages/poker/
 
 RUN npm install --workspaces --include-workspace-root
 

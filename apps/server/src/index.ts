@@ -1,5 +1,6 @@
 import { buildApp } from './app.js';
 import { config } from './config.js';
+import { disposeAllTables } from './game/registry.js';
 import { closeDatabase, connectDatabase } from './lib/db.js';
 import { closeRedis } from './lib/redis.js';
 
@@ -22,6 +23,7 @@ async function shutdown(signal: string): Promise<void> {
   timer.unref();
 
   try {
+    disposeAllTables();
     await app.close();
     await Promise.allSettled([closeDatabase(), closeRedis()]);
     process.exit(0);

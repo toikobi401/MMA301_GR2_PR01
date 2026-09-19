@@ -1,12 +1,15 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import websocket from '@fastify/websocket';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { config, isDevelopment } from './config.js';
 import { authPlugin } from './plugins/auth.js';
 import { errorHandler } from './plugins/error-handler.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
+import { realtimeRoutes } from './routes/realtime.js';
+import { tableRoutes } from './routes/tables.js';
 import { walletRoutes } from './routes/wallet.js';
 import { redis } from './lib/redis.js';
 
@@ -53,8 +56,16 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(healthRoutes);
 
+  // A poker connection stays open for a whole session, so the idle timeout is
+  // generous; the client's own ping keeps it alive through proxies.
+  await app.register(websocket, {
+    options: { maxPayload: 64 * 1024 },
+  });
+
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(walletRoutes, { prefix: '/api/v1/wallet' });
+  await app.register(tableRoutes, { prefix: '/api/v1/tables' });
+  await app.register(realtimeRoutes);
 
   return app;
 }

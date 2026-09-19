@@ -12,14 +12,14 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 COPY apps/server/package.json apps/server/
 COPY packages/shared/package.json packages/shared/
-COPY packages/design-tokens/package.json packages/design-tokens/
+COPY packages/poker/package.json packages/poker/
 RUN --mount=type=cache,target=/root/.npm \
     npm install --workspaces --include-workspace-root --omit=optional
 
 # ---------- build ----------
 FROM deps AS build
 COPY packages/shared packages/shared
-COPY packages/design-tokens packages/design-tokens
+COPY packages/poker packages/poker
 COPY apps/server apps/server
 RUN npm run build --workspace @app/server
 
@@ -28,7 +28,7 @@ FROM base AS prod-deps
 COPY package.json package-lock.json* ./
 COPY apps/server/package.json apps/server/
 COPY packages/shared/package.json packages/shared/
-COPY packages/design-tokens/package.json packages/design-tokens/
+COPY packages/poker/package.json packages/poker/
 RUN --mount=type=cache,target=/root/.npm \
     npm install --workspaces --include-workspace-root --omit=dev --omit=optional
 
