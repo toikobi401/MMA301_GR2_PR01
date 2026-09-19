@@ -19,8 +19,8 @@ Docker build on every pull request.
 
 | Owner | Scope |
 |---|---|
-| Developer A | `apps/server`, `infra`, database schema |
-| Developer B | `apps/mobile`, `apps/web`, `packages/design-tokens` |
+| Developer A | `apps/server`, `packages/poker`, `infra` |
+| Developer B | `apps/client` — screens and components |
 | Both | `packages/shared` — change it together |
 
 `packages/shared` is the seam. Agree on a schema there before either side

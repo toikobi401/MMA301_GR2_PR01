@@ -14,7 +14,7 @@ npm workspaces monorepo with one client for every platform:
 - `apps/client` — Expo app for iOS, Android, and web (Expo Router)
 - `apps/server` — Fastify API, runs in Docker, never on Vercel
 - `packages/shared` — API contracts shared by server and client
-- `packages/design-tokens` — colours and spacing for every platform
+- `packages/poker` — rules engine, pure logic, tested
 
 There is no separate web app. Screens in `apps/client/src/app` render natively
 on device and as browser routes on web.
@@ -25,8 +25,15 @@ Read `docs/ARCHITECTURE.md` before adding a feature.
 
 - API request and response types go in `packages/shared` first, then get
   implemented. Both sides must compile against the same schema.
-- Colours and spacing come from `packages/design-tokens`. No hex codes inside
-  components.
+- The UI uses NativeWind (Tailwind classes on React Native). Colours come from
+  the semantic tokens in `apps/client/src/global.css`, never from raw hex in a
+  component. shadcn/ui itself cannot run here — it needs Radix and the DOM —
+  so `src/components/ui` holds the React Native equivalents.
+- NativeWind v4 requires Tailwind **3**. Upgrading to Tailwind 4 breaks the
+  build.
+- `dark:` resolves from the app-level scheme on native; a `dark` class on a
+  nested view only cascades on web. A subtree that must stay dark on every
+  platform takes an explicit prop, as `ActionBar` does with `onDarkSurface`.
 - Workspace packages use extensionless relative imports (`./api`, not
   `./api.js`). Metro cannot resolve the `.js` form. The server uses
   `moduleResolution: "bundler"` for the same reason.

@@ -4,7 +4,9 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
@@ -13,7 +15,12 @@
     "*.ts",
     "*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
   ],
-  "exclude": ["node_modules", "dist", ".expo"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".expo"
+  ]
 }

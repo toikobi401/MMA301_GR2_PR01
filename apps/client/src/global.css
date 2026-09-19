@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Colour variables, in HSL channels so Tailwind can apply opacity modifiers
+ * like `bg-primary/50`.
+ *
+ * These mirror packages/design-tokens. That package stays the source of truth
+ * for anything read from TypeScript; these values exist so class names work.
+ * Change a colour in both places or they drift.
+ */
+
+@layer base {
+  :root {
+    --background: 220 20% 98%;
+    --foreground: 220 26% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 26% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 26% 9%;
+
+    --primary: 231 87% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 220 20% 25%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 11% 48%;
+
+    --accent: 231 87% 66%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 56% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 18% 89%;
+    --input: 220 18% 89%;
+    --ring: 231 87% 66%;
+
+    /* The felt stays dark in both themes. A poker table lit like a document
+       reads as a spreadsheet, and players expect the cards to pop against a
+       dark surface. */
+    --felt: 162 42% 13%;
+    --felt-rail: 20 25% 14%;
+    --felt-line: 162 25% 24%;
+  }
+
+  /* `:root` covers the app-wide toggle; the bare `.dark` lets any subtree
+     force dark, which the poker table needs since its felt stays dark in
+     both themes. */
+  .dark:root,
+  .dark {
+    --background: 220 30% 6%;
+    --foreground: 220 20% 97%;
+
+    --card: 220 26% 9%;
+    --card-foreground: 220 20% 97%;
+
+    --popover: 220 24% 12%;
+    --popover-foreground: 220 20% 97%;
+
+    --primary: 231 87% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 24% 14%;
+    --secondary-foreground: 220 18% 82%;
+
+    --muted: 220 24% 14%;
+    --muted-foreground: 220 13% 65%;
+
+    --accent: 231 87% 72%;
+    --accent-foreground: 220 30% 6%;
+
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 56% 45%;
+    --success-foreground: 220 30% 6%;
+
+    --border: 220 24% 17%;
+    --input: 220 24% 17%;
+    --ring: 231 87% 66%;
+
+    --felt: 162 45% 10%;
+    --felt-rail: 20 28% 11%;
+    --felt-line: 162 28% 20%;
+  }
+}

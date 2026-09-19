@@ -1,67 +1,115 @@
-# Design workflow
+# Design
 
-## Figma to code
+## The short version
 
-The bridge is `packages/design-tokens`. Figma Variables and the token names in
-`tokens.ts` are kept identical, so translating a design never involves guessing
-which grey was used.
-
-### Naming
-
-| Figma Variable | Token |
-|---|---|
-| `color/background` | `colors.background` |
-| `color/text/primary` | `colors.textPrimary` |
-| `space/lg` | `spacing.lg` |
-| `radius/md` | `radius.md` |
-
-Create the Figma variables to match this list rather than inventing new names,
-otherwise the mapping has to be maintained by hand.
-
-### Changing a colour
-
-1. Update the value in `packages/design-tokens/src/tokens.ts`.
-2. Run `npm run tokens` to regenerate the CSS variables.
-3. Mobile picks it up on the next reload. No component changes.
-
-If you find yourself typing a hex code inside a component, the token is missing.
-Add it to `tokens.ts` instead.
-
-## Using tokens
-
-React Native:
+Tailwind classes on React Native components, through NativeWind. One
+`className` renders on iOS, Android, and web.
 
 ```tsx
-const theme = useTheme();
-
-<View style={{
-  backgroundColor: theme.colors.surface,
-  padding: theme.spacing.lg,
-  borderRadius: theme.radius.md,
-}} />
+<Card>
+  <CardHeader>
+    <CardTitle>Service status</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Text tone="muted">Everything is up.</Text>
+  </CardContent>
+</Card>
 ```
 
-Web:
+## Why not shadcn/ui itself
 
-```css
-.card {
-  background: var(--color-surface);
-  padding: var(--space-lg);
-  border-radius: var(--radius-md);
+shadcn/ui is built on Radix UI and the DOM. It runs in a browser and nowhere
+else, so dropping it in would give us a working web app and a broken phone app
+— losing the single codebase this project is built around.
+
+`apps/client/src/components/ui` holds React Native equivalents that follow the
+same conventions: variants declared with `class-variance-authority`, a `cn`
+helper that merges Tailwind classes, and components that live in the repository
+rather than in `node_modules`, so they can be edited freely.
+
+## Two visual registers
+
+**Everything outside the table** is neutral and quiet: near-white or near-black
+backgrounds, thin borders, one accent colour. Lobby, wallet, friends, history.
+
+**The table** is dark felt with warm chips and white cards. Poker players
+expect it, and cards need a dark surface to read against. The felt stays dark
+in both themes.
+
+Keeping these separate is deliberate. If the whole app looked like a casino it
+would be tiring; if the table looked like a dashboard it would not feel like
+poker.
+
+## Colour
+
+Semantic tokens in `apps/client/src/global.css`, as HSL channels so Tailwind's
+opacity modifiers work:
+
+| Token | Use |
+|---|---|
+| `background` / `foreground` | Page and its text |
+| `card` / `card-foreground` | Raised surfaces |
+| `muted` / `muted-foreground` | Secondary text, quiet fills |
+| `primary` | The one accent; buttons and the acting-player ring |
+| `destructive` | Fold, errors, losses |
+| `success` | Online, wins |
+| `border` / `input` / `ring` | Outlines and focus |
+| `felt` / `felt-rail` / `felt-line` | The table only |
+| `chip-*` / `suit-*` | Chips and card pips |
+
+Write `bg-card`, never `bg-[#12161D]`. A hex value in a component is a token
+that has not been named yet.
+
+## Platform difference worth knowing
+
+`dark:` resolves from the app-level colour scheme on native. A `dark` class on
+a nested view cascades on web but does nothing on a phone.
+
+So a subtree that must stay dark on every platform cannot rely on the class.
+The table passes an explicit prop instead:
+
+```tsx
+<ActionBar onDarkSurface ... />
+```
+
+This is the kind of thing that looks right in a browser and breaks on a device,
+so check both before calling a screen done.
+
+## Constraints
+
+**NativeWind v4 requires Tailwind 3.** The v4 preset is incompatible. Upgrading
+breaks the build with errors that do not point at the cause.
+
+**Touch targets are at least 44 points.** The `Button` component enforces this;
+do not override the minimum height to make something fit.
+
+**Numbers that change use `variant="numeric"`.** It applies tabular figures, so
+a chip count does not shift the layout as it counts up.
+
+## Adding a component
+
+Put shared primitives in `components/ui`, poker-specific pieces in
+`components/poker`. Follow the existing pattern:
+
+```tsx
+const badgeVariants = cva('base classes here', {
+  variants: { variant: { default: '...', outline: '...' } },
+  defaultVariants: { variant: 'default' },
+});
+
+export function Badge({ variant, className, ...props }: BadgeProps) {
+  return <View className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 ```
 
-## Dark mode
+Accepting `className` last and merging it with `cn` is what lets a caller
+override padding or colour without a new variant.
 
-Both themes are defined in `tokens.ts` and share the `ThemeColors` shape, so a
-missing colour in one theme is a compile error. Mobile follows the OS setting
-through `useColorScheme()`. Web follows `prefers-color-scheme`.
+## Figma
 
-Never define a colour only inside a dark-mode block.
+The Figma connector is not authorised in this workspace. To enable it, run
+`/mcp` in an interactive Claude Code session and complete the sign-in. Until
+then, designs have to be translated by hand.
 
-## Figma MCP connection
-
-Claude Code can read Figma files directly once the Figma connector is
-authorised. It is not connected yet. To enable it, run `/mcp` in an interactive
-Claude Code session and complete the sign-in, after which designs can be
-translated to code without manual measurement.
+If you do set up Figma Variables, name them to match the tokens above
+(`color/card`, `space/lg`) so the mapping stays mechanical.

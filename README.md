@@ -13,14 +13,14 @@ the payment flow can be demonstrated without handling currency.
 apps/
   client/     Expo SDK 57 — iOS, Android, and web from one source tree
     src/app/        File-based routes (Expo Router)
-    src/components/ Shared UI, renders on every platform
+    src/components/ui/    Buttons, cards, inputs — shadcn-style, NativeWind
+    src/components/poker/ Cards, chips, seats, table felt
     src/features/   Feature modules
     src/theme/      Token bindings
   server/     Fastify API — runs in Docker
 packages/
   poker/          Rules engine: hand evaluation, pots, betting state machine
   shared/         API contracts, Zod schemas, HTTP client
-  design-tokens/  Colours, spacing, typography — one source for all platforms
 infra/
   docker-compose.yml   MongoDB + Redis + API
   mongo/init/          Collections, validators, and indexes
@@ -76,7 +76,6 @@ chain works end to end.
 | `npm run docker:reset` | Stop and delete volumes (wipes the database and re-runs the index setup) |
 | `npm run typecheck` | Typecheck every workspace |
 | `npm test` | Run the rules-engine tests |
-| `npm run tokens` | Regenerate `tokens.css` from the TypeScript tokens |
 
 A database browser is available on demand:
 
@@ -125,5 +124,5 @@ Read `docs/ARCHITECTURE.md` before adding a feature. Two rules matter most:
 1. Request and response shapes live in `packages/shared`. The server validates
    against them and the clients parse with them, so a contract change breaks the
    build instead of production.
-2. Colours and spacing come from `packages/design-tokens`. No hex codes in
-   components.
+2. The UI uses NativeWind. Colours come from the semantic tokens in
+   `apps/client/src/global.css`, not from raw hex in components.
