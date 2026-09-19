@@ -22,8 +22,7 @@
     "docker:reset": "docker compose -f infra/docker-compose.yml down -v",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "tokens": "npm run build --workspace @app/design-tokens"
+    "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
     "typescript": "~6.0.3"

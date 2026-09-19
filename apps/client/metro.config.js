@@ -1,6 +1,8 @@
 // Metro must be told about the monorepo: watch the repo root so workspace
 // packages resolve, and allow the hoisted node_modules at the root.
+// withNativeWind compiles Tailwind classes into styles at build time.
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 const path = require('node:path');
 
 const projectRoot = __dirname;
@@ -15,4 +17,4 @@ config.resolver.nodeModulesPaths = [
 ];
 config.resolver.disableHierarchicalLookup = true;
 
-module.exports = config;
+module.exports = withNativeWind(config, { input: './src/global.css' });
