@@ -150,6 +150,7 @@ collection(
           properties: {
             seat: { bsonType: 'int', minimum: 0 },
             userId: { bsonType: ['objectId', 'null'] },
+            displayName: { bsonType: ['string', 'null'] },
             stack: { bsonType: ['int', 'long'], minimum: 0 },
             sittingOut: { bsonType: 'bool' },
             joinedAt: { bsonType: 'date' },
@@ -157,6 +158,7 @@ collection(
         },
       },
       handNumber: { bsonType: ['int', 'long'] },
+      buttonSeat: { bsonType: 'int', minimum: 0 },
       createdAt: { bsonType: 'date' },
     },
   },
