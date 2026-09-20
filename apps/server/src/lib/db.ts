@@ -1,4 +1,5 @@
 import { MongoClient, type Collection, type Db, type Document, type ObjectId } from 'mongodb';
+import type { BotDifficulty } from '@app/shared';
 import { config, isProduction } from '../config.js';
 
 /**
@@ -35,6 +36,11 @@ export interface UserDoc extends Document {
   displayName: string;
   role: 'user' | 'admin';
   chips: number;
+  /**
+   * Bots are real accounts so they share seats, hand history, and every other
+   * path. The flag keeps them off the leaderboard and out of the wallet.
+   */
+  isBot?: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -88,6 +94,14 @@ export interface SeatDoc {
   displayName: string | null;
   stack: number;
   sittingOut: boolean;
+  /**
+   * Null for a human seat.
+   *
+   * Difficulty lives on the seat rather than on the bot account, so the same
+   * bot can sit at an easy table and a hard one, and changing difficulty is a
+   * table operation rather than a user mutation.
+   */
+  botProfile: { difficulty: BotDifficulty } | null;
   joinedAt: Date;
 }
 
@@ -107,6 +121,18 @@ export interface PokerTableDoc extends Document {
   handNumber: number;
   /** Seat holding the dealer button; advances one occupied seat per hand. */
   buttonSeat: number;
+  /**
+   * Deal the next hand automatically once one finishes.
+   *
+   * Off by default: a table of humans keeps the existing behaviour where a
+   * hand starts only on a join or an explicit deal. Turned on when a bot is
+   * seated, because otherwise a bot table plays one hand and stops forever.
+   */
+  autoDeal?: boolean;
+  /** Fill empty seats with bots between hands. */
+  autoFillBots?: boolean;
+  /** Difficulty used for seats the table fills on its own. */
+  autoFillDifficulty?: BotDifficulty;
   createdAt: Date;
 }
 
