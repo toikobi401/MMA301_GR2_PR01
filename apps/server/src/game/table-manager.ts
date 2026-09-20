@@ -271,13 +271,28 @@ export class Table {
     );
   }
 
+  /**
+   * Updates the leaderboard figures.
+   *
+   * Bots are skipped: they do not draw from a wallet, so their net chips are
+   * not comparable with a human's, and a leaderboard topped by the house
+   * tells a player nothing.
+   */
   private async updateStats(
     hand: HandState,
     wonBy: Map<string, number>,
     potTotal: number,
   ): Promise<void> {
+    const botSeats = new Set(
+      this.doc.seats
+        .filter((seat) => seat.botProfile != null && seat.userId !== null)
+        .map((seat) => seat.userId?.toHexString()),
+    );
+
+    const humans = hand.players.filter((player) => !botSeats.has(player.id));
+
     await Promise.all(
-      hand.players.map((player) => {
+      humans.map((player) => {
         const won = wonBy.get(player.id) ?? 0;
         return playerStats().updateOne(
           { userId: new ObjectId(player.id) },
