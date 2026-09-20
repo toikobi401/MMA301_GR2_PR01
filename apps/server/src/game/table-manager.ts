@@ -327,8 +327,10 @@ export class Table {
           | 'all_in'
           | 'sitting_out',
         committed: player?.committed ?? 0,
-        holeCards: reveal ? (player?.holeCards ?? []) : [],
+        holeCards: reveal ? [...(player?.holeCards ?? [])] : [],
         isActing: hand?.actingPlayerId === userId,
+        isBot: seat.botProfile !== null && seat.botProfile !== undefined,
+        botDifficulty: seat.botProfile?.difficulty ?? null,
       };
     });
 

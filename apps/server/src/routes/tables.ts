@@ -23,6 +23,7 @@ function toSummary(doc: PokerTableDoc): TableSummary {
     maxBuyIn: doc.maxBuyIn,
     isPrivate: doc.isPrivate,
     status: doc.status,
+    botCount: doc.seats.filter((seat) => seat.botProfile != null).length,
     createdAt: doc.createdAt.toISOString(),
   };
 }
@@ -41,6 +42,7 @@ function emptySeats(count: number): SeatDoc[] {
     displayName: null,
     stack: 0,
     sittingOut: false,
+    botProfile: null,
     joinedAt: new Date(),
   }));
 }
