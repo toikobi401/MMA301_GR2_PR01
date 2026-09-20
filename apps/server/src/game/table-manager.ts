@@ -12,6 +12,7 @@ import {
 import { ACTION_TIMEOUT_SECONDS, type BotDifficulty, type TableState } from '@app/shared';
 import { hands, pokerTables, playerStats, users, type PokerTableDoc } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
+import { recordHand } from './opponent-stats.js';
 import { secureRandom } from './random.js';
 
 /**
@@ -250,6 +251,10 @@ export class Table {
     }
 
     this.doc.status = 'open';
+
+    // Fold this hand into the opponent reads before anything else, so the
+    // expert tier has it for the next hand even if persistence fails.
+    recordHand(this.id, hand);
 
     const potTotal = hand.pots.reduce((sum, pot) => sum + pot.amount, 0);
     const wonBy = new Map<string, number>();
