@@ -80,7 +80,19 @@ collection(
       email: { bsonType: 'string' },
       passwordHash: { bsonType: 'string' },
       displayName: { bsonType: 'string', minLength: 1, maxLength: 64 },
-      role: { enum: ['user', 'admin'] },
+      // moderator runs tournaments; admin can also appoint moderators.
+      role: { enum: ['user', 'moderator', 'admin'] },
+      // Present only while the account is banned. Chips are untouched, so
+      // lifting a ban restores the account exactly as it was.
+      ban: {
+        bsonType: ['object', 'null'],
+        properties: {
+          reason: { bsonType: 'string', minLength: 1, maxLength: 280 },
+          bannedAt: { bsonType: 'date' },
+          bannedBy: { bsonType: 'objectId' },
+          expiresAt: { bsonType: ['date', 'null'] },
+        },
+      },
       // Bots are ordinary accounts with a flag, not a separate role — a new
       // role would ripple into JWT claims and every authorisation check for
       // no benefit. The flag keeps them off the leaderboard instead.
@@ -103,6 +115,12 @@ collection(
       keys: { isBot: 1 },
       options: { name: 'bots', partialFilterExpression: { isBot: true } },
     },
+    // Same reasoning: only banned accounts, which should stay a small set.
+    {
+      keys: { 'ban.bannedAt': -1 },
+      options: { name: 'banned', partialFilterExpression: { ban: { $type: 'object' } } },
+    },
+    { keys: { role: 1 }, options: { name: 'by_role' } },
   ],
 );
 
@@ -228,6 +246,9 @@ collection(
       autoDeal: { bsonType: 'bool' },
       autoFillBots: { bsonType: 'bool' },
       autoFillDifficulty: { enum: ['easy', 'medium', 'hard', 'expert'] },
+      closedAt: { bsonType: ['date', 'null'] },
+      closedBy: { bsonType: ['objectId', 'null'] },
+      closeReason: { bsonType: ['string', 'null'] },
       createdAt: { bsonType: 'date' },
     },
   },

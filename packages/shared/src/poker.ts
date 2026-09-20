@@ -145,6 +145,31 @@ export const addBotBodySchema = z.object({
 });
 export type AddBotBody = z.infer<typeof addBotBodySchema>;
 
+export const closeTableBodySchema = z.object({
+  /** Shown to anyone seated when the table shuts. */
+  reason: z.string().min(1).max(280).optional(),
+});
+export type CloseTableBody = z.infer<typeof closeTableBodySchema>;
+
+/** A table as a moderator sees it, with the detail a player does not need. */
+export const managedTableSchema = tableSummarySchema.extend({
+  ownerName: z.string().nullable(),
+  handNumber: z.number().int(),
+  autoDeal: z.boolean(),
+  autoFillBots: z.boolean(),
+  joinCode: z.string().nullable(),
+  seatedPlayers: z.array(
+    z.object({
+      seat: z.number().int(),
+      userId: z.string(),
+      displayName: z.string(),
+      stack: z.number().int(),
+      isBot: z.boolean(),
+    }),
+  ),
+});
+export type ManagedTable = z.infer<typeof managedTableSchema>;
+
 export const setAutoFillBodySchema = z.object({
   enabled: z.boolean(),
   /** Difficulty used for seats the table fills on its own. */
@@ -171,6 +196,13 @@ export const seatViewSchema = z.object({
   isBot: z.boolean(),
   /** Null for human seats. */
   botDifficulty: botDifficultySchema.nullable(),
+  /**
+   * Banned mid-hand.
+   *
+   * They keep their seat until the hand ends so the pot they contributed to
+   * is not stranded, but every action is refused and the table marks them.
+   */
+  isBanned: z.boolean(),
 });
 export type SeatView = z.infer<typeof seatViewSchema>;
 

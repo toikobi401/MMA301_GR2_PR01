@@ -49,6 +49,28 @@ const ARGON_OPTIONS = {
   parallelism: 1,
 } as const;
 
+/**
+ * Refuses a banned account, and lifts an expired ban on the way past.
+ *
+ * Checked on every path that issues a token, not only login — otherwise a
+ * banned player simply keeps refreshing the session they already held.
+ */
+async function assertNotBanned(doc: UserDoc): Promise<void> {
+  const ban = doc.ban;
+  if (!ban) return;
+
+  if (ban.expiresAt && ban.expiresAt.getTime() <= Date.now()) {
+    await users().updateOne({ _id: doc._id }, { $set: { ban: null } });
+    doc.ban = null;
+    return;
+  }
+
+  const until = ban.expiresAt
+    ? ` until ${ban.expiresAt.toISOString()}`
+    : '';
+  throw AppError.forbidden(`This account is banned${until}: ${ban.reason}`);
+}
+
 export async function authRoutes(app: FastifyInstance) {
   async function issueSession(doc: UserDoc): Promise<AuthSession> {
     const user = toUser(doc);
@@ -138,6 +160,8 @@ export async function authRoutes(app: FastifyInstance) {
       throw AppError.unauthorized('Incorrect email or password');
     }
 
+    await assertNotBanned(doc);
+
     return { ok: true as const, data: await issueSession(doc) };
   });
 
@@ -155,6 +179,8 @@ export async function authRoutes(app: FastifyInstance) {
 
     const doc = await users().findOne({ _id: stored.userId });
     if (!doc) throw AppError.unauthorized('Account no longer exists');
+
+    await assertNotBanned(doc);
 
     return { ok: true as const, data: await issueSession(doc) };
   });

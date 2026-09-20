@@ -49,6 +49,15 @@ export class Table {
   private nextHandTimer: NodeJS.Timeout | null = null;
 
   /**
+   * Players banned while this hand is running.
+   *
+   * They keep their seat until the hand ends, because pulling someone out
+   * mid-hand would strand the chips they already committed and leave the pot
+   * short. Their actions are refused and they are removed at showdown.
+   */
+  private readonly bannedThisHand = new Set<string>();
+
+  /**
    * Called when a bot seat is on the clock.
    *
    * A single hook, not a subscriber list: there is one bot driver per
@@ -160,6 +169,9 @@ export class Table {
     if (this.hand.actingPlayerId !== userId) {
       throw AppError.badRequest('It is not your turn');
     }
+    if (this.bannedThisHand.has(userId)) {
+      throw AppError.forbidden('Your account is banned');
+    }
 
     try {
       applyAction(this.hand, {
@@ -226,6 +238,52 @@ export class Table {
     }
   }
 
+  /**
+   * Marks a seated player as banned and folds them out of the current hand.
+   *
+   * Their committed chips stay in the pot: they lost them fairly before the
+   * ban, and clawing them back would short every other player in the hand.
+   * The seat is vacated once the hand finishes.
+   *
+   * Returns true if the player was seated here.
+   */
+  banSeatedPlayer(userId: string): boolean {
+    const seat = this.doc.seats.find((entry) => entry.userId?.toHexString() === userId);
+    if (!seat) return false;
+
+    this.bannedThisHand.add(userId);
+
+    const inHand = this.hand?.players.some(
+      (player) => player.id === userId && player.status === PlayerStatus.Active,
+    );
+
+    if (inHand && this.hand?.actingPlayerId === userId) {
+      // It is their turn, so folding is legal right now.
+      try {
+        applyAction(this.hand, { playerId: userId, type: ActionType.Fold, amount: 0 });
+        this.sequence += 1;
+        if (streetOf(this.hand) === Street.Complete) void this.finishHand();
+        else this.armActionTimer();
+      } catch {
+        // The hand moved on between the check and the fold.
+      }
+    } else if (inHand && this.hand) {
+      // Not their turn: fold them where they sit so the hand can finish
+      // without waiting out their clock when it comes round.
+      const player = this.hand.players.find((entry) => entry.id === userId);
+      if (player) player.status = PlayerStatus.Folded;
+      this.sequence += 1;
+    }
+
+    this.emitChange();
+    return true;
+  }
+
+  /** Whether this seat is banned for the rest of the hand. */
+  isSeatBanned(userId: string): boolean {
+    return this.bannedThisHand.has(userId);
+  }
+
   /** The difficulty of the bot in this seat, or null for a human. */
   botDifficultyFor(userId: string): BotDifficulty | null {
     const seat = this.doc.seats.find((entry) => entry.userId?.toHexString() === userId);
@@ -255,6 +313,21 @@ export class Table {
     // Fold this hand into the opponent reads before anything else, so the
     // expert tier has it for the next hand even if persistence fails.
     recordHand(this.id, hand);
+
+    // Now the hand is over, banned players can leave without stranding a pot.
+    // Their chips stay on the table: they were lost fairly before the ban, and
+    // clawing them back would short every other player in the hand.
+    if (this.bannedThisHand.size > 0) {
+      for (const seat of this.doc.seats) {
+        const seatUser = seat.userId?.toHexString();
+        if (!seatUser || !this.bannedThisHand.has(seatUser)) continue;
+        seat.userId = null;
+        seat.displayName = null;
+        seat.stack = 0;
+        seat.botProfile = null;
+      }
+      this.bannedThisHand.clear();
+    }
 
     const potTotal = hand.pots.reduce((sum, pot) => sum + pot.amount, 0);
     const wonBy = new Map<string, number>();
@@ -435,6 +508,7 @@ export class Table {
         isActing: hand?.actingPlayerId === userId,
         isBot: seat.botProfile !== null && seat.botProfile !== undefined,
         botDifficulty: seat.botProfile?.difficulty ?? null,
+        isBanned: userId !== null && this.bannedThisHand.has(userId),
       };
     });
 

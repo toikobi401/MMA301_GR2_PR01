@@ -17,6 +17,7 @@
     "build:web": "npm run build:web --workspace @app/client",
     "server:dev": "npm run dev --workspace @app/server",
     "seed:bots": "npm run seed:bots --workspace @app/server",
+    "make:moderator": "npm run make:moderator --workspace @app/server --",
     "docker:up": "docker compose -f infra/docker-compose.yml up -d",
     "docker:down": "docker compose -f infra/docker-compose.yml down",
     "docker:logs": "docker compose -f infra/docker-compose.yml logs -f",

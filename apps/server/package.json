@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
-    "seed:bots": "tsx src/scripts/seed-bots.ts"
+    "seed:bots": "tsx src/scripts/seed-bots.ts",
+    "make:moderator": "tsx src/scripts/make-moderator.ts"
   },
   "dependencies": {
     "@app/poker": "*",
