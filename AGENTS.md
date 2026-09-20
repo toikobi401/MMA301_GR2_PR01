@@ -137,6 +137,30 @@ about 0.7. Postflop comes from `category / 8`, where top pair is about 0.22
 and a flush is 0.73. One set of thresholds for both makes a bot check top pair
 every time. Check the scale before tuning a number.
 
+## Mocked endpoints
+
+`apps/client/src/lib/api-client.ts` is the single list of every call a screen
+makes. Each is marked LIVE or MOCK. A MOCK returns fixtures from
+`mock-api.ts`, which names the exact route that needs building at the top of
+the file.
+
+Still missing on the server, all with contracts already written: friends,
+user search, hand history, leaderboard, and the chat backlog. Sending chat
+already works over the socket; only fetching past messages is mocked.
+
+Replacing a mock is one line in `api-client.ts`. No screen changes.
+
+## Sessions
+
+The refresh token is persisted — the keychain on device, `localStorage` on
+web, because `expo-secure-store` is a no-op there. That fallback is a real
+weakening: anything running in the page can read it. Accepted because the
+alternative is an httpOnly cookie, which the native app cannot use, and
+access tokens last fifteen minutes.
+
+Screens that gate on `token` must also check `restoring`, or every reload
+flashes the signed-out view before the stored token is exchanged.
+
 ## Deal animation
 
 The animation is entirely client-side. The server sends the finished state and
