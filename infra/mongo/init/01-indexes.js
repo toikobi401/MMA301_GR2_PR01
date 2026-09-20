@@ -10,14 +10,60 @@
 
 const db = db.getSiblingDB('poker');
 
-function collection(name, validator, indexes) {
-  if (!db.getCollectionNames().includes(name)) {
-    db.createCollection(name, {
-      validator: { $jsonSchema: validator },
-      validationLevel: 'strict',
-      validationAction: 'error',
-    });
+/**
+ * Recursively forbids unknown properties.
+ *
+ * JSON Schema permits extra fields unless a schema says otherwise, so without
+ * this a typo like `displayNmae` is stored as a new field and nothing
+ * complains. Nested objects — a seat inside a table, a player inside a hand —
+ * need the same treatment, which is why this recurses rather than setting the
+ * flag once at the top.
+ */
+function closeSchema(schema, isRoot) {
+  if (!schema || typeof schema !== 'object') return schema;
+
+  const result = { ...schema };
+
+  if (result.properties) {
+    result.additionalProperties = false;
+    result.properties = Object.fromEntries(
+      Object.entries(result.properties).map(([key, value]) => [key, closeSchema(value, false)]),
+    );
+
+    // Mongo adds _id to every document, so a closed top-level schema that does
+    // not declare it rejects every single write. Nested objects have no _id,
+    // hence the root-only exception.
+    if (isRoot && !result.properties._id) {
+      result.properties._id = { bsonType: 'objectId' };
+    }
   }
+
+  if (result.items) {
+    result.items = closeSchema(result.items, false);
+  }
+
+  return result;
+}
+
+function collection(name, validator, indexes) {
+  const closed = closeSchema(validator, true);
+
+  const options = {
+    validator: { $jsonSchema: closed },
+    validationLevel: 'strict',
+    validationAction: 'error',
+  };
+
+  if (db.getCollectionNames().includes(name)) {
+    // The collection already exists, so createCollection would fail and the
+    // old validator would stay in force — rejecting any field added since.
+    // collMod updates it in place, which matters because the alternative is
+    // docker:reset, and that destroys every account and hand on the machine.
+    db.runCommand({ collMod: name, ...options });
+  } else {
+    db.createCollection(name, options);
+  }
+
   for (const index of indexes) {
     db[name].createIndex(index.keys, index.options || {});
   }
@@ -35,6 +81,10 @@ collection(
       passwordHash: { bsonType: 'string' },
       displayName: { bsonType: 'string', minLength: 1, maxLength: 64 },
       role: { enum: ['user', 'admin'] },
+      // Bots are ordinary accounts with a flag, not a separate role — a new
+      // role would ripple into JWT claims and every authorisation check for
+      // no benefit. The flag keeps them off the leaderboard instead.
+      isBot: { bsonType: 'bool' },
       // Play money only. Never real currency.
       chips: { bsonType: ['int', 'long'], minimum: 0 },
       createdAt: { bsonType: 'date' },
@@ -48,6 +98,11 @@ collection(
       options: { unique: true, collation: { locale: 'en', strength: 2 }, name: 'email_unique_ci' },
     },
     { keys: { displayName: 'text' }, options: { name: 'display_name_text' } },
+    // Partial, so it indexes the dozen bot accounts rather than every user.
+    {
+      keys: { isBot: 1 },
+      options: { name: 'bots', partialFilterExpression: { isBot: true } },
+    },
   ],
 );
 
@@ -153,12 +208,26 @@ collection(
             displayName: { bsonType: ['string', 'null'] },
             stack: { bsonType: ['int', 'long'], minimum: 0 },
             sittingOut: { bsonType: 'bool' },
+            // Null for a human seat. Difficulty lives here rather than on the
+            // bot account so one bot can sit at tables of different levels.
+            botProfile: {
+              bsonType: ['object', 'null'],
+              properties: {
+                difficulty: { enum: ['easy', 'medium', 'hard', 'expert'] },
+              },
+            },
             joinedAt: { bsonType: 'date' },
           },
         },
       },
       handNumber: { bsonType: ['int', 'long'] },
       buttonSeat: { bsonType: 'int', minimum: 0 },
+      // Deal the next hand automatically. Off by default, so a table of
+      // humans keeps the existing behaviour; turned on when a bot sits down,
+      // because otherwise a bot table plays one hand and stops forever.
+      autoDeal: { bsonType: 'bool' },
+      autoFillBots: { bsonType: 'bool' },
+      autoFillDifficulty: { enum: ['easy', 'medium', 'hard', 'expert'] },
       createdAt: { bsonType: 'date' },
     },
   },
