@@ -1,3 +1,4 @@
+export * from './bot';
 export * from './bot-view';
 export * from './cards';
 export * from './evaluator';
