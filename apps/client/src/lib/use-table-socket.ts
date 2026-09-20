@@ -15,6 +15,13 @@ export interface UseTableSocket {
   messages: ChatMessage[];
   /** True while a fresh hand is being dealt, so the UI can animate. */
   dealing: boolean;
+  /**
+   * Increments each time a hand finishes.
+   *
+   * A counter rather than a boolean: the table refetches its log when this
+   * changes, and a boolean would need resetting, which invites missing one.
+   */
+  handsFinished: number;
   act: (type: string, amount: number) => void;
   sendChat: (body: string) => void;
   error: string | null;
@@ -33,6 +40,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
   const [status, setStatus] = useState<ConnectionStatus>('closed');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [dealing, setDealing] = useState(false);
+  const [handsFinished, setHandsFinished] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
@@ -126,6 +134,13 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
             return;
           }
 
+          case 'hand_finished': {
+            // The hand is now part of the table's public record. The server
+            // sends this after persisting, so a refetch will find it.
+            setHandsFinished((count) => count + 1);
+            return;
+          }
+
           case 'chat': {
             setMessages((previous) => [...previous.slice(-49), message.message]);
             return;
@@ -198,5 +213,5 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     [tableId, send],
   );
 
-  return { state, status, messages, dealing, act, sendChat, error };
+  return { state, status, messages, dealing, handsFinished, act, sendChat, error };
 }

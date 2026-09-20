@@ -2,12 +2,21 @@ import type { FastifyInstance } from 'fastify';
 import { ObjectId } from 'mongodb';
 import {
   addBotBodySchema,
+  canModerate,
   joinTableBodySchema,
   setAutoFillBodySchema,
+  type TableHand,
   type TableSummary,
 } from '@app/shared';
 import { getTable } from '../game/registry.js';
-import { pokerTables, users, type PokerTableDoc, type SeatDoc } from '../lib/db.js';
+import {
+  hands,
+  pokerTables,
+  users,
+  type HandDoc,
+  type PokerTableDoc,
+  type SeatDoc,
+} from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
 import { applyChipChange } from './wallet.js';
 
@@ -52,6 +61,50 @@ async function assertOwner(
   if (role === 'admin') return;
   if (doc.ownerId?.toHexString() === userId) return;
   throw AppError.forbidden('Only the table owner can manage bots');
+}
+
+/**
+ * A stored hand as everyone at the table may see it.
+ *
+ * Betting is public: every action happened in front of the whole table, so
+ * making it reviewable afterwards only levels the field between a player
+ * taking notes and one who is not. Cards are the opposite — `holeCards` is
+ * populated in storage only when the hand reached a contested showdown, so
+ * passing it straight through reveals nothing that was not already shown.
+ */
+function toTableHand(doc: HandDoc): TableHand {
+  const names = new Map(
+    doc.players.map((player) => [player.userId.toHexString(), player.displayName]),
+  );
+
+  return {
+    id: doc._id.toHexString(),
+    handNumber: doc.handNumber,
+    board: doc.board,
+    potTotal: doc.potTotal,
+    buttonSeat: doc.buttonSeat,
+    players: doc.players.map((player) => ({
+      userId: player.userId.toHexString(),
+      displayName: player.displayName,
+      seat: player.seat,
+      // Already null unless they showed down; no extra filtering needed.
+      revealedCards: player.holeCards,
+      handRank: player.handRank,
+      netChips: player.netChips,
+      won: player.netChips > 0,
+    })),
+    actions: doc.actions.map((action) => ({
+      sequence: action.sequence,
+      userId: action.userId?.toHexString() ?? null,
+      displayName: action.userId ? (names.get(action.userId.toHexString()) ?? null) : null,
+      street: action.street,
+      action: action.action,
+      amount: action.amount,
+      offsetMs: action.offsetMs,
+    })),
+    startedAt: doc.startedAt.toISOString(),
+    endedAt: doc.endedAt?.toISOString() ?? null,
+  };
 }
 
 export async function tableRoutes(app: FastifyInstance) {
@@ -346,6 +399,56 @@ export async function tableRoutes(app: FastifyInstance) {
     );
 
     return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  /**
+   * Every finished hand at this table, as public information.
+   *
+   * Restricted to people seated here, and to moderators. Opening it to
+   * anyone would turn the lobby into a database of how every player behaves,
+   * which is a different thing from levelling one table.
+   *
+   * Hands appear only once complete. A partial record would leak the shape of
+   * live betting to someone who had already folded and was watching.
+   */
+  app.get('/:id/hands', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const query = request.query as { limit?: string; before?: string };
+    const limit = Math.min(Number(query.limit ?? 25) || 25, 100);
+
+    const table = await getTable(id);
+    const seated = table.table.seats.some((seat) => seat.userId?.toHexString() === claim);
+
+    if (!seated && !canModerate(request.claims?.role)) {
+      throw AppError.forbidden('Only players at this table can read its hands');
+    }
+
+    // Paginate on _id: ObjectIds are monotonic, so two hands finishing in the
+    // same millisecond cannot make a cursor skip or repeat one.
+    const filter = query.before
+      ? { tableId: table.table._id, _id: { $lt: new ObjectId(query.before) } }
+      : { tableId: table.table._id };
+
+    const docs = await hands()
+      .find(filter)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
+      .toArray();
+
+    const hasMore = docs.length > limit;
+    const page = hasMore ? docs.slice(0, limit) : docs;
+    const last = page[page.length - 1];
+
+    return {
+      ok: true as const,
+      data: {
+        items: page.map(toTableHand),
+        nextCursor: hasMore && last ? last._id.toHexString() : null,
+      },
+    };
   });
 
   /** Deals the next hand. Normally automatic; exposed for testing and demos. */

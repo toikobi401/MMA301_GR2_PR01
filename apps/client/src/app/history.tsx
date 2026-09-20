@@ -14,6 +14,7 @@ import {
 import { CardRow, formatChips } from '@/components/poker';
 import { handsApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 
 /**
@@ -24,6 +25,7 @@ import { useSession } from '@/lib/session';
  * millisecond offset, which is what makes the replay below possible.
  */
 export default function HistoryScreen() {
+  const hydrated = useHydrated();
   const { token, restoring } = useSession();
   const [hands, setHands] = useState<HandSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +50,9 @@ export default function HistoryScreen() {
 
   // Wait for the stored session to be exchanged, or every reload flashes the
   // signed-out view before the token arrives.
-  if (restoring) {
+  // The prerendered HTML has no session, so deciding before hydration makes
+  // the first client render disagree with it (React #418).
+  if (!hydrated || restoring) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="small" />

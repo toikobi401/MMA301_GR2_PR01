@@ -288,6 +288,57 @@ export const handDetailSchema = handSummarySchema.extend({
 });
 export type HandDetail = z.infer<typeof handDetailSchema>;
 
+// ------------------------------------------------- public table history
+
+/**
+ * One player's part in a finished hand, as everyone at the table may see it.
+ *
+ * This is deliberately narrower than `handPlayerRecordSchema`, which is the
+ * private view: it carries only what the player themselves revealed. Someone
+ * who folded shows no cards, because they never showed them.
+ */
+export const tableHandPlayerSchema = z.object({
+  userId: z.string(),
+  displayName: z.string(),
+  seat: z.number().int(),
+  /**
+   * Populated only when the hand went to a contested showdown and this player
+   * was still in it. Null for anyone who folded or mucked.
+   */
+  revealedCards: z.array(cardSchema).nullable(),
+  handRank: z.string().nullable(),
+  /** Signed result. Public because the stacks moved in front of everyone. */
+  netChips: z.number().int(),
+  /** True when this player took the pot, or a share of it. */
+  won: z.boolean(),
+});
+export type TableHandPlayer = z.infer<typeof tableHandPlayerSchema>;
+
+/**
+ * A finished hand at a table, readable by anyone seated there.
+ *
+ * The point is that betting is public information: everyone watched the
+ * actions happen, so making them reviewable afterwards levels the table
+ * between someone taking notes and someone who is not. Cards stay private
+ * unless they were actually shown.
+ *
+ * Written once, when a hand ends with a winner. There is no partial record of
+ * a hand in progress — that would leak the shape of live betting to someone
+ * who had already folded.
+ */
+export const tableHandSchema = z.object({
+  id: z.string(),
+  handNumber: z.number().int(),
+  board: z.array(cardSchema),
+  potTotal: z.number().int(),
+  buttonSeat: z.number().int(),
+  players: z.array(tableHandPlayerSchema),
+  actions: z.array(handActionRecordSchema),
+  startedAt: z.iso.datetime(),
+  endedAt: z.iso.datetime().nullable(),
+});
+export type TableHand = z.infer<typeof tableHandSchema>;
+
 // ---------------------------------------------------------------- chat
 
 export const chatMessageSchema = z.object({

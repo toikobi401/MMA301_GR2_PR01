@@ -137,6 +137,33 @@ about 0.7. Postflop comes from `category / 8`, where top pair is about 0.22
 and a flush is 0.73. One set of thresholds for both makes a bot check top pair
 every time. Check the scale before tuning a number.
 
+## The table's public log
+
+`GET /api/v1/tables/:id/hands` is the record of finished hands at one table,
+readable by anyone seated there.
+
+The rule it encodes: **betting is public, cards are not.** Every action
+happened in front of the table, so reviewing it afterwards only levels the
+field between a player taking notes and one who is not. Cards appear only
+where they were actually shown — `holeCards` is written at showdown and left
+null otherwise, so passing it through reveals nothing new.
+
+- A hand joins the record when it ends with a winner, never before. A partial
+  record would leak live betting to someone who had already folded.
+- Restricted to seated players and moderators. Opening it wider would turn the
+  lobby into a database of how everyone plays, which is a different thing.
+- `hand_finished` over the socket is the signal to refetch. It was defined in
+  the protocol from the start and never emitted until now.
+
+## Static rendering and hydration
+
+The web build is prerendered with no URL parameters and no session. A screen
+that branches on either before hydrating renders one thing at build time and
+another in the browser, and React discards the server markup — error #418.
+
+Every session- or param-dependent screen gates on `useHydrated()` as well as
+`restoring`. Adding a new one means doing the same.
+
 ## Mocked endpoints
 
 `apps/client/src/lib/api-client.ts` is the single list of every call a screen

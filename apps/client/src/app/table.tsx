@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { BotDifficulty, SeatView } from '@app/shared';
+import type { BotDifficulty, SeatView, TableHand } from '@app/shared';
 import { Button, Text } from '@/components/ui';
 import {
   ActionBar,
   AddBotSheet,
   Board,
+  HandLog,
   PlayerSeat,
   PotDisplay,
   TableCentre,
@@ -17,24 +18,49 @@ import {
   type SeatStatus,
 } from '@/components/poker';
 import { api } from '@/lib/api';
+import { tablesApi } from '@/lib/api-client';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 import { useTableSocket } from '@/lib/use-table-socket';
 
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const hydrated = useHydrated();
   const { user, token, restoring } = useSession();
   const tableId = typeof id === 'string' ? id : null;
 
-  const { state, status, dealing, messages, act, sendChat, error } = useTableSocket(
-    tableId,
-    token,
-  );
+  const { state, status, dealing, messages, handsFinished, act, sendChat, error } =
+    useTableSocket(tableId, token);
   const [dealError, setDealError] = useState<string | null>(null);
   const [addingToSeat, setAddingToSeat] = useState<number | null>(null);
   const [addingBot, setAddingBot] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [hands, setHands] = useState<TableHand[]>([]);
+  const [loadingHands, setLoadingHands] = useState(false);
   // Unread count resets whenever the log is opened.
   const [readCount, setReadCount] = useState(0);
+
+  const loadHands = useCallback(async () => {
+    if (!tableId) return;
+    setLoadingHands(true);
+    try {
+      const page = await tablesApi.hands(tableId);
+      setHands(page.items);
+    } catch {
+      // Not seated yet, or the table has no history. Either way the panel
+      // shows its empty state rather than an error nobody can act on.
+      setHands([]);
+    } finally {
+      setLoadingHands(false);
+    }
+  }, [tableId]);
+
+  // Refetch when a hand finishes: that is the moment it joins the record.
+  useEffect(() => {
+    if (handsFinished === 0) return;
+    void loadHands();
+  }, [handsFinished, loadHands]);
 
   // Clock, recomputed locally between state pushes so the bar drains smoothly
   // instead of jumping once per server message.
@@ -45,6 +71,18 @@ export default function TableScreen() {
     return () => clearInterval(timer);
   }, [state?.actingDeadline]);
 
+  // The prerendered HTML has no URL parameters and no session. Branching on
+  // either before hydration makes the first client render disagree with the
+  // server markup, and React throws it away — error #418. Every branch below
+  // depends on one or the other, so they all wait.
+  if (!hydrated || restoring) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950">
+        <ActivityIndicator size="small" color="#9AA3B4" />
+      </SafeAreaView>
+    );
+  }
+
   if (!tableId) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950 p-6">
@@ -52,14 +90,6 @@ export default function TableScreen() {
         <Button variant="outline" className="mt-4" onPress={() => router.back()}>
           <Text className="text-white">Back to lobby</Text>
         </Button>
-      </SafeAreaView>
-    );
-  }
-
-  if (restoring) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950">
-        <ActivityIndicator size="small" color="#9AA3B4" />
       </SafeAreaView>
     );
   }
@@ -130,6 +160,17 @@ export default function TableScreen() {
         </Button>
 
         <View className="flex-row items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => {
+              setLogOpen(true);
+              void loadHands();
+            }}
+          >
+            <Text className="text-sm font-medium text-white">History</Text>
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"
@@ -213,6 +254,15 @@ export default function TableScreen() {
           </View>
         </TableFelt>
       </View>
+
+      <HandLog
+        visible={logOpen}
+        hands={hands}
+        loading={loadingHands}
+        viewerId={user?.id ?? null}
+        onClose={() => setLogOpen(false)}
+        onRefresh={() => void loadHands()}
+      />
 
       <TableChat
         visible={chatOpen}

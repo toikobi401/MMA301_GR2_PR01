@@ -29,6 +29,9 @@ const rooms = new Map<string, Set<Client>>();
  */
 const broadcastSubscriptions = new Map<string, () => void>();
 
+/** One hand-finished subscription per table, alongside the broadcast one. */
+const handFinishedSubscriptions = new Map<string, () => void>();
+
 function send(client: Client, message: ServerMessage): void {
   // readyState 1 is OPEN. Writing to a closing socket throws.
   if (client.socket.readyState !== 1) return;
@@ -79,6 +82,8 @@ function leaveRoom(tableId: string, client: Client): void {
     // may still be in a hand — it simply has no audience.
     broadcastSubscriptions.get(tableId)?.();
     broadcastSubscriptions.delete(tableId);
+    handFinishedSubscriptions.get(tableId)?.();
+    handFinishedSubscriptions.delete(tableId);
   }
 }
 
@@ -163,6 +168,43 @@ export async function realtimeRoutes(app: FastifyInstance) {
             message.tableId,
             table.subscribe(() => {
               void broadcastTable(message.tableId);
+            }),
+          );
+        }
+
+        if (!handFinishedSubscriptions.has(message.tableId)) {
+          handFinishedSubscriptions.set(
+            message.tableId,
+            table.onHandFinished((hand) => {
+              // Tells watchers the hand is now part of the table's public
+              // record, so they know when to refetch it. The cards here are
+              // only the ones already shown at showdown.
+              const room = rooms.get(message.tableId);
+              if (!room) return;
+
+              const names = new Map(
+                table.table.seats
+                  .filter((seat) => seat.userId !== null)
+                  .map((seat) => [seat.userId?.toHexString() ?? '', seat.displayName ?? '']),
+              );
+
+              const results = (hand.results ?? []).map((result) => ({
+                userId: result.playerId,
+                displayName: names.get(result.playerId) ?? 'Unknown',
+                amount: result.amount,
+                handDescription: result.handDescription,
+                cards: result.cards,
+              }));
+
+              for (const member of room) {
+                send(member, {
+                  type: 'hand_finished',
+                  sequence: table.seq,
+                  tableId: message.tableId,
+                  handId: hand.handId,
+                  results,
+                });
+              }
             }),
           );
         }

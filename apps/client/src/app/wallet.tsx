@@ -15,6 +15,7 @@ import {
 import { formatChips } from '@/components/poker';
 import { walletApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 
 const KINDS: Record<ChipTransaction['kind'], string> = {
@@ -29,6 +30,7 @@ const KINDS: Record<ChipTransaction['kind'], string> = {
 };
 
 export default function WalletScreen() {
+  const hydrated = useHydrated();
   const { token, restoring } = useSession();
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,9 @@ export default function WalletScreen() {
 
   // Wait for the stored session to be exchanged, or every reload flashes the
   // signed-out view before the token arrives.
-  if (restoring) {
+  // The prerendered HTML has no session, so deciding before hydration makes
+  // the first client render disagree with it (React #418).
+  if (!hydrated || restoring) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="small" />
