@@ -8,6 +8,7 @@ import { authPlugin } from './plugins/auth.js';
 import { errorHandler } from './plugins/error-handler.js';
 import { authRoutes } from './routes/auth.js';
 import { healthRoutes } from './routes/health.js';
+import { moderationRoutes } from './routes/moderation.js';
 import { realtimeRoutes } from './routes/realtime.js';
 import { tableRoutes } from './routes/tables.js';
 import { walletRoutes } from './routes/wallet.js';
@@ -65,6 +66,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(walletRoutes, { prefix: '/api/v1/wallet' });
   await app.register(tableRoutes, { prefix: '/api/v1/tables' });
+  await app.register(moderationRoutes, { prefix: '/api/v1/moderation' });
   await app.register(realtimeRoutes);
 
   return app;

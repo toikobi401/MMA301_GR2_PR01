@@ -1,9 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { ObjectId } from 'mongodb';
 import {
   addBotBodySchema,
-  createTableBodySchema,
   joinTableBodySchema,
   setAutoFillBodySchema,
   type TableSummary,
@@ -28,13 +26,6 @@ function toSummary(doc: PokerTableDoc): TableSummary {
     botCount: doc.seats.filter((seat) => seat.botProfile != null).length,
     createdAt: doc.createdAt.toISOString(),
   };
-}
-
-/** Short, unambiguous join code. No 0/O or 1/I to avoid misreads. */
-function makeJoinCode(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = randomBytes(6);
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join('');
 }
 
 function emptySeats(count: number): SeatDoc[] {
@@ -76,38 +67,9 @@ export async function tableRoutes(app: FastifyInstance) {
     return { ok: true as const, data: { items: docs.map(toSummary), nextCursor: null } };
   });
 
-  app.post('/', async (request, reply) => {
-    const claim = request.claims?.sub;
-    if (!claim) throw AppError.unauthorized();
-
-    const body = createTableBodySchema.parse(request.body);
-
-    const doc: PokerTableDoc = {
-      _id: new ObjectId(),
-      name: body.name,
-      ownerId: new ObjectId(claim),
-      maxSeats: body.maxSeats,
-      smallBlind: body.smallBlind,
-      bigBlind: body.bigBlind,
-      minBuyIn: body.minBuyIn,
-      maxBuyIn: body.maxBuyIn,
-      isPrivate: body.isPrivate,
-      joinCode: body.isPrivate ? makeJoinCode() : null,
-      status: 'open',
-      seats: emptySeats(body.maxSeats),
-      handNumber: 0,
-      buttonSeat: 0,
-      createdAt: new Date(),
-    };
-
-    await pokerTables().insertOne(doc);
-
-    reply.status(201);
-    return {
-      ok: true as const,
-      data: { ...toSummary(doc), joinCode: doc.joinCode },
-    };
-  });
+  // Creating a table moved to POST /api/v1/moderation/tables. Players do not
+  // open tables any more, so the lobby stays a curated set rather than
+  // whatever anyone happened to make.
 
   app.get('/:id', async (request) => {
     const { id } = request.params as { id: string };

@@ -29,13 +29,26 @@ export function db(): Db {
 
 // ------------------------------------------------------------- documents
 
+export interface BanDoc {
+  reason: string;
+  bannedAt: Date;
+  bannedBy: ObjectId;
+  /** Null for an indefinite ban. */
+  expiresAt: Date | null;
+}
+
 export interface UserDoc extends Document {
   _id: ObjectId;
   email: string;
   passwordHash: string;
   displayName: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'moderator' | 'admin';
   chips: number;
+  /**
+   * Present only while banned. Chips are deliberately untouched so the ledger
+   * stays complete and lifting the ban restores the account as it was.
+   */
+  ban?: BanDoc | null;
   /**
    * Bots are real accounts so they share seats, hand history, and every other
    * path. The flag keeps them off the leaderboard and out of the wallet.
@@ -133,6 +146,9 @@ export interface PokerTableDoc extends Document {
   autoFillBots?: boolean;
   /** Difficulty used for seats the table fills on its own. */
   autoFillDifficulty?: BotDifficulty;
+  closedAt?: Date | null;
+  closedBy?: ObjectId | null;
+  closeReason?: string | null;
   createdAt: Date;
 }
 
