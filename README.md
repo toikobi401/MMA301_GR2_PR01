@@ -80,6 +80,9 @@ chain works end to end.
 | `node scripts/play-hand.mjs` | Play a full hand over the socket, end to end |
 | `npm run seed:bots` | Create the bot accounts (run once) |
 | `node scripts/bot-table.mjs 5` | Watch four bots play five hands |
+| `npm run make:moderator -- <email> admin` | Give an account tournament control |
+| `node scripts/try-moderation.mjs` | Check tables, bans, and roles end to end |
+| `node scripts/try-table-history.mjs` | Check the public table log |
 
 A database browser is available on demand:
 

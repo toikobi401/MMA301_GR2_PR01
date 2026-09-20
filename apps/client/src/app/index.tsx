@@ -14,11 +14,13 @@ import {
 } from '@/components/ui';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
 export default function LobbyScreen() {
   const { isDark, toggle } = useTheme();
+  const hydrated = useHydrated();
   const { user, token, restoring, busy, error, login, register, logout } = useSession();
 
   return (
@@ -43,9 +45,12 @@ export default function LobbyScreen() {
           </Button>
         </View>
 
-        {restoring ? (
-          // A stored session is being exchanged; showing the sign-in form here
-          // would make an already-signed-in user think they were logged out.
+        {!hydrated || restoring ? (
+          // Before hydration the prerendered HTML has no session, so rendering
+          // either branch here would disagree with it (React #418). After
+          // that, a stored session is still being exchanged — showing the
+          // sign-in form would make a signed-in user think they were logged
+          // out.
           <View className="py-10">
             <ActivityIndicator size="small" />
           </View>

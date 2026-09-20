@@ -8,6 +8,7 @@ import type {
   LeaderboardScope,
   ManagedTable,
   ManagedUser,
+  TableHand,
   TableState,
   TableSummary,
   UserRole,
@@ -63,6 +64,18 @@ export const tablesApi = {
   /** LIVE: DELETE /api/v1/tables/:id/bots/:seat */
   removeBot: (tableId: string, seat: number) =>
     api.delete<TableState>(`/api/v1/tables/${tableId}/bots/${seat}`),
+
+  /**
+   * LIVE: GET /api/v1/tables/:id/hands
+   *
+   * The table's public log. Readable only by people seated there, so it
+   * levels one table rather than exposing how everyone plays everywhere.
+   */
+  hands: (tableId: string, limit = 25) =>
+    api.get<{ items: TableHand[]; nextCursor: string | null }>(
+      `/api/v1/tables/${tableId}/hands`,
+      { query: { limit } },
+    ),
 };
 
 export const moderationApi = {

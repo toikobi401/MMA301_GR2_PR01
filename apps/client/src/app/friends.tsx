@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { friendsApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 
 type Tab = 'friends' | 'requests' | 'find';
@@ -30,6 +31,7 @@ type Tab = 'friends' | 'requests' | 'find';
  * routes that need building.
  */
 export default function FriendsScreen() {
+  const hydrated = useHydrated();
   const { token, restoring } = useSession();
   const [tab, setTab] = useState<Tab>('friends');
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -69,7 +71,9 @@ export default function FriendsScreen() {
 
   // Wait for the stored session to be exchanged, or every reload flashes the
   // signed-out view before the token arrives.
-  if (restoring) {
+  // The prerendered HTML has no session, so deciding before hydration makes
+  // the first client render disagree with it (React #418).
+  if (!hydrated || restoring) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="small" />

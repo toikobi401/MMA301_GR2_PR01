@@ -18,6 +18,7 @@ import {
 import { formatChips } from '@/components/poker';
 import { moderationApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
+import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
 
 type Tab = 'tables' | 'players';
@@ -29,10 +30,13 @@ type Tab = 'tables' | 'players';
  * cannot open tables themselves any more, so this is the only way one exists.
  */
 export default function ModerationScreen() {
+  const hydrated = useHydrated();
   const { user, token, restoring } = useSession();
   const [tab, setTab] = useState<Tab>('tables');
 
-  if (restoring) {
+  // The prerendered HTML has no session, so deciding before hydration makes
+  // the first client render disagree with it (React #418).
+  if (!hydrated || restoring) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="small" />

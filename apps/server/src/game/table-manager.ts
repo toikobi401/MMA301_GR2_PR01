@@ -75,6 +75,16 @@ export class Table {
    */
   private readonly listeners = new Set<() => void>();
 
+  /**
+   * Called once when a hand ends with a result.
+   *
+   * Separate from the change listeners because a finished hand is a discrete
+   * event, not another state push: it is the moment the hand becomes part of
+   * the table's public record, and the only moment a client needs to refetch
+   * that record.
+   */
+  private readonly handFinishedListeners = new Set<(hand: HandState) => void>();
+
   constructor(doc: PokerTableDoc) {
     this.id = doc._id.toHexString();
     this.doc = doc;
@@ -97,6 +107,14 @@ export class Table {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
+    };
+  }
+
+  /** Fires once per finished hand. Returns an unsubscribe function. */
+  onHandFinished(listener: (hand: HandState) => void): () => void {
+    this.handFinishedListeners.add(listener);
+    return () => {
+      this.handFinishedListeners.delete(listener);
     };
   }
 
@@ -384,6 +402,17 @@ export class Table {
 
     this.sequence += 1;
     this.emitChange();
+
+    // After persistence, so a client that refetches on this signal finds the
+    // hand rather than racing the write.
+    for (const listener of [...this.handFinishedListeners]) {
+      try {
+        listener(hand);
+      } catch (error) {
+        console.error('Hand-finished listener failed', error);
+      }
+    }
+
     this.scheduleNextHand();
   }
 
@@ -544,5 +573,6 @@ export class Table {
     this.nextHandTimer = null;
     this.onBotTurn = null;
     this.listeners.clear();
+    this.handFinishedListeners.clear();
   }
 }
