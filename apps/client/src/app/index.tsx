@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
-import type { TableSummary } from '@app/shared';
+import { canModerate, type TableSummary, type UserRole } from '@app/shared';
 import {
   Badge,
   Button,
@@ -50,7 +50,7 @@ export default function LobbyScreen() {
             <ActivityIndicator size="small" />
           </View>
         ) : token && user ? (
-          <TableList user={user.displayName} onSignOut={logout} />
+          <TableList user={user.displayName} role={user.role} onSignOut={logout} />
         ) : (
           <SignIn busy={busy} error={error} onLogin={login} onRegister={register} />
         )}
@@ -139,7 +139,15 @@ function SignIn({
   );
 }
 
-function TableList({ user, onSignOut }: { user: string; onSignOut: () => void }) {
+function TableList({
+  user,
+  role,
+  onSignOut,
+}: {
+  user: string;
+  role: UserRole;
+  onSignOut: () => void;
+}) {
   const [tables, setTables] = useState<TableSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
@@ -161,24 +169,6 @@ function TableList({ user, onSignOut }: { user: string; onSignOut: () => void })
   useEffect(() => {
     void refresh();
   }, [refresh]);
-
-  async function createTable() {
-    setError(null);
-    try {
-      const created = await api.post<TableSummary>('/api/v1/tables', {
-        name: `${user}'s table`,
-        maxSeats: 6,
-        smallBlind: 10,
-        bigBlind: 20,
-        minBuyIn: 400,
-        maxBuyIn: 2000,
-        isPrivate: false,
-      });
-      await joinTable(created.id);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not create the table');
-    }
-  }
 
   async function joinTable(tableId: string) {
     setJoining(tableId);
@@ -296,7 +286,17 @@ function TableList({ user, onSignOut }: { user: string; onSignOut: () => void })
         </Text>
       )}
 
-      <Button label="Create a table" onPress={() => void createTable()} block />
+      {canModerate(role) ? (
+        <Button
+          label="Tournament control"
+          onPress={() => router.push('/moderation')}
+          block
+        />
+      ) : (
+        <Text variant="caption" tone="muted" className="text-center">
+          Tables are opened by a tournament moderator.
+        </Text>
+      )}
     </View>
   );
 }

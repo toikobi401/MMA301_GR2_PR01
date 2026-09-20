@@ -295,6 +295,7 @@ function SeatCard({
       isSelf={isSelf}
       isBot={seat.isBot}
       botDifficulty={seat.botDifficulty}
+      isBanned={seat.isBanned}
       clockRemaining={clockRemaining}
       onAddBot={seat.userId === null ? onAddBot : undefined}
     />
