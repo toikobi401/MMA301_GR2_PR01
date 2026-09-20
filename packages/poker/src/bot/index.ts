@@ -1,4 +1,5 @@
 export { easyPolicy } from './easy';
+export { adjustmentsFor, expertPolicy } from './expert';
 export { decideFromEquity, hardPolicy, type HardAdjustments } from './hard';
 export { mediumPolicy } from './medium';
 export { equity, iterationsFor, type EquityOptions } from './monte-carlo';

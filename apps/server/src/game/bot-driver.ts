@@ -2,12 +2,14 @@ import {
   buildBotView,
   clampDecision,
   easyPolicy,
+  expertPolicy,
   hardPolicy,
   mediumPolicy,
   type BotDecision,
   type BotPolicy,
 } from '@app/poker';
 import type { BotDifficulty } from '@app/shared';
+import { profilesFor } from './opponent-stats.js';
 import type { Table } from './table-manager.js';
 import { secureRandom } from './random.js';
 
@@ -15,9 +17,7 @@ const POLICIES: Record<BotDifficulty, BotPolicy> = {
   easy: easyPolicy,
   medium: mediumPolicy,
   hard: hardPolicy,
-  // Expert arrives in a later step; until then it plays like hard rather than
-  // being unavailable.
-  expert: hardPolicy,
+  expert: expertPolicy,
 };
 
 interface PendingTurn {
@@ -91,7 +91,10 @@ export function handleBotTurn(table: Table, botId: string, difficulty: BotDiffic
     // The only legitimate use of `currentHand` here: it goes straight into
     // the redactor, and the policy never sees the raw state.
     const view = buildBotView(hand, botId);
-    decision = clampDecision(view, policy(view, { random: secureRandom, opponents: new Map() }));
+    // Only expert consults the reads; the others receive them and ignore
+    // them, which keeps the context shape uniform across tiers.
+    const opponents = profilesFor(table.id);
+    decision = clampDecision(view, policy(view, { random: secureRandom, opponents }));
   } catch (error) {
     // A crashed policy must not make the table wait out the full 30-second
     // clock. Act immediately with the safest legal option instead.

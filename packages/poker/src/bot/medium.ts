@@ -10,12 +10,22 @@ import {
 } from './strength';
 import type { BotPolicy } from './types';
 
-/** Thresholds loosen as the board fills and hands become better defined. */
+/**
+ * Thresholds, calibrated against the scale each street actually produces.
+ *
+ * Preflop uses Chen, where a premium hand scores around 0.7. Postflop uses
+ * category/8, where top pair is about 0.22, two pair 0.35, trips 0.48, and a
+ * flush 0.73 — a very different range. Writing one set of thresholds for both
+ * made the bot check top pair and two pair every time, which lost to a bot
+ * that bets at random.
+ */
 const THRESHOLDS: Record<string, { call: number; raise: number }> = {
-  [Street.Preflop]: { call: 0.45, raise: 0.72 },
-  [Street.Flop]: { call: 0.4, raise: 0.68 },
-  [Street.Turn]: { call: 0.42, raise: 0.7 },
-  [Street.River]: { call: 0.45, raise: 0.74 },
+  // Chen scale: raise with roughly the top 10 percent of hands.
+  [Street.Preflop]: { call: 0.45, raise: 0.6 },
+  // Category scale: bet top pair or better, fold worse than a weak pair.
+  [Street.Flop]: { call: 0.16, raise: 0.22 },
+  [Street.Turn]: { call: 0.18, raise: 0.24 },
+  [Street.River]: { call: 0.2, raise: 0.28 },
 };
 
 /**
