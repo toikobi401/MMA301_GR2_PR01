@@ -5,4 +5,5 @@ export { ChipStack, PotDisplay, formatChips, type ChipStackProps } from './chip-
 export { DealtCard, type DealtCardProps } from './dealt-card';
 export { CardRow, PlayingCard, type CardCode, type PlayingCardProps } from './playing-card';
 export { PlayerSeat, type PlayerSeatProps, type SeatStatus } from './player-seat';
+export { TableChat, type TableChatProps } from './table-chat';
 export { TableCentre, TableFelt } from './table-felt';

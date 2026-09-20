@@ -28,6 +28,10 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ title: 'Poker' }} />
         <Stack.Screen name="table" options={{ title: 'Table', headerShown: false }} />
+        <Stack.Screen name="wallet" options={{ title: 'Wallet' }} />
+        <Stack.Screen name="friends" options={{ title: 'Friends' }} />
+        <Stack.Screen name="leaderboard" options={{ title: 'Leaderboard' }} />
+        <Stack.Screen name="history" options={{ title: 'Hand history' }} />
       </Stack>
     </SafeAreaProvider>
   );

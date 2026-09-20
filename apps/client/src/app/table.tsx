@@ -11,6 +11,7 @@ import {
   PlayerSeat,
   PotDisplay,
   TableCentre,
+  TableChat,
   TableFelt,
   type LegalAction,
   type SeatStatus,
@@ -21,13 +22,19 @@ import { useTableSocket } from '@/lib/use-table-socket';
 
 export default function TableScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { user, token } = useSession();
+  const { user, token, restoring } = useSession();
   const tableId = typeof id === 'string' ? id : null;
 
-  const { state, status, dealing, act, error } = useTableSocket(tableId, token);
+  const { state, status, dealing, messages, act, sendChat, error } = useTableSocket(
+    tableId,
+    token,
+  );
   const [dealError, setDealError] = useState<string | null>(null);
   const [addingToSeat, setAddingToSeat] = useState<number | null>(null);
   const [addingBot, setAddingBot] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  // Unread count resets whenever the log is opened.
+  const [readCount, setReadCount] = useState(0);
 
   // Clock, recomputed locally between state pushes so the bar drains smoothly
   // instead of jumping once per server message.
@@ -45,6 +52,14 @@ export default function TableScreen() {
         <Button variant="outline" className="mt-4" onPress={() => router.back()}>
           <Text className="text-white">Back to lobby</Text>
         </Button>
+      </SafeAreaView>
+    );
+  }
+
+  if (restoring) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950">
+        <ActivityIndicator size="small" color="#9AA3B4" />
       </SafeAreaView>
     );
   }
@@ -115,6 +130,19 @@ export default function TableScreen() {
         </Button>
 
         <View className="flex-row items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => {
+              setChatOpen(true);
+              setReadCount(messages.length);
+            }}
+          >
+            <Text className="text-sm font-medium text-white">
+              Chat{messages.length > readCount ? ` (${messages.length - readCount})` : ''}
+            </Text>
+          </Button>
+
           {status !== 'open' && (
             <View className="flex-row items-center gap-1.5">
               <ActivityIndicator size="small" color="#9AA3B4" />
@@ -185,6 +213,17 @@ export default function TableScreen() {
           </View>
         </TableFelt>
       </View>
+
+      <TableChat
+        visible={chatOpen}
+        messages={messages}
+        viewerId={user?.id ?? null}
+        onSend={sendChat}
+        onClose={() => {
+          setChatOpen(false);
+          setReadCount(messages.length);
+        }}
+      />
 
       <AddBotSheet
         visible={addingToSeat !== null}

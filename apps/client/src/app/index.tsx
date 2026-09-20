@@ -19,7 +19,7 @@ import { useTheme } from '@/lib/theme';
 
 export default function LobbyScreen() {
   const { isDark, toggle } = useTheme();
-  const { user, token, busy, error, login, register, logout } = useSession();
+  const { user, token, restoring, busy, error, login, register, logout } = useSession();
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerClassName="p-6 items-center">
@@ -43,7 +43,13 @@ export default function LobbyScreen() {
           </Button>
         </View>
 
-        {token && user ? (
+        {restoring ? (
+          // A stored session is being exchanged; showing the sign-in form here
+          // would make an already-signed-in user think they were logged out.
+          <View className="py-10">
+            <ActivityIndicator size="small" />
+          </View>
+        ) : token && user ? (
           <TableList user={user.displayName} onSignOut={logout} />
         ) : (
           <SignIn busy={busy} error={error} onLogin={login} onRegister={register} />
@@ -200,6 +206,38 @@ function TableList({ user, onSignOut }: { user: string; onSignOut: () => void })
           Signed in as <Text className="font-medium text-foreground">{user}</Text>
         </Text>
         <Button variant="ghost" size="sm" label="Sign out" onPress={onSignOut} />
+      </View>
+
+      {/* Everything that is not the table itself lives one tap away. */}
+      <View className="flex-row gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          label="Wallet"
+          onPress={() => router.push('/wallet')}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          label="Friends"
+          onPress={() => router.push('/friends')}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          label="Ranks"
+          onPress={() => router.push('/leaderboard')}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          label="Hands"
+          onPress={() => router.push('/history')}
+          className="flex-1"
+        />
       </View>
 
       <Card>
