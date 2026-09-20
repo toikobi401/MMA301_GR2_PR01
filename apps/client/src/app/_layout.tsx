@@ -32,6 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="friends" options={{ title: 'Friends' }} />
         <Stack.Screen name="leaderboard" options={{ title: 'Leaderboard' }} />
         <Stack.Screen name="history" options={{ title: 'Hand history' }} />
+        <Stack.Screen name="moderation" options={{ title: 'Tournament control' }} />
       </Stack>
     </SafeAreaProvider>
   );

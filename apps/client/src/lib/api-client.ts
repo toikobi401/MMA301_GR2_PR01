@@ -1,11 +1,16 @@
 import type {
+  BanUserBody,
+  CreateTableBody,
   Friend,
   HandDetail,
   HandSummary,
   Leaderboard,
   LeaderboardScope,
+  ManagedTable,
+  ManagedUser,
   TableState,
   TableSummary,
+  UserRole,
   Wallet,
 } from '@app/shared';
 import { api } from './api';
@@ -38,16 +43,7 @@ export const tablesApi = {
   /** LIVE: GET /api/v1/tables */
   list: () => api.get<{ items: TableSummary[] }>('/api/v1/tables'),
 
-  /** LIVE: POST /api/v1/tables */
-  create: (body: {
-    name: string;
-    maxSeats: number;
-    smallBlind: number;
-    bigBlind: number;
-    minBuyIn: number;
-    maxBuyIn: number;
-    isPrivate: boolean;
-  }) => api.post<TableSummary & { joinCode: string | null }>('/api/v1/tables', body),
+  // Creating a table is a moderator action now — see moderationApi below.
 
   /** LIVE: POST /api/v1/tables/:id/join */
   join: (tableId: string, buyIn: number, joinCode?: string) =>
@@ -67,6 +63,47 @@ export const tablesApi = {
   /** LIVE: DELETE /api/v1/tables/:id/bots/:seat */
   removeBot: (tableId: string, seat: number) =>
     api.delete<TableState>(`/api/v1/tables/${tableId}/bots/${seat}`),
+};
+
+export const moderationApi = {
+  /** LIVE: GET /api/v1/moderation/tables */
+  listTables: () => api.get<{ items: ManagedTable[] }>('/api/v1/moderation/tables'),
+
+  /** LIVE: POST /api/v1/moderation/tables */
+  createTable: (body: CreateTableBody) =>
+    api.post<ManagedTable>('/api/v1/moderation/tables', body),
+
+  /** LIVE: DELETE /api/v1/moderation/tables/:id */
+  closeTable: (tableId: string, reason?: string) =>
+    api.request<{ closed: boolean }>(`/api/v1/moderation/tables/${tableId}`, {
+      method: 'DELETE',
+      // The server reads the reason from the body, not the query string.
+      body: reason ? { reason } : undefined,
+    }),
+
+  /** LIVE: GET /api/v1/moderation/users */
+  listUsers: (query?: string) =>
+    api.get<{ items: ManagedUser[] }>('/api/v1/moderation/users', {
+      query: query ? { q: query } : undefined,
+    }),
+
+  /** LIVE: POST /api/v1/moderation/users/:id/ban */
+  ban: (userId: string, body: BanUserBody) =>
+    api.post<{ banned: boolean; expiresAt: string | null }>(
+      `/api/v1/moderation/users/${userId}/ban`,
+      body,
+    ),
+
+  /** LIVE: DELETE /api/v1/moderation/users/:id/ban */
+  unban: (userId: string) =>
+    api.delete<{ banned: boolean }>(`/api/v1/moderation/users/${userId}/ban`),
+
+  /** LIVE: PUT /api/v1/moderation/users/:id/role — admin only */
+  setRole: (userId: string, role: UserRole) =>
+    api.request<{ role: UserRole }>(`/api/v1/moderation/users/${userId}/role`, {
+      method: 'PUT',
+      body: { role },
+    }),
 };
 
 // ------------------------------------------------------------------ MOCK

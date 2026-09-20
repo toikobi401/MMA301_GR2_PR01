@@ -28,6 +28,8 @@ export interface PlayerSeatProps {
   /** Marks the seat as played by the server. */
   isBot?: boolean;
   botDifficulty?: BotDifficulty | null;
+  /** Banned mid-hand: folded, cannot act, leaves when the hand ends. */
+  isBanned?: boolean;
   /** Shown on an empty seat when the viewer owns the table. */
   onAddBot?: () => void;
   /** Fraction of the action clock remaining, 0 to 1. */
@@ -49,6 +51,7 @@ export function PlayerSeat({
   isSelf = false,
   isBot = false,
   botDifficulty = null,
+  isBanned = false,
   onAddBot,
   clockRemaining,
   className,
@@ -104,6 +107,7 @@ export function PlayerSeat({
       <View
         className={cn(
           'flex-row items-center gap-2 rounded-lg border px-2.5 py-1.5',
+          isBanned && 'opacity-60',
           // The acting player is the one thing on the table that must be
           // unmissable, so it gets a ring rather than a subtle tint.
           isActing ? 'border-primary bg-primary/15' : 'border-white/10 bg-black/40',
@@ -131,6 +135,15 @@ export function PlayerSeat({
               <View className="rounded bg-white/15 px-1">
                 <Text className="text-[9px] font-bold uppercase text-white/70">
                   {botDifficulty ? botDifficulty[0] : 'B'}
+                </Text>
+              </View>
+            )}
+            {isBanned && (
+              // They keep the seat until the hand ends, so the table has to
+              // say why they are not acting.
+              <View className="rounded bg-destructive px-1">
+                <Text className="text-[9px] font-bold uppercase text-destructive-foreground">
+                  ⃠ banned
                 </Text>
               </View>
             )}
