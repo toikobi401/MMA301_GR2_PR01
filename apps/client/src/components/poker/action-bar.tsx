@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { BetSlider } from './bet-slider';
 import { formatChips } from './chip-stack';
 
 export interface LegalAction {
@@ -51,12 +52,23 @@ export function ActionBar({
   const canCall = actions.some((action) => action.type === 'call');
 
   const [amount, setAmount] = useState(raise?.min ?? 0);
+  // The typed text, separate from `amount`: while the field reads "1500" the
+  // amount is already 1500, but while it reads "" or "15-" it should not
+  // collapse to some clamped number the player didn't type yet.
+  const [amountText, setAmountText] = useState(String(raise?.min ?? 0));
 
   // Reset to the minimum whenever the legal range changes, so a stale amount
   // from the previous street is never submitted.
   useEffect(() => {
     setAmount(raise?.min ?? 0);
+    setAmountText(String(raise?.min ?? 0));
   }, [raise?.min, raise?.max]);
+
+  const setClamped = (next: number) => {
+    const clamped = Math.min(raise?.max ?? next, Math.max(raise?.min ?? next, Math.round(next)));
+    setAmount(clamped);
+    setAmountText(String(clamped));
+  };
 
   if (actions.length === 0) {
     return (
@@ -77,9 +89,9 @@ export function ActionBar({
   const presets = raise
     ? (
         [
-          { label: '½ pot', value: Math.floor(potSize / 2) },
-          { label: '¾ pot', value: Math.floor((potSize * 3) / 4) },
-          { label: 'Pot', value: potSize },
+          { label: '0.5x pot', value: Math.floor(potSize * 0.5) },
+          { label: '1x pot', value: Math.floor(potSize * 1) },
+          { label: '3x pot', value: Math.floor(potSize * 3) },
           { label: 'All in', value: raise.max ?? 0 },
         ] as const
       ).filter(
@@ -116,7 +128,7 @@ export function ActionBar({
                 size="sm"
                 variant={amount === preset.value ? 'default' : 'outline'}
                 disabled={disabled}
-                onPress={() => setAmount(preset.value)}
+                onPress={() => setClamped(preset.value)}
                 className={cn(
                   'flex-1',
                   onDarkSurface && amount !== preset.value && 'border-white/20',
@@ -136,6 +148,40 @@ export function ActionBar({
                 </Text>
               </Button>
             ))}
+          </View>
+
+          <View className="flex-row items-center gap-2">
+            <BetSlider
+              min={raise.min ?? 0}
+              max={raise.max ?? amount}
+              value={amount}
+              onChange={setClamped}
+              disabled={disabled}
+              onDarkSurface={onDarkSurface}
+              className="flex-1"
+            />
+
+            <TextInput
+              value={amountText}
+              editable={!disabled}
+              keyboardType="number-pad"
+              inputMode="numeric"
+              onChangeText={(text) => {
+                // Digits only, so a stray letter can't get typed into an
+                // amount that later gets sent to the server as-is.
+                const digitsOnly = text.replace(/[^0-9]/g, '');
+                setAmountText(digitsOnly);
+                if (digitsOnly !== '') setAmount(Number(digitsOnly));
+              }}
+              onBlur={() => setClamped(amount)}
+              onSubmitEditing={() => setClamped(amount)}
+              className={cn(
+                'w-24 rounded-md border px-2 py-1.5 text-right text-sm font-medium',
+                onDarkSurface
+                  ? 'border-white/20 text-white'
+                  : 'border-input text-foreground',
+              )}
+            />
           </View>
         </View>
       )}
@@ -180,7 +226,16 @@ export function ActionBar({
           <Button
             label={raise.type === 'bet' ? 'Bet' : 'Raise'}
             disabled={disabled}
-            onPress={() => onAct(raise.type, amount)}
+            onPress={() => {
+              // Clamp at submit time too: pressing this while the field still
+              // reads an unclamped value typed a moment ago (before blur)
+              // must never send a number outside the legal range.
+              const clamped = Math.min(
+                raise.max ?? amount,
+                Math.max(raise.min ?? amount, Math.round(amount)),
+              );
+              onAct(raise.type, clamped);
+            }}
             className="flex-1"
           />
         )}
