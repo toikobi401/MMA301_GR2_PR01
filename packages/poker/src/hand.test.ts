@@ -2,20 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { applyAction, legalActions, redactForPlayer, startHand } from './hand';
 import { ActionType, PlayerStatus, Street, type HandState } from './types';
-
-/** Deterministic generator so every test replays the same shuffle. */
-function seededRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    // xorshift32 — good enough to shuffle reproducibly in tests.
-    state ^= state << 13;
-    state >>>= 0;
-    state ^= state >> 17;
-    state ^= state << 5;
-    state >>>= 0;
-    return state / 0x100000000;
-  };
-}
+import { seededRandom } from './test-helpers';
 
 function threeHandedHand(stacks: [number, number, number] = [1000, 1000, 1000]): HandState {
   return startHand({

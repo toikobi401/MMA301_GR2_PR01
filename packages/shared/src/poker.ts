@@ -13,6 +13,17 @@ export type ActionType = z.infer<typeof actionTypeSchema>;
 export const playerStatusSchema = z.enum(['active', 'folded', 'all_in', 'sitting_out']);
 export type PlayerStatus = z.infer<typeof playerStatusSchema>;
 
+/**
+ * How well a bot plays.
+ *
+ * easy    — weighted random, ignores its own cards
+ * medium  — hand strength against pot odds, never bluffs
+ * hard    — Monte Carlo equity, position aware, occasional bluff
+ * expert  — hard, plus opponent modelling that shifts its thresholds
+ */
+export const botDifficultySchema = z.enum(['easy', 'medium', 'hard', 'expert']);
+export type BotDifficulty = z.infer<typeof botDifficultySchema>;
+
 // ------------------------------------------------------------------ chips
 
 export const chipTransactionKindSchema = z.enum([
@@ -92,6 +103,8 @@ export const tableSummarySchema = z.object({
   maxBuyIn: z.number().int(),
   isPrivate: z.boolean(),
   status: z.enum(['open', 'in_hand', 'closed']),
+  /** How many of the seated players are bots. */
+  botCount: z.number().int(),
   createdAt: z.iso.datetime(),
 });
 export type TableSummary = z.infer<typeof tableSummarySchema>;
@@ -123,6 +136,22 @@ export const joinTableBodySchema = z.object({
 });
 export type JoinTableBody = z.infer<typeof joinTableBodySchema>;
 
+export const addBotBodySchema = z.object({
+  /** Omit to take the first free seat. */
+  seat: z.number().int().min(0).max(8).optional(),
+  difficulty: botDifficultySchema,
+  /** Defaults to the table's minimum buy-in. Bots never top up beyond this. */
+  buyIn: z.number().int().positive().optional(),
+});
+export type AddBotBody = z.infer<typeof addBotBodySchema>;
+
+export const setAutoFillBodySchema = z.object({
+  enabled: z.boolean(),
+  /** Difficulty used for seats the table fills on its own. */
+  difficulty: botDifficultySchema.default('medium'),
+});
+export type SetAutoFillBody = z.infer<typeof setAutoFillBodySchema>;
+
 // ------------------------------------------------------------- table state
 
 export const seatViewSchema = z.object({
@@ -138,6 +167,10 @@ export const seatViewSchema = z.object({
    */
   holeCards: z.array(cardSchema),
   isActing: z.boolean(),
+  /** True when this seat is played by the server rather than a person. */
+  isBot: z.boolean(),
+  /** Null for human seats. */
+  botDifficulty: botDifficultySchema.nullable(),
 });
 export type SeatView = z.infer<typeof seatViewSchema>;
 
