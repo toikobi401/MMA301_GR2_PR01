@@ -43,8 +43,14 @@ export class Table {
   private actionTimer: NodeJS.Timeout | null = null;
   private actingDeadline: number | null = null;
 
-  /** Called whenever state changes, so the socket layer can broadcast. */
-  onChange: (() => void) | null = null;
+  /**
+   * Everything that wants to know when the table changes.
+   *
+   * A single callback would work until a second observer arrived: the bot
+   * driver assigning it would silently delete the socket broadcast, and the
+   * table would keep playing while nobody saw it.
+   */
+  private readonly listeners = new Set<() => void>();
 
   constructor(doc: PokerTableDoc) {
     this.id = doc._id.toHexString();
@@ -61,6 +67,32 @@ export class Table {
 
   get table(): PokerTableDoc {
     return this.doc;
+  }
+
+  /** Returns an unsubscribe function. */
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  /**
+   * Notifies every observer.
+   *
+   * Iterates a copy because a listener may call `act` synchronously, which
+   * re-enters this method — mutating the set mid-iteration would be undefined
+   * behaviour. Each listener is isolated so a failing socket broadcast cannot
+   * stop the bot driver from being told, or the other way round.
+   */
+  private emitChange(): void {
+    for (const listener of [...this.listeners]) {
+      try {
+        listener();
+      } catch (error) {
+        console.error('Table listener failed', error);
+      }
+    }
   }
 
   /** Seats occupied by a player with chips behind. */
@@ -102,7 +134,7 @@ export class Table {
     this.doc.status = 'in_hand';
     this.sequence += 1;
     this.armActionTimer();
-    this.onChange?.();
+    this.emitChange();
     return true;
   }
 
@@ -136,7 +168,7 @@ export class Table {
       this.armActionTimer();
     }
 
-    this.onChange?.();
+    this.emitChange();
   }
 
   /**
@@ -243,7 +275,7 @@ export class Table {
     }
 
     this.sequence += 1;
-    this.onChange?.();
+    this.emitChange();
   }
 
   private async displayNames(userIds: string[]): Promise<Map<string, string>> {
@@ -377,6 +409,6 @@ export class Table {
 
   dispose(): void {
     this.clearActionTimer();
-    this.onChange = null;
+    this.listeners.clear();
   }
 }

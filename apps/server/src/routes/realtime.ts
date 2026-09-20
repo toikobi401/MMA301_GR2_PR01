@@ -20,6 +20,15 @@ interface Client {
 /** Sockets per table, so a state change reaches only its watchers. */
 const rooms = new Map<string, Set<Client>>();
 
+/**
+ * One broadcast subscription per table, not per socket.
+ *
+ * Subscribing on every join would add a duplicate listener each time someone
+ * opened the table, and every client would receive one copy of the state per
+ * subscriber.
+ */
+const broadcastSubscriptions = new Map<string, () => void>();
+
 function send(client: Client, message: ServerMessage): void {
   // readyState 1 is OPEN. Writing to a closing socket throws.
   if (client.socket.readyState !== 1) return;
@@ -63,7 +72,14 @@ function leaveRoom(tableId: string, client: Client): void {
   if (!room) return;
   room.delete(client);
   client.tables.delete(tableId);
-  if (room.size === 0) rooms.delete(tableId);
+
+  if (room.size === 0) {
+    rooms.delete(tableId);
+    // Nobody is watching, so stop listening. The table keeps playing — bots
+    // may still be in a hand — it simply has no audience.
+    broadcastSubscriptions.get(tableId)?.();
+    broadcastSubscriptions.delete(tableId);
+  }
 }
 
 export async function realtimeRoutes(app: FastifyInstance) {
@@ -142,10 +158,14 @@ export async function realtimeRoutes(app: FastifyInstance) {
         const table = await getTable(message.tableId);
         joinRoom(message.tableId, client);
 
-        // Wire the broadcast once per table rather than per subscriber.
-        table.onChange = () => {
-          void broadcastTable(message.tableId);
-        };
+        if (!broadcastSubscriptions.has(message.tableId)) {
+          broadcastSubscriptions.set(
+            message.tableId,
+            table.subscribe(() => {
+              void broadcastTable(message.tableId);
+            }),
+          );
+        }
 
         send(client, {
           type: 'table_state',
