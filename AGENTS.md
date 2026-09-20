@@ -109,6 +109,34 @@ decides money or cards.
 - Reconnects get a full snapshot, never a replay of missed messages. Clients
   ignore any state whose sequence is not newer than the last one applied.
 
+## Bots
+
+Four tiers in `packages/poker/src/bot`: easy plays at random, medium weighs
+hand strength against pot odds, hard runs a Monte Carlo equity estimate, and
+expert adds opponent modelling on top of hard.
+
+- **A bot never sees a `HandState`.** It receives a `BotView`, which has no
+  `deck` field and no `holeCards` key on opponents — reaching for an
+  opponent's cards is a compile error, not a review finding. `buildBotView` is
+  the only bridge.
+- Policies are synchronous and pure. Not being async is deliberate: it means a
+  policy cannot perform I/O, which is where a cheating implementation would go
+  looking for information.
+- The driver clamps every decision before acting, so a buggy policy degrades
+  to a legal action rather than wedging the table.
+- Bots are `users` rows with `isBot`, seated with a fixed stack. They do not
+  touch the wallet and get no `playerStats` row, so chips are **not** conserved
+  across a table with bots on it. That is deliberate: the ledger stays a record
+  of human money.
+- Run `npm run seed:bots` once before adding bots to a table.
+
+### Thresholds are on different scales per street
+
+Preflop strength comes from the Chen formula, where a premium hand scores
+about 0.7. Postflop comes from `category / 8`, where top pair is about 0.22
+and a flush is 0.73. One set of thresholds for both makes a bot check top pair
+every time. Check the scale before tuning a number.
+
 ## Deal animation
 
 The animation is entirely client-side. The server sends the finished state and

@@ -20,6 +20,7 @@ apps/
   server/     Fastify API — runs in Docker
 packages/
   poker/          Rules engine: hand evaluation, pots, betting state machine
+                  and the four bot difficulty tiers
   shared/         API contracts, Zod schemas, HTTP client
 infra/
   docker-compose.yml   MongoDB + Redis + API
@@ -77,6 +78,8 @@ chain works end to end.
 | `npm run typecheck` | Typecheck every workspace |
 | `npm test` | Run the rules-engine tests |
 | `node scripts/play-hand.mjs` | Play a full hand over the socket, end to end |
+| `npm run seed:bots` | Create the bot accounts (run once) |
+| `node scripts/bot-table.mjs 5` | Watch four bots play five hands |
 
 A database browser is available on demand:
 
