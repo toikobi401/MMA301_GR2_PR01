@@ -1,4 +1,5 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import type { BotDifficulty } from '@app/shared';
 import { cn } from '@/lib/cn';
 import { Avatar } from '@/components/ui/avatar';
 import { Text } from '@/components/ui/text';
@@ -24,6 +25,11 @@ export interface PlayerSeatProps {
   isActing?: boolean;
   isDealer?: boolean;
   isSelf?: boolean;
+  /** Marks the seat as played by the server. */
+  isBot?: boolean;
+  botDifficulty?: BotDifficulty | null;
+  /** Shown on an empty seat when the viewer owns the table. */
+  onAddBot?: () => void;
   /** Fraction of the action clock remaining, 0 to 1. */
   clockRemaining?: number;
   className?: string;
@@ -41,21 +47,32 @@ export function PlayerSeat({
   isActing = false,
   isDealer = false,
   isSelf = false,
+  isBot = false,
+  botDifficulty = null,
+  onAddBot,
   clockRemaining,
   className,
 }: PlayerSeatProps) {
   if (status === 'empty' || !name) {
+    // An empty seat becomes the add-bot control for the table owner, so the
+    // action sits where the result will appear.
+    const Wrapper = onAddBot ? Pressable : View;
+
     return (
-      <View
+      <Wrapper
+        {...(onAddBot
+          ? { onPress: onAddBot, accessibilityRole: 'button' as const }
+          : {})}
         className={cn(
-          'items-center justify-center rounded-lg border border-dashed border-white/15 px-3 py-2',
+          'items-center justify-center rounded-lg border border-dashed px-3 py-2',
+          onAddBot ? 'border-white/30 active:bg-white/10' : 'border-white/15',
           className,
         )}
       >
-        <Text variant="caption" className="text-white/30">
-          Seat {seat + 1}
+        <Text variant="caption" className={onAddBot ? 'text-white/60' : 'text-white/30'}>
+          {onAddBot ? '+ Add bot' : `Seat ${seat + 1}`}
         </Text>
-      </View>
+      </Wrapper>
     );
   }
 
@@ -104,9 +121,20 @@ export function PlayerSeat({
         </View>
 
         <View className="min-w-[56px]">
-          <Text variant="caption" className="font-medium text-white" numberOfLines={1}>
-            {name}
-          </Text>
+          <View className="flex-row items-center gap-1">
+            <Text variant="caption" className="font-medium text-white" numberOfLines={1}>
+              {name}
+            </Text>
+            {isBot && (
+              // Small enough not to change the seat's footprint, so the table
+              // does not reflow when a bot is swapped for a person.
+              <View className="rounded bg-white/15 px-1">
+                <Text className="text-[9px] font-bold uppercase text-white/70">
+                  {botDifficulty ? botDifficulty[0] : 'B'}
+                </Text>
+              </View>
+            )}
+          </View>
           {allIn ? (
             <Text variant="caption" className="text-xs font-semibold text-chip-red">
               ALL IN

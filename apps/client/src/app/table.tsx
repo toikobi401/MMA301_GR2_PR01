@@ -2,10 +2,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { SeatView } from '@app/shared';
+import type { BotDifficulty, SeatView } from '@app/shared';
 import { Button, Text } from '@/components/ui';
 import {
   ActionBar,
+  AddBotSheet,
   Board,
   PlayerSeat,
   PotDisplay,
@@ -25,6 +26,8 @@ export default function TableScreen() {
 
   const { state, status, dealing, act, error } = useTableSocket(tableId, token);
   const [dealError, setDealError] = useState<string | null>(null);
+  const [addingToSeat, setAddingToSeat] = useState<number | null>(null);
+  const [addingBot, setAddingBot] = useState(false);
 
   // Clock, recomputed locally between state pushes so the bar drains smoothly
   // instead of jumping once per server message.
@@ -84,6 +87,24 @@ export default function TableScreen() {
     }
   }
 
+  async function addBot(difficulty: BotDifficulty) {
+    if (addingToSeat === null) return;
+    setAddingBot(true);
+    setDealError(null);
+    try {
+      await api.post(`/api/v1/tables/${tableId}/bots`, {
+        seat: addingToSeat,
+        difficulty,
+      });
+      setAddingToSeat(null);
+      // No refresh needed: seating a bot changes the table, which broadcasts.
+    } catch (caught) {
+      setDealError(caught instanceof Error ? caught.message : 'Could not add a bot');
+    } finally {
+      setAddingBot(false);
+    }
+  }
+
   const handIdle = state !== null && (state.street === null || state.street === 'complete');
 
   return (
@@ -122,6 +143,7 @@ export default function TableScreen() {
                   dealIndex={index}
                   buttonSeat={state?.buttonSeat ?? null}
                   clockRemaining={seat.isActing ? clockRemaining : undefined}
+                  onAddBot={() => setAddingToSeat(seat.seat)}
                 />
               ))}
             </View>
@@ -145,6 +167,7 @@ export default function TableScreen() {
                   dealIndex={topSeats.length + index}
                   buttonSeat={state?.buttonSeat ?? null}
                   clockRemaining={seat.isActing ? clockRemaining : undefined}
+                  onAddBot={() => setAddingToSeat(seat.seat)}
                 />
               ))}
 
@@ -162,6 +185,13 @@ export default function TableScreen() {
           </View>
         </TableFelt>
       </View>
+
+      <AddBotSheet
+        visible={addingToSeat !== null}
+        busy={addingBot}
+        onClose={() => setAddingToSeat(null)}
+        onConfirm={(difficulty) => void addBot(difficulty)}
+      />
 
       <View className="gap-2 border-t border-white/10 bg-neutral-900 px-4 pb-2 pt-3">
         {(error ?? dealError) && (
@@ -190,6 +220,7 @@ function SeatCard({
   buttonSeat,
   isSelf = false,
   clockRemaining,
+  onAddBot,
 }: {
   seat: SeatView;
   dealing: boolean;
@@ -197,6 +228,7 @@ function SeatCard({
   buttonSeat: number | null;
   isSelf?: boolean;
   clockRemaining?: number;
+  onAddBot?: () => void;
 }) {
   const inHand = seat.status !== 'sitting_out' || seat.holeCards.length > 0;
 
@@ -222,7 +254,10 @@ function SeatCard({
       isActing={seat.isActing}
       isDealer={buttonSeat === seat.seat}
       isSelf={isSelf}
+      isBot={seat.isBot}
+      botDifficulty={seat.botDifficulty}
       clockRemaining={clockRemaining}
+      onAddBot={seat.userId === null ? onAddBot : undefined}
     />
   );
 }
