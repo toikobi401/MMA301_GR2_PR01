@@ -2,8 +2,10 @@ import { randomBytes } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { ObjectId } from 'mongodb';
 import {
+  addBotBodySchema,
   createTableBodySchema,
   joinTableBodySchema,
+  setAutoFillBodySchema,
   type TableSummary,
 } from '@app/shared';
 import { getTable } from '../game/registry.js';
@@ -45,6 +47,20 @@ function emptySeats(count: number): SeatDoc[] {
     botProfile: null,
     joinedAt: new Date(),
   }));
+}
+
+/**
+ * Only the table owner may add or remove bots. Without this any player could
+ * stack a table with easy bots and farm them.
+ */
+async function assertOwner(
+  doc: PokerTableDoc,
+  userId: string,
+  role: string | undefined,
+): Promise<void> {
+  if (role === 'admin') return;
+  if (doc.ownerId?.toHexString() === userId) return;
+  throw AppError.forbidden('Only the table owner can manage bots');
 }
 
 export async function tableRoutes(app: FastifyInstance) {
@@ -209,6 +225,165 @@ export async function tableRoutes(app: FastifyInstance) {
     }
 
     return { ok: true as const, data: { left: true, refunded: refund } };
+  });
+
+  /**
+   * Seats a bot.
+   *
+   * Bots do not go through the wallet: they are given a fixed stack and never
+   * top up, so no chips are debited and none are refunded when they leave.
+   * That keeps the chip ledger a record of human money only — the cost is
+   * that chips are not conserved across a table with bots on it, which is a
+   * deliberate trade.
+   */
+  app.post('/:id/bots', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const body = addBotBodySchema.parse(request.body);
+
+    const table = await getTable(id);
+    const doc = table.table;
+
+    await assertOwner(doc, claim, request.claims?.role);
+
+    const seatNumber = body.seat ?? doc.seats.find((seat) => seat.userId === null)?.seat;
+    if (seatNumber === undefined) throw AppError.conflict('The table is full');
+
+    const seated = new Set(
+      doc.seats.map((seat) => seat.userId?.toHexString()).filter(Boolean) as string[],
+    );
+
+    // Any bot account not already at this table. Picking at random keeps the
+    // same names from always appearing in the same order.
+    const candidates = await users()
+      .find({ isBot: true }, { projection: { displayName: 1 } })
+      .toArray();
+
+    const free = candidates.filter((bot) => !seated.has(bot._id.toHexString()));
+    if (free.length === 0) {
+      throw AppError.conflict('No bot accounts are free. Run `npm run seed:bots`.');
+    }
+
+    const bot = free[Math.floor(Math.random() * free.length)];
+    if (!bot) throw AppError.internal('Failed to pick a bot');
+
+    const buyIn = body.buyIn ?? doc.minBuyIn;
+    if (buyIn < doc.minBuyIn || buyIn > doc.maxBuyIn) {
+      throw AppError.badRequest(
+        `Buy-in must be between ${doc.minBuyIn} and ${doc.maxBuyIn}`,
+      );
+    }
+
+    const claimed = await pokerTables().updateOne(
+      {
+        _id: doc._id,
+        seats: { $elemMatch: { seat: seatNumber, userId: null } },
+      },
+      {
+        $set: {
+          'seats.$.userId': bot._id,
+          'seats.$.displayName': bot.displayName,
+          'seats.$.stack': buyIn,
+          'seats.$.botProfile': { difficulty: body.difficulty },
+          'seats.$.joinedAt': new Date(),
+          // Without this the table deals one hand and stops, because nothing
+          // else starts the next one.
+          autoDeal: true,
+        },
+      },
+    );
+
+    if (claimed.modifiedCount !== 1) throw AppError.conflict('That seat was just taken');
+
+    const seat = doc.seats.find((entry) => entry.seat === seatNumber);
+    if (seat) {
+      seat.userId = bot._id;
+      seat.displayName = bot.displayName;
+      seat.stack = buyIn;
+      seat.botProfile = { difficulty: body.difficulty };
+      seat.joinedAt = new Date();
+    }
+    doc.autoDeal = true;
+
+    table.startHandIfReady();
+
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  app.delete('/:id/bots/:seat', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id, seat: seatParam } = request.params as { id: string; seat: string };
+    const seatNumber = Number(seatParam);
+
+    const table = await getTable(id);
+    const doc = table.table;
+
+    await assertOwner(doc, claim, request.claims?.role);
+
+    const seat = doc.seats.find((entry) => entry.seat === seatNumber);
+    if (!seat || !seat.botProfile) throw AppError.badRequest('That seat holds no bot');
+
+    // Removing a player mid-hand would strand the pot they have contributed
+    // to, so wait for the hand to finish.
+    const hand = table.currentHand;
+    const inHand =
+      hand !== null &&
+      hand.street !== 'complete' &&
+      hand.players.some((player) => player.id === seat.userId?.toHexString());
+    if (inHand) throw AppError.conflict('That bot is in a hand; try again shortly');
+
+    seat.userId = null;
+    seat.displayName = null;
+    seat.stack = 0;
+    seat.botProfile = null;
+
+    await pokerTables().updateOne(
+      { _id: doc._id, 'seats.seat': seatNumber },
+      {
+        $set: {
+          'seats.$.userId': null,
+          'seats.$.displayName': null,
+          'seats.$.stack': 0,
+          'seats.$.botProfile': null,
+        },
+      },
+    );
+
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  app.put('/:id/auto-fill', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const body = setAutoFillBodySchema.parse(request.body);
+
+    const table = await getTable(id);
+    const doc = table.table;
+
+    await assertOwner(doc, claim, request.claims?.role);
+
+    doc.autoFillBots = body.enabled;
+    doc.autoFillDifficulty = body.difficulty;
+    if (body.enabled) doc.autoDeal = true;
+
+    await pokerTables().updateOne(
+      { _id: doc._id },
+      {
+        $set: {
+          autoFillBots: body.enabled,
+          autoFillDifficulty: body.difficulty,
+          ...(body.enabled ? { autoDeal: true } : {}),
+        },
+      },
+    );
+
+    return { ok: true as const, data: table.viewFor(claim) };
   });
 
   /** Deals the next hand. Normally automatic; exposed for testing and demos. */

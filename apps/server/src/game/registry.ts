@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { pokerTables } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
+import { cancelPendingTurn, handleBotTurn } from './bot-driver.js';
 import { Table } from './table-manager.js';
 
 /**
@@ -25,6 +26,10 @@ export async function getTable(tableId: string): Promise<Table> {
   if (!doc) throw AppError.notFound('Table not found');
 
   const table = new Table(doc);
+  // Every table gets the bot driver. It does nothing until a bot seat is on
+  // the clock, so wiring it unconditionally costs nothing and removes a
+  // "why is this table's bot not moving" failure mode.
+  table.onBotTurn = handleBotTurn;
   tables.set(tableId, table);
   return table;
 }
@@ -36,11 +41,15 @@ export function peekTable(tableId: string): Table | undefined {
 export function releaseTable(tableId: string): void {
   const table = tables.get(tableId);
   if (!table) return;
+  cancelPendingTurn(tableId);
   table.dispose();
   tables.delete(tableId);
 }
 
 export function disposeAllTables(): void {
-  for (const table of tables.values()) table.dispose();
+  for (const [tableId, table] of tables) {
+    cancelPendingTurn(tableId);
+    table.dispose();
+  }
   tables.clear();
 }

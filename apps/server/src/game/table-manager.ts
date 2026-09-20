@@ -9,7 +9,7 @@ import {
   Street,
   type HandState,
 } from '@app/poker';
-import { ACTION_TIMEOUT_SECONDS, type TableState } from '@app/shared';
+import { ACTION_TIMEOUT_SECONDS, type BotDifficulty, type TableState } from '@app/shared';
 import { hands, pokerTables, playerStats, users, type PokerTableDoc } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
 import { secureRandom } from './random.js';
@@ -22,6 +22,9 @@ import { secureRandom } from './random.js';
 function streetOf(hand: HandState): string {
   return hand.street;
 }
+
+/** Pause between hands, long enough for clients to show the showdown. */
+const NEXT_HAND_DELAY_MS = 4000;
 
 /**
  * One live table.
@@ -42,6 +45,16 @@ export class Table {
   private sequence = 0;
   private actionTimer: NodeJS.Timeout | null = null;
   private actingDeadline: number | null = null;
+  private nextHandTimer: NodeJS.Timeout | null = null;
+
+  /**
+   * Called when a bot seat is on the clock.
+   *
+   * A single hook, not a subscriber list: there is one bot driver per
+   * process, and a list would invite a second one to act on the same turn.
+   */
+  onBotTurn: ((table: Table, botId: string, difficulty: BotDifficulty) => void) | null =
+    null;
 
   /**
    * Everything that wants to know when the table changes.
@@ -180,7 +193,8 @@ export class Table {
    */
   private armActionTimer(): void {
     this.clearActionTimer();
-    if (!this.hand?.actingPlayerId) return;
+    const actingId = this.hand?.actingPlayerId;
+    if (!actingId) return;
 
     this.actingDeadline = Date.now() + ACTION_TIMEOUT_SECONDS * 1000;
     this.actionTimer = setTimeout(() => {
@@ -199,6 +213,22 @@ export class Table {
 
     // Do not hold the process open for a pending poker clock.
     this.actionTimer.unref?.();
+
+    // Hand the turn to the bot driver if this seat is played by the server.
+    // This is the only place that fires exactly once per new actor, which is
+    // why the hook lives here rather than on a change listener — those fire
+    // on every state change and would need deduplication to avoid double
+    // acting.
+    const difficulty = this.botDifficultyFor(actingId);
+    if (difficulty && this.onBotTurn) {
+      this.onBotTurn(this, actingId, difficulty);
+    }
+  }
+
+  /** The difficulty of the bot in this seat, or null for a human. */
+  botDifficultyFor(userId: string): BotDifficulty | null {
+    const seat = this.doc.seats.find((entry) => entry.userId?.toHexString() === userId);
+    return seat?.botProfile?.difficulty ?? null;
   }
 
   private clearActionTimer(): void {
@@ -276,6 +306,28 @@ export class Table {
 
     this.sequence += 1;
     this.emitChange();
+    this.scheduleNextHand();
+  }
+
+  /**
+   * Deals the next hand on a delay, when the table is set to run itself.
+   *
+   * Nothing previously started a new hand: only a join or an explicit deal
+   * did. A table of bots would therefore play exactly one hand and sit idle
+   * forever. Off by default, so a table of humans keeps deciding for itself.
+   *
+   * The delay gives clients time to show the showdown before cards vanish.
+   */
+  private scheduleNextHand(): void {
+    if (this.nextHandTimer) clearTimeout(this.nextHandTimer);
+    if (!this.doc.autoDeal) return;
+
+    this.nextHandTimer = setTimeout(() => {
+      this.nextHandTimer = null;
+      this.startHandIfReady();
+    }, NEXT_HAND_DELAY_MS);
+
+    this.nextHandTimer.unref?.();
   }
 
   private async displayNames(userIds: string[]): Promise<Map<string, string>> {
@@ -409,6 +461,9 @@ export class Table {
 
   dispose(): void {
     this.clearActionTimer();
+    if (this.nextHandTimer) clearTimeout(this.nextHandTimer);
+    this.nextHandTimer = null;
+    this.onBotTurn = null;
     this.listeners.clear();
   }
 }
