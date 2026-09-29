@@ -108,7 +108,10 @@ export function CardRow({
         <View
           key={`slot-${index}`}
           className={cn(
-            'rounded-md border border-dashed border-white/15',
+            // Only drawn off the felt (the table's Board has its own slots),
+            // so it takes the neutral border rather than a white tint that
+            // vanishes on a light card.
+            'rounded-md border border-dashed border-border',
             size === 'sm' ? 'h-11 w-8' : size === 'lg' ? 'h-24 w-[68px]' : 'h-16 w-12',
           )}
         />

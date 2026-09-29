@@ -54,3 +54,7 @@ apps/client/android/
 # Expo web export
 apps/client/dist/
 apps/client/.expo/
+
+# Superdesign scratch HTML and Playwright captures
+.superdesign/tmp/
+.playwright-mcp/

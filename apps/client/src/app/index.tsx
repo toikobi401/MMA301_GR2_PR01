@@ -10,9 +10,12 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  Tabs,
   Text,
 } from '@/components/ui';
+import { formatChips } from '@/components/poker';
 import { api } from '@/lib/api';
+import { walletApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
 import { useHydrated } from '@/lib/use-hydrated';
 import { useSession } from '@/lib/session';
@@ -80,25 +83,44 @@ function SignIn({
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
 
+  // The session keeps one error for both forms. Remembering which form
+  // produced it stops a failed sign-in from showing up under "Create account".
+  const [submittedMode, setSubmittedMode] = useState(mode);
+
   const submit = () => {
+    setSubmittedMode(mode);
     if (mode === 'login') void onLogin(email, password);
     else void onRegister(email, password, displayName);
   };
 
+  const registering = mode === 'register';
+  const shownError = submittedMode === mode ? error : null;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{mode === 'login' ? 'Sign in' : 'Create an account'}</CardTitle>
+        {/* Two peers, not a primary action and a buried link: a new player
+            should see "Create account" as clearly as a returning one sees
+            "Sign in". */}
+        <Tabs
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: 'login', label: 'Sign in' },
+            { value: 'register', label: 'Create account' },
+          ]}
+        />
       </CardHeader>
 
       <CardContent className="gap-3">
-        {mode === 'register' && (
+        {registering && (
           <Input
             label="Display name"
             value={displayName}
             onChangeText={setDisplayName}
             autoCapitalize="words"
             placeholder="Your name at the table"
+            hint="This is the name other players see at the table."
           />
         )}
 
@@ -118,26 +140,37 @@ function SignIn({
           secureTextEntry
           placeholder="At least 8 characters"
           onSubmitEditing={submit}
+          // Sign-in failures are about the credentials, so they sit under
+          // the field the player will retype. Registration errors can be
+          // about any field and go above the button instead.
+          error={!registering ? (shownError ?? undefined) : undefined}
         />
 
-        {error && (
+        {registering && (
+          <View className="flex-row items-center gap-3 rounded-md bg-muted px-3 py-2.5">
+            <View className="h-5 w-5 rounded-full border-2 border-white/60 bg-primary" />
+            <Text variant="caption">
+              New accounts start with{' '}
+              <Text variant="numeric" className="text-sm font-semibold">
+                10,000
+              </Text>{' '}
+              chips.
+            </Text>
+          </View>
+        )}
+
+        {registering && shownError && (
           <Text variant="caption" tone="destructive">
-            {error}
+            {shownError}
           </Text>
         )}
 
         <Button
-          label={mode === 'login' ? 'Sign in' : 'Create account'}
+          label={registering ? 'Create account' : 'Sign in'}
           loading={busy}
           onPress={submit}
           block
-        />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          label={mode === 'login' ? 'Need an account?' : 'Already have one?'}
-          onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+          className="mt-1"
         />
       </CardContent>
     </Card>
@@ -157,12 +190,19 @@ function TableList({
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const page = await api.get<{ items: TableSummary[] }>('/api/v1/tables');
+      // The balance decides which tables a player can afford to join, so it
+      // is fetched alongside the list rather than hidden behind the wallet.
+      const [page, wallet] = await Promise.all([
+        api.get<{ items: TableSummary[] }>('/api/v1/tables'),
+        walletApi.get(),
+      ]);
       setTables(page.items);
+      setBalance(wallet.chips);
       setError(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not load tables');
@@ -202,6 +242,17 @@ function TableList({
         </Text>
         <Button variant="ghost" size="sm" label="Sign out" onPress={onSignOut} />
       </View>
+
+      {balance !== null && (
+        <View className="flex-row items-baseline gap-2">
+          <Text variant="caption" tone="muted">
+            Balance
+          </Text>
+          <Text variant="numeric" className="font-semibold">
+            {formatChips(balance)}
+          </Text>
+        </View>
+      )}
 
       {/* Everything that is not the table itself lives one tap away. */}
       <View className="flex-row gap-2">
@@ -248,7 +299,8 @@ function TableList({
             </View>
           ) : tables.length === 0 ? (
             <Text tone="muted" className="py-4">
-              No tables yet. Create one to start playing.
+              No tables are open right now. A tournament moderator opens them — refresh in a
+              moment.
             </Text>
           ) : (
             tables.map((table, index) => (
@@ -259,8 +311,10 @@ function TableList({
                   index > 0 && 'border-t border-border',
                 )}
               >
-                <View className="flex-1 gap-0.5">
-                  <Text className="font-medium">{table.name}</Text>
+                <View className="flex-1 gap-0.5 pr-3">
+                  <Text className="font-medium" numberOfLines={1}>
+                    {table.name}
+                  </Text>
                   <Text variant="caption" tone="muted">
                     {table.smallBlind}/{table.bigBlind} · {table.seatedCount}/{table.maxSeats}{' '}
                     seated

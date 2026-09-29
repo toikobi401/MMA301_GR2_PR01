@@ -1,15 +1,12 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import type { Friend } from '@app/shared';
 import {
   Avatar,
-  Badge,
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   EmptyState,
   Input,
   StatusDot,
@@ -91,6 +88,9 @@ export default function FriendsScreen() {
   }
 
   const accepted = friends.filter((friend) => friend.status === 'accepted');
+  // Online first: those are the people a player can actually sit down with.
+  const online = accepted.filter((friend) => friend.online);
+  const offline = accepted.filter((friend) => !friend.online);
   const incoming = friends.filter((friend) => friend.status === 'pending' && !friend.outgoing);
   const outgoing = friends.filter((friend) => friend.status === 'pending' && friend.outgoing);
 
@@ -120,7 +120,7 @@ export default function FriendsScreen() {
           onChange={setTab}
           options={[
             { value: 'friends', label: `Friends (${accepted.length})` },
-            { value: 'requests', label: `Requests (${incoming.length})` },
+            { value: 'requests', label: 'Requests', count: incoming.length },
             { value: 'find', label: 'Find' },
           ]}
         />
@@ -140,63 +140,72 @@ export default function FriendsScreen() {
                   onAction={() => setTab('find')}
                 />
               ) : (
-                accepted.map((friend, index) => (
-                  <FriendRow
-                    key={friend.userId}
-                    friend={friend}
-                    first={index === 0}
-                    busy={pendingId === friend.userId}
-                    onRemove={() => void act(friend.userId, 'remove')}
-                  />
-                ))
+                <>
+                  <Group title="Online now" first>
+                    {online.map((friend, index) => (
+                      <FriendRow
+                        key={friend.userId}
+                        friend={friend}
+                        first={index === 0}
+                        busy={pendingId === friend.userId}
+                        onRemove={() => void act(friend.userId, 'remove')}
+                      />
+                    ))}
+                  </Group>
+                  <Group title="Offline" first={online.length === 0}>
+                    {offline.map((friend, index) => (
+                      <FriendRow
+                        key={friend.userId}
+                        friend={friend}
+                        first={index === 0}
+                        busy={pendingId === friend.userId}
+                        onRemove={() => void act(friend.userId, 'remove')}
+                      />
+                    ))}
+                  </Group>
+                </>
               )}
             </CardContent>
           </Card>
         ) : tab === 'requests' ? (
-          <View className="gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Waiting for you</CardTitle>
-              </CardHeader>
-              <CardContent className="gap-0">
-                {incoming.length === 0 ? (
-                  <EmptyState title="Nothing to answer" />
-                ) : (
-                  incoming.map((friend, index) => (
-                    <FriendRow
-                      key={friend.userId}
-                      friend={friend}
-                      first={index === 0}
-                      busy={pendingId === friend.userId}
-                      onAccept={() => void act(friend.userId, 'accept')}
-                      onRemove={() => void act(friend.userId, 'remove')}
-                    />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Sent</CardTitle>
-              </CardHeader>
-              <CardContent className="gap-0">
-                {outgoing.length === 0 ? (
-                  <EmptyState title="No requests sent" />
-                ) : (
-                  outgoing.map((friend, index) => (
-                    <FriendRow
-                      key={friend.userId}
-                      friend={friend}
-                      first={index === 0}
-                      busy={pendingId === friend.userId}
-                      onRemove={() => void act(friend.userId, 'remove')}
-                    />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </View>
+          <Card>
+            <CardContent className="gap-0 pt-4">
+              {incoming.length === 0 && outgoing.length === 0 ? (
+                <EmptyState
+                  title="No requests"
+                  description="Requests you send or receive wait here until they are answered."
+                  actionLabel="Find people"
+                  onAction={() => setTab('find')}
+                />
+              ) : (
+                <>
+                  <Group title="Waiting for you" first>
+                    {incoming.map((friend, index) => (
+                      <FriendRow
+                        key={friend.userId}
+                        friend={friend}
+                        first={index === 0}
+                        busy={pendingId === friend.userId}
+                        onAccept={() => void act(friend.userId, 'accept')}
+                        onRemove={() => void act(friend.userId, 'remove')}
+                      />
+                    ))}
+                  </Group>
+                  <Group title="You sent" first={incoming.length === 0}>
+                    {outgoing.map((friend, index) => (
+                      <FriendRow
+                        key={friend.userId}
+                        friend={friend}
+                        first={index === 0}
+                        busy={pendingId === friend.userId}
+                        onRemove={() => void act(friend.userId, 'remove')}
+                      />
+                    ))}
+                  </Group>
+                </>
+              )}
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="gap-3 pt-4">
@@ -230,7 +239,7 @@ export default function FriendsScreen() {
                       </View>
                       <Button
                         size="sm"
-                        label="Add"
+                        label="Add friend"
                         loading={pendingId === person.displayName}
                         onPress={() => void add(person.displayName)}
                       />
@@ -250,6 +259,28 @@ export default function FriendsScreen() {
   );
 }
 
+/** A titled run of rows inside one card. Renders nothing when empty. */
+function Group({
+  title,
+  first,
+  children,
+}: {
+  title: string;
+  first: boolean;
+  children: ReactNode[];
+}) {
+  if (children.length === 0) return null;
+
+  return (
+    <View className={cn(!first && 'mt-1 border-t border-border pt-4')}>
+      <Text variant="caption" tone="muted">
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
 function FriendRow({
   friend,
   first,
@@ -263,6 +294,15 @@ function FriendRow({
   onAccept?: () => void;
   onRemove?: () => void;
 }) {
+  const pending = friend.status === 'pending';
+  const subtitle = !pending
+    ? friend.online
+      ? 'Online'
+      : 'Offline'
+    : friend.outgoing
+      ? 'Waiting for an answer'
+      : 'Wants to be friends';
+
   return (
     <View
       className={cn(
@@ -270,28 +310,34 @@ function FriendRow({
         !first && 'border-t border-border',
       )}
     >
-      <View className="flex-row items-center gap-3">
-        <Avatar name={friend.displayName} size="sm" />
-        <View className="gap-0.5">
-          <Text className="font-medium">{friend.displayName}</Text>
-          <View className="flex-row items-center gap-1.5">
-            <StatusDot className={friend.online ? 'bg-success' : 'bg-muted-foreground'} />
-            <Text variant="caption" tone="muted">
-              {friend.online ? 'Online' : 'Offline'}
-            </Text>
-          </View>
+      <View className="flex-1 flex-row items-center gap-3">
+        <View>
+          <Avatar name={friend.displayName} size="sm" />
+          {!pending && friend.online && (
+            <StatusDot className="absolute -bottom-0.5 -right-0.5 h-3 w-3 border-2 border-card bg-success" />
+          )}
+        </View>
+        <View className="flex-1 gap-0.5">
+          <Text className="font-medium" numberOfLines={1}>
+            {friend.displayName}
+          </Text>
+          <Text variant="caption" tone="muted" numberOfLines={1}>
+            {subtitle}
+          </Text>
         </View>
       </View>
 
       <View className="flex-row items-center gap-2">
-        {friend.status === 'pending' && !onAccept && <Badge label="Sent" variant="muted" />}
+        {onAccept && onRemove && (
+          <Button size="sm" variant="outline" label="Decline" onPress={onRemove} />
+        )}
         {onAccept && <Button size="sm" label="Accept" loading={busy} onPress={onAccept} />}
-        {onRemove && (
+        {onRemove && !onAccept && (
           <Button
             size="sm"
             variant="outline"
-            label={onAccept ? 'Decline' : 'Remove'}
-            loading={busy && !onAccept}
+            label={pending ? 'Cancel' : 'Remove'}
+            loading={busy}
             onPress={onRemove}
           />
         )}
