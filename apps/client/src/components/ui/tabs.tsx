@@ -5,6 +5,8 @@ import { Text } from './text';
 export interface TabOption<T extends string> {
   value: T;
   label: string;
+  /** Shown as a small indigo pill when greater than zero — something waits on the user. */
+  count?: number;
 }
 
 export interface TabsProps<T extends string> {
@@ -32,8 +34,8 @@ export function Tabs<T extends string>({ options, value, onChange, className }: 
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
             className={cn(
-              'flex-1 items-center justify-center rounded px-3 py-1.5',
-              active && 'bg-background',
+              'flex-1 flex-row items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5',
+              active ? 'border-border bg-card' : 'border-transparent',
             )}
           >
             <Text
@@ -42,6 +44,13 @@ export function Tabs<T extends string>({ options, value, onChange, className }: 
             >
               {option.label}
             </Text>
+            {option.count !== undefined && option.count > 0 && (
+              <View className="min-w-[20px] items-center rounded-full bg-primary px-1.5">
+                <Text className="font-mono text-xs tabular-nums text-primary-foreground">
+                  {option.count}
+                </Text>
+              </View>
+            )}
           </Pressable>
         );
       })}

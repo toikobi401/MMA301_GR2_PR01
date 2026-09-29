@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/table": {
+      "targetKind": "existing-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "baselineDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/table.tsx:108",
+        "apps/client/src/components/poker/table-felt.tsx",
+        "apps/client/src/components/poker/player-seat.tsx",
+        "apps/client/src/components/poker/playing-card.tsx",
+        "apps/client/src/components/poker/dealt-card.tsx",
+        "apps/client/src/components/poker/board.tsx",
+        "apps/client/src/components/poker/chip-stack.tsx",
+        "apps/client/src/components/poker/action-bar.tsx",
+        "apps/client/src/components/poker/bet-slider.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/table.tsx": "6afe4db0c645b64edb01fd70a2be1614952d57ca0a9c3959419a2e305771945a",
+        "apps/client/src/components/poker/table-felt.tsx": "bd41317b41ae54c1f52b137789d060e485a9857ec499917ace5a868fe2a283b3",
+        "apps/client/src/components/poker/player-seat.tsx": "aa67ef8cbc03b170656e8e74c1677c5b881b43f9ceebb2e2d393ba0b998eb920",
+        "apps/client/src/components/poker/playing-card.tsx": "69011ecbac3141630820ab25e4d97200bcdbc2fe76011707ec7bd1b94ba64287",
+        "apps/client/src/components/poker/dealt-card.tsx": "efb2a6143bdd9b61859a82514fe0e83a67003ed6b52fb47409000fa6ace55e91",
+        "apps/client/src/components/poker/board.tsx": "8cb4c4d802c24f3c9cdf28b036ea120d3b12050cb9dfbaa6f492f7e0d88beca4",
+        "apps/client/src/components/poker/chip-stack.tsx": "3921319cb755a6a1f5b96fd40ef9072bfc24257429ffda20e0b7b69b7af8dd7a",
+        "apps/client/src/components/poker/action-bar.tsx": "de485e903ac76de8d43ba2a24f10b05fe3b5a1f1382bfd69e676fcc112b329f8",
+        "apps/client/src/components/poker/bet-slider.tsx": "3f18ee0d69b68da8094519a1383241115ff729b20b7f50591fa7da1bbc2f62b9",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "1ac55319-1bf4-42d3-ad48-3b4fb699a67c": {
+          "title": "Current Table screen",
+          "visualDirection": "faithful reproduction of current UI (baseline)",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "/": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "afe3f110-7865-48f8-80db-f21107018bec",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/_layout.tsx",
+        "apps/client/src/app/index.tsx:21:66",
+        "apps/client/src/app/index.tsx:147",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/badge.tsx",
+        "apps/client/src/components/ui/tabs.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/empty-state.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/_layout.tsx": "cab99d01e629ffff5ecaf4810295e4b4fda1e2538f9281da7d521ffae8cea95f",
+        "apps/client/src/app/index.tsx": "755120b73810ad5deb171a63ba3d06d759095dce9e3556f2ee544a779b8f157e",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/card.tsx": "8d1c76d7fa3fb2e5aa651a599e10b8be5e0dc0b7fcf8df4a81fb071eec220578",
+        "apps/client/src/components/ui/input.tsx": "6e61063ee25156282988212c9827732c5c8c0486ee8c87a9c925c5e32b878d44",
+        "apps/client/src/components/ui/badge.tsx": "efde6bd665df31c529160cf483ddd88e86fee676233f9abe74f71224b2405a55",
+        "apps/client/src/components/ui/tabs.tsx": "774cba41cd24c5e0a1e1056f1dbb7db06f8a822310e9d183dc9c3033c8b427e7",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/empty-state.tsx": "84f822e5cef6bba6bd92c498fbbf1fd2aafa0a836cc3f13ad60794211e8f08f6",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "afe3f110-7865-48f8-80db-f21107018bec": {
+          "title": "Lobby",
+          "visualDirection": "current style applied, light neutral register; stray badge removed by direct edit",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 3
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "/wallet": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "c99cc8cd-82a0-431c-99a2-74780c7388f9",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/_layout.tsx",
+        "apps/client/src/app/wallet.tsx:98",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/badge.tsx",
+        "apps/client/src/components/ui/tabs.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/empty-state.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/_layout.tsx": "cab99d01e629ffff5ecaf4810295e4b4fda1e2538f9281da7d521ffae8cea95f",
+        "apps/client/src/app/wallet.tsx": "2a13c1933e11e0cb1fe11b6a10e5f67d384f334465c10771f4c7949c6eaf8d48",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/card.tsx": "8d1c76d7fa3fb2e5aa651a599e10b8be5e0dc0b7fcf8df4a81fb071eec220578",
+        "apps/client/src/components/ui/input.tsx": "6e61063ee25156282988212c9827732c5c8c0486ee8c87a9c925c5e32b878d44",
+        "apps/client/src/components/ui/badge.tsx": "efde6bd665df31c529160cf483ddd88e86fee676233f9abe74f71224b2405a55",
+        "apps/client/src/components/ui/tabs.tsx": "774cba41cd24c5e0a1e1056f1dbb7db06f8a822310e9d183dc9c3033c8b427e7",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/empty-state.tsx": "84f822e5cef6bba6bd92c498fbbf1fd2aafa0a836cc3f13ad60794211e8f08f6",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "c99cc8cd-82a0-431c-99a2-74780c7388f9": {
+          "title": "Wallet",
+          "visualDirection": "current style applied, light neutral register",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "/leaderboard": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "3c02f564-a9eb-4274-8181-ac3ea80f7176",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/_layout.tsx",
+        "apps/client/src/app/leaderboard.tsx:72",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/badge.tsx",
+        "apps/client/src/components/ui/tabs.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/empty-state.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/_layout.tsx": "cab99d01e629ffff5ecaf4810295e4b4fda1e2538f9281da7d521ffae8cea95f",
+        "apps/client/src/app/leaderboard.tsx": "1e28f5fa931c8858eab57e9cb72b2cc2329b5f61d56d91e6add07f61b1c2ea54",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/card.tsx": "8d1c76d7fa3fb2e5aa651a599e10b8be5e0dc0b7fcf8df4a81fb071eec220578",
+        "apps/client/src/components/ui/input.tsx": "6e61063ee25156282988212c9827732c5c8c0486ee8c87a9c925c5e32b878d44",
+        "apps/client/src/components/ui/badge.tsx": "efde6bd665df31c529160cf483ddd88e86fee676233f9abe74f71224b2405a55",
+        "apps/client/src/components/ui/tabs.tsx": "774cba41cd24c5e0a1e1056f1dbb7db06f8a822310e9d183dc9c3033c8b427e7",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/empty-state.tsx": "84f822e5cef6bba6bd92c498fbbf1fd2aafa0a836cc3f13ad60794211e8f08f6",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "3c02f564-a9eb-4274-8181-ac3ea80f7176": {
+          "title": "Leaderboard",
+          "visualDirection": "current style applied, light neutral register",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "/moderation": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "4a32c976-c65e-4de7-aa34-40094917c303",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/_layout.tsx",
+        "apps/client/src/app/moderation.tsx:59:76",
+        "apps/client/src/app/moderation.tsx:152:277",
+        "apps/client/src/app/moderation.tsx:355",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/badge.tsx",
+        "apps/client/src/components/ui/tabs.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/empty-state.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/_layout.tsx": "cab99d01e629ffff5ecaf4810295e4b4fda1e2538f9281da7d521ffae8cea95f",
+        "apps/client/src/app/moderation.tsx": "621e1015075e0e83781e594173245d6955581c10d47eaa32620508e71b93c429",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/card.tsx": "8d1c76d7fa3fb2e5aa651a599e10b8be5e0dc0b7fcf8df4a81fb071eec220578",
+        "apps/client/src/components/ui/input.tsx": "6e61063ee25156282988212c9827732c5c8c0486ee8c87a9c925c5e32b878d44",
+        "apps/client/src/components/ui/badge.tsx": "efde6bd665df31c529160cf483ddd88e86fee676233f9abe74f71224b2405a55",
+        "apps/client/src/components/ui/tabs.tsx": "774cba41cd24c5e0a1e1056f1dbb7db06f8a822310e9d183dc9c3033c8b427e7",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/empty-state.tsx": "84f822e5cef6bba6bd92c498fbbf1fd2aafa0a836cc3f13ad60794211e8f08f6",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "4a32c976-c65e-4de7-aa34-40094917c303": {
+          "title": "Tournament Control",
+          "visualDirection": "current style applied, light neutral register",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "design-system:foundations": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "edab4d7f-5de2-41b9-bf17-870cca0ea579",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/app/_layout.tsx",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/badge.tsx",
+        "apps/client/src/components/ui/tabs.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/empty-state.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/app/_layout.tsx": "cab99d01e629ffff5ecaf4810295e4b4fda1e2538f9281da7d521ffae8cea95f",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/card.tsx": "8d1c76d7fa3fb2e5aa651a599e10b8be5e0dc0b7fcf8df4a81fb071eec220578",
+        "apps/client/src/components/ui/input.tsx": "6e61063ee25156282988212c9827732c5c8c0486ee8c87a9c925c5e32b878d44",
+        "apps/client/src/components/ui/badge.tsx": "efde6bd665df31c529160cf483ddd88e86fee676233f9abe74f71224b2405a55",
+        "apps/client/src/components/ui/tabs.tsx": "774cba41cd24c5e0a1e1056f1dbb7db06f8a822310e9d183dc9c3033c8b427e7",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/empty-state.tsx": "84f822e5cef6bba6bd92c498fbbf1fd2aafa0a836cc3f13ad60794211e8f08f6",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "edab4d7f-5de2-41b9-bf17-870cca0ea579": {
+          "title": "Design System — Foundations",
+          "visualDirection": "reference board; v2 hand-authored (generation truncated, then out of credits)",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 2
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    },
+    "design-system:table": {
+      "targetKind": "new-ui",
+      "projectId": "4d7fc6d0-0e0c-4b18-884b-e1cb8c4fcb81",
+      "sourceTarget": "/table",
+      "sourceDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+      "activeDraftId": "3d614101-fed8-4128-8f71-678650c870c6",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "apps/client/src/components/poker/table-felt.tsx",
+        "apps/client/src/components/poker/player-seat.tsx",
+        "apps/client/src/components/poker/playing-card.tsx",
+        "apps/client/src/components/poker/board.tsx",
+        "apps/client/src/components/poker/chip-stack.tsx",
+        "apps/client/src/components/poker/action-bar.tsx",
+        "apps/client/src/components/poker/bet-slider.tsx",
+        "apps/client/src/components/poker/hand-log.tsx",
+        "apps/client/src/components/ui/avatar.tsx",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/ui/text.tsx",
+        "apps/client/src/lib/cn.ts",
+        "apps/client/src/global.css",
+        "apps/client/tailwind.config.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "a55bb682168a6a2f6b4c800c490411461cee2d69d19d97d326d52e85ae9cd5af",
+        "apps/client/src/components/poker/table-felt.tsx": "bd41317b41ae54c1f52b137789d060e485a9857ec499917ace5a868fe2a283b3",
+        "apps/client/src/components/poker/player-seat.tsx": "aa67ef8cbc03b170656e8e74c1677c5b881b43f9ceebb2e2d393ba0b998eb920",
+        "apps/client/src/components/poker/playing-card.tsx": "69011ecbac3141630820ab25e4d97200bcdbc2fe76011707ec7bd1b94ba64287",
+        "apps/client/src/components/poker/board.tsx": "8cb4c4d802c24f3c9cdf28b036ea120d3b12050cb9dfbaa6f492f7e0d88beca4",
+        "apps/client/src/components/poker/chip-stack.tsx": "3921319cb755a6a1f5b96fd40ef9072bfc24257429ffda20e0b7b69b7af8dd7a",
+        "apps/client/src/components/poker/action-bar.tsx": "de485e903ac76de8d43ba2a24f10b05fe3b5a1f1382bfd69e676fcc112b329f8",
+        "apps/client/src/components/poker/bet-slider.tsx": "3f18ee0d69b68da8094519a1383241115ff729b20b7f50591fa7da1bbc2f62b9",
+        "apps/client/src/components/poker/hand-log.tsx": "d9bc7ab486cf9a3af9372e75a333971abf8dee1e4d371e596bf5c62f5c82f475",
+        "apps/client/src/components/ui/avatar.tsx": "45782390cc1dc6ed3666fc54a3787110704fd07111a1af8b6800f15cb15afc0f",
+        "apps/client/src/components/ui/button.tsx": "cd9391d96e2dd30d7089553d6ccdef761a28f723c69065def68f87be677edd9a",
+        "apps/client/src/components/ui/text.tsx": "e11c204727e6546794359117e0a115c54107f10e293553a4070da8fdb03a2516",
+        "apps/client/src/lib/cn.ts": "2ad1d8f9f46ecdc3a5d16a36a8534c05aac3ebbf57698a7a02be0b082fd70831",
+        "apps/client/src/global.css": "903c58ff8e6eff38f38289a8dcaa54d2042a12ff053c6778b5194784ec299594",
+        "apps/client/tailwind.config.js": "ad65ff79c138baac9dfb4059bf63281d8bf6186cbbefe541098f164aa3d7ae8e"
+      },
+      "components": [],
+      "drafts": {
+        "3d614101-fed8-4128-8f71-678650c870c6": {
+          "title": "Design System — Table Components",
+          "visualDirection": "felt register reference board, hand-authored",
+          "parentDraftId": "1ac55319-1bf4-42d3-ad48-3b4fb699a67c",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-09-29T04:44:26.252Z"
+    }
+  }
+}

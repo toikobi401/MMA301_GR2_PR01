@@ -106,20 +106,26 @@ export default function WalletScreen() {
             {loading ? (
               <ActivityIndicator size="small" />
             ) : (
-              <Text variant="display">{formatChips(wallet?.chips ?? 0)}</Text>
+              <Text variant="display" className="font-mono tabular-nums">
+                {formatChips(wallet?.chips ?? 0)}
+              </Text>
             )}
             <Text variant="caption" tone="muted">
-              Play money. Nothing here is real currency.
+              Play money. Deposits and withdrawals are simulated.
             </Text>
           </CardHeader>
+        </Card>
 
-          <CardContent className="gap-3">
+        <Card>
+          <CardContent className="gap-3 pt-4">
             <Input
               label="Amount"
               value={amount}
               onChangeText={setAmount}
               keyboardType="number-pad"
-              hint="Between 100 and 100,000"
+              // The two limits differ, so both are shown rather than one
+              // that is wrong for half the buttons below.
+              hint="Deposit 100–100,000 · Withdraw 100–1,000,000"
             />
 
             <View className="flex-row gap-2">
@@ -185,11 +191,14 @@ export default function WalletScreen() {
                         transaction.amount >= 0 ? 'text-success' : 'text-destructive',
                       )}
                     >
-                      {transaction.amount >= 0 ? '+' : ''}
-                      {formatChips(transaction.amount)}
+                      {transaction.amount >= 0 ? '+' : '−'}
+                      {formatChips(Math.abs(transaction.amount))}
                     </Text>
                     <Text variant="caption" tone="muted">
-                      {formatChips(transaction.balanceAfter)}
+                      Balance{' '}
+                      <Text variant="numeric" className="text-sm text-muted-foreground">
+                        {formatChips(transaction.balanceAfter)}
+                      </Text>
                     </Text>
                   </View>
                 </View>

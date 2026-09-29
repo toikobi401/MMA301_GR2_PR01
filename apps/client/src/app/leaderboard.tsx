@@ -140,12 +140,27 @@ function Row({
         isViewer && 'rounded-md bg-accent/10 px-2',
       )}
     >
-      <Text
-        variant="numeric"
-        className={cn('w-7 text-right', entry.rank <= 3 ? 'font-bold' : 'text-muted-foreground')}
+      {/* The podium gets a tile rather than medal colours: the app has one
+          accent, and first place is the only rank that earns it. */}
+      <View
+        className={cn(
+          'h-7 min-w-[28px] items-center justify-center rounded-sm px-1',
+          entry.rank === 1 && 'bg-primary/15',
+          (entry.rank === 2 || entry.rank === 3) && 'bg-muted',
+        )}
       >
-        {entry.rank}
-      </Text>
+        <Text
+          variant="numeric"
+          className={cn(
+            'text-sm',
+            entry.rank === 1 && 'font-semibold text-primary',
+            (entry.rank === 2 || entry.rank === 3) && 'font-semibold',
+            entry.rank > 3 && 'text-muted-foreground',
+          )}
+        >
+          {entry.rank}
+        </Text>
+      </View>
 
       <Avatar name={entry.displayName} size="sm" />
 
@@ -166,8 +181,8 @@ function Row({
           scope === 'net_chips' && (positive ? 'text-success' : 'text-destructive'),
         )}
       >
-        {scope === 'net_chips' && positive ? '+' : ''}
-        {scope === 'hands_won' ? entry.score : formatChips(entry.score)}
+        {scope === 'net_chips' ? (positive ? '+' : '−') : ''}
+        {scope === 'hands_won' ? entry.score : formatChips(Math.abs(entry.score))}
       </Text>
     </View>
   );
