@@ -1,0 +1,48 @@
+{
+  "name": "@app/client",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "prepare:dirs": "node -e \"require('node:fs').mkdirSync('.expo/types', { recursive: true })\"",
+    "prestart": "npm run prepare:dirs",
+    "start": "expo start",
+    "preandroid": "npm run prepare:dirs",
+    "android": "expo start --android",
+    "preios": "npm run prepare:dirs",
+    "ios": "expo start --ios",
+    "preweb": "npm run prepare:dirs",
+    "web": "expo start --web",
+    "prebuild:web": "npm run prepare:dirs",
+    "build:web": "expo export --platform web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@app/shared": "*",
+    "@expo/metro-runtime": "~57.0.15",
+    "@rn-primitives/slot": "^1.5.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "expo": "~57.0.20",
+    "expo-constants": "~57.0.18",
+    "expo-linking": "~57.0.10",
+    "expo-router": "~57.0.21",
+    "expo-secure-store": "~57.0.4",
+    "expo-status-bar": "~57.0.1",
+    "nativewind": "^4.2.7",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "^0.21.2",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.4",
+    "tailwindcss": "^3.4.19",
+    "typescript": "~6.0.3"
+  }
+}
