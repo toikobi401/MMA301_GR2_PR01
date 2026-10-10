@@ -39,7 +39,6 @@ WORKDIR /repo
 ENV NODE_ENV=production
 
 COPY --from=prod-deps --chown=appuser:nodejs /repo/node_modules ./node_modules
-COPY --from=prod-deps --chown=appuser:nodejs /repo/apps/server/node_modules ./apps/server/node_modules
 COPY --from=build --chown=appuser:nodejs /repo/apps/server/dist ./apps/server/dist
 COPY --chown=appuser:nodejs apps/server/package.json ./apps/server/
 COPY --chown=appuser:nodejs packages ./packages
