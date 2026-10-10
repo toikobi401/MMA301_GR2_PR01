@@ -1,23 +1,31 @@
 {
-  "name": "mma301_gr2_pr01",
+  "name": "mma301-gr2-pr01",
   "version": "1.0.0",
-  "main": "index.ts",
-  "dependencies": {
-    "expo": "~57.0.20",
-    "expo-status-bar": "~57.0.1",
-    "react": "19.2.3",
-    "react-native": "0.86.3"
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "tsc": "tsc --noEmit"
+    "dev": "npm run start --workspace @app/client",
+    "android": "npm run android --workspace @app/client",
+    "ios": "npm run ios --workspace @app/client",
+    "web": "npm run web --workspace @app/client",
+    "build:web": "npm run build:web --workspace @app/client",
+    "server:dev": "npm run dev --workspace @app/server",
+    "make:moderator": "npm run make:moderator --workspace @app/server --",
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "docker:logs": "docker compose -f infra/docker-compose.yml logs -f",
+    "docker:reset": "docker compose -f infra/docker-compose.yml down -v",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
   },
-  "private": true,
   "devDependencies": {
-    "@types/react": "~19.2.4",
     "typescript": "~6.0.3"
   }
 }
