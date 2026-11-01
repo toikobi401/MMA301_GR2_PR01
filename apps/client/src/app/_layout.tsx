@@ -10,6 +10,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="table" options={{ headerShown: false }} />
         <Stack.Screen name="wallet" options={{ title: 'Wallet' }} />
+        <Stack.Screen name="wallet/transactions" options={{ title: 'Chip transactions' }} />
         <Stack.Screen name="history" options={{ title: 'Hand history' }} />
         <Stack.Screen name="friends" options={{ headerShown: false }} />
         <Stack.Screen name="leaderboard" options={{ headerShown: false }} />

@@ -153,8 +153,14 @@ export default function WalletScreen() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Recent activity</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              label="View all"
+              onPress={() => router.push('/wallet/transactions')}
+            />
           </CardHeader>
 
           <CardContent className="gap-0">

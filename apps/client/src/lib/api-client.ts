@@ -24,6 +24,13 @@ export const walletApi = {
   /** LIVE: GET /api/v1/wallet */
   get: () => api.get<Wallet>('/api/v1/wallet'),
 
+  /** LIVE: GET /api/v1/wallet/transactions */
+  transactions: (limit = 20, cursor?: string) =>
+    api.get<{ items: Wallet['recentTransactions']; nextCursor: string | null }>(
+      '/api/v1/wallet/transactions',
+      { query: { limit, cursor } },
+    ),
+
   /** LIVE: POST /api/v1/wallet/deposit */
   deposit: (amount: number) =>
     api.post<{ balance: number }>('/api/v1/wallet/deposit', { amount }),
