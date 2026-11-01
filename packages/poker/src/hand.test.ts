@@ -81,6 +81,47 @@ test('heads-up: the button posts the small blind and acts first preflop', () => 
   assert.equal(state.actingPlayerId, 'btn');
 });
 
+function headsUpHand(buttonStack: number, bigBlindStack: number): HandState {
+  return startHand({
+    handId: 'hu-short',
+    players: [
+      { id: 'btn', seat: 0, stack: buttonStack },
+      { id: 'bb', seat: 1, stack: bigBlindStack },
+    ],
+    buttonSeat: 0,
+    smallBlind: 10,
+    bigBlind: 20,
+    random: seededRandom(7),
+    now: 0,
+  });
+}
+
+test('heads-up: a small blind all in from the blind runs the board out', () => {
+  const state = headsUpHand(10, 3990);
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.actingPlayerId, null);
+  assert.equal(state.board.length, 5);
+  assert.equal(totalChips(state), 4000);
+  // The short stack can only win from the opponent what they put in.
+  assert.ok((state.players.find((p) => p.id === 'btn')?.stack ?? 0) <= 20);
+});
+
+test('heads-up: both players all in from the blinds runs the board out', () => {
+  const state = headsUpHand(10, 15);
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.board.length, 5);
+  assert.equal(totalChips(state), 25);
+});
+
+test('heads-up: a short big blind still leaves the small blind a decision', () => {
+  const state = headsUpHand(1000, 5);
+
+  assert.equal(state.street, Street.Preflop);
+  assert.equal(state.actingPlayerId, 'btn');
+});
+
 test('rejects an action from a player out of turn', () => {
   const state = threeHandedHand();
   assert.throws(

@@ -169,7 +169,18 @@ function postBlinds(state: HandState, order: Player[]): void {
   const afterBigBlind = seatOrderAfter(state, bigBlindPlayer.seat).filter(
     (player) => player.status === PlayerStatus.Active,
   );
-  state.actingPlayerId = (headsUp ? smallBlindPlayer : afterBigBlind[0])?.id ?? null;
+  const first = headsUp ? smallBlindPlayer : afterBigBlind[0];
+
+  // A heads-up small blind can be all in from the blind alone. They cannot
+  // act, and the big blind has nobody left to bet against, so no decision
+  // remains. Handing them the turn would leave the hand waiting forever.
+  if (first?.status !== PlayerStatus.Active) {
+    while (state.street !== Street.River) dealNextStreet(state);
+    finish(state);
+    return;
+  }
+
+  state.actingPlayerId = first.id;
 }
 
 /** What the player to act may legally do right now. */
