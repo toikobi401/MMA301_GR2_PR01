@@ -1,0 +1,743 @@
+[{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434fef"
+	},
+	"email": "alice+1789828322679@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$OOMMZwP2BbpDcuXZM8gPPA$xlvIjAVN+LRwQZSHQjMmWHTCVjQjMuqtF+sOOeN5C68",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.714Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:02.804Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff3"
+	},
+	"email": "bob+1789828322679@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$ojDZRH9RuFrDVMxIMVU/kw$Uq71odq+e4/TSAbKi0zzZ+kZIWyoA7go8ApVc2lvmEM",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.758Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:02.816Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce434ffb"
+	},
+	"email": "alice+1789828344891@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$psU51pozxpU2w7foadQHhA$dsXaxeIyulrKFc8eS/sWcqorof2uCbXcBA9t7P30QP0",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.918Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:24.989Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce434fff"
+	},
+	"email": "bob+1789828344891@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$ZQN7eU6sjI6ErgrME+7+Yw$Cj0x81lqfbIVJgsxiKCj+zwhXMQHqiu6XpVjhSPVDYE",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.953Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:24.998Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce435007"
+	},
+	"email": "alice+1789828375516@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$98OQRSvSp2E13zjBQPgE7Q$8/qz5jI9GM+KXR71A32P+xa2T6flIHqshGfWbKyeNR4",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.544Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.616Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce43500b"
+	},
+	"email": "bob+1789828375516@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$9bVbzEo5vp15PUiwDtVuzA$7B+x5iKY1kMhId62QjpElAI/ZtSWG8JjRRGC3uC78xA",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.579Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.624Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435013"
+	},
+	"email": "alice+1789828408690@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$THnCL1y0DCsGGwrPvrBzsw$Y/g7dPBo3qd8YI/c4LkUzGHOEbXMsXOt6OJKAXvtKNw",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.718Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:33:28.788Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435017"
+	},
+	"email": "bob+1789828408690@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$ydo3MOdR9fIww+P/+yOPLA$tBZQUhnK/jdSSO5T3DZzuaSSDeFwrVHas1KcQpUaWws",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.753Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:33:28.797Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a33b"
+	},
+	"email": "alice+1789828455812@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$+TR2IWGc6Vqvi2tUlHL1/g$TY+bZGu7Scej0eoTmt18YMnV+/6RIRGgN0cJMdK972Q",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.84Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:34:15.918Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a33f"
+	},
+	"email": "bob+1789828455812@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$+RnKcEeyLP3FlpZleTrffw$HIq8MmJag1e92oyXHtmwcrtPF0v94XFNuHGHDglOgtA",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.877Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:34:15.928Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a347"
+	},
+	"email": "alice+1789828479974@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$tXe3a9GubuMOsa8aY/zLqQ$1avf5+qgB9pYFUUah1jVEUB2JJ5aq+MdyZZwTk40vDg",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.004Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:34:40.079Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a34b"
+	},
+	"email": "bob+1789828479974@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$2oTx2dGhnxPRdfv0eLb4vw$xQ2C1M163ppa/zlUj16zFpeZW9LVsGRt8saNWL0cQlM",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.041Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:34:40.088Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a353"
+	},
+	"email": "alice+1789828505316@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$3gOIVIqRcIdWmcyET6st+Q$IgCllq4UNtwDN6VdHMy3hVBKBNMOCR/kVQQl5mS89oU",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.346Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:05.425Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a357"
+	},
+	"email": "bob+1789828505316@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$qEB1LhzS76rXNN1OrFaKOQ$inWmvDJ7SAx/d17Zgwqf5k4wwCaXIcE36eQsFDCFMEE",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.39Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:05.434Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a35f"
+	},
+	"email": "alice+1789828516444@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$V7ECAYbRYnAZ4D9j7EEW4w$qxs8r8Oe3GNQPD08eWucqq4cGGwzAFkTMeMmjkS0r/M",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.471Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:16.54Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a363"
+	},
+	"email": "bob+1789828516444@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$77uObtz0XELrOX6CFYqd+Q$WHr9QsuxKtUFakduZhnhRSzpAZ6nNa1VKSebJ5e7sq4",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.506Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:16.548Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db0dd53a600ac35a36b"
+	},
+	"email": "alice+1789828528959@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$szhSxlVid7UIqxjbQui7Tg$1JfYoUCCMvMYNoxj0Y2eV66lPssz/etzJk40o0HaBrs",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:28.987Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:29.054Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a36f"
+	},
+	"email": "bob+1789828528959@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$fKQC/7iSeZL6kjwH74bnew$8hRGltoIJVwksj8s8qygFpEB+GDkdmfYz1UvINWzVhQ",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:29.021Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:29.061Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"email": "alice.ui@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$MHW62KvGpNG5c2gsQ+ViHw$vIspwGVMI2IQ0dQZo/b7A/EcLdhc7VC6c4Wa+1VG5x4",
+	"displayName": "Alice",
+	"role": "admin",
+	"chips": 8000,
+	"createdAt": {
+		"$date": "2026-09-19T14:40:30.392Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T18:25:08.58Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9efadd53a600ac35a37d"
+	},
+	"email": "bob.ui@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$IxFz0n6U7jvVlR3povKnpg$KuJlHzgNZLcXg0fy97wd3Z1enyXjpSlj35LAYmU3F+w",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:40:58.49Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:40:58.595Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a384"
+	},
+	"email": "alice+1789828923650@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$4JXupHLAiGUL5YZWcfZQvg$5c5CY4ajpy/K/Vb0QvYD/dPlBGYOnkeTfTYUpXssgGY",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.678Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:42:03.75Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a388"
+	},
+	"email": "bob+1789828923650@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$SvO/hQMLwIJX6RJA0g/G8w$O9qLz+ucHr03Dpp/3TNAxdYQJFrYG9vjiCPpHlHbkWg",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.716Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T14:42:03.757Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaeaf0cdd53a600ac35a390"
+	},
+	"email": "test@gmail.con",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$azdT4wpnoxeWQ1qrPorC6w$SMbIRdUMafCmxTwTG9y14MpXFcmkLMgH+usI0gXg7iY",
+	"displayName": "test",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-19T15:49:32.617Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-19T15:49:43.509Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec0725e"
+	},
+	"email": "bot-ada@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$RYhlM0bwUptZhC3RikQi9g$X8GJZC0kvwG17TtmekL734zwTI1Wdq7ajFitUdNwS5g",
+	"displayName": "Ada",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.639Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.639Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec0725f"
+	},
+	"email": "bot-boris@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$geB8FXQVWt/L9ZKf7NXl4Q$dPJnQIgdLozesmHfFVBErWQWSICsOgjzcdRgjPgwFJw",
+	"displayName": "Boris",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.664Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.664Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07260"
+	},
+	"email": "bot-cleo@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$ZB86QbpEMeufBLRi9khshg$0iQ1Uldu0O72n2Q1mjzsMKGX+gX60Da6BLI6rTxici4",
+	"displayName": "Cleo",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.684Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.684Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07261"
+	},
+	"email": "bot-diego@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$hMvqluPt3v7uT+6Q72VXdQ$YdkVlnlGNV8eo3a0NEG7euFwiVNnDaRw1jOqS5Kd+6g",
+	"displayName": "Diego",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.705Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.705Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07262"
+	},
+	"email": "bot-elena@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$/mMTgUVDoil7Rdwwgfz5Gw$gLrtDG4YO9EisBpoV2LQe0Y0/gYzoJ2geesIqWxDq1c",
+	"displayName": "Elena",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.731Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.731Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07263"
+	},
+	"email": "bot-felix@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$dHTG+uHeBP1P8b+J4QChGw$hnR9tR6CTOi1KCanyHU2Ps/NDSw44CRb84ZvA21Aclc",
+	"displayName": "Felix",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.753Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.753Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07264"
+	},
+	"email": "bot-greta@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$AewaPEHIPzww80ox3i486w$IsNdfMf8Eg4kQjjTekUc3xCXzwfwA/pbm5Ud1VsW15Y",
+	"displayName": "Greta",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.775Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.775Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07265"
+	},
+	"email": "bot-hugo@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$GIYCpRvK7yGabNVAPMT96Q$oiaczPmHEWpRGvHmYQJz0mXTwSIoRK9htf9VtCmMwk8",
+	"displayName": "Hugo",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.797Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.797Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07266"
+	},
+	"email": "bot-iris@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$xuJeYYLISOxJa4xtz7+MuQ$Y/DACynUJ/JwzKAIkLc9v0FZDmAyAEWMGFvctqDQzP8",
+	"displayName": "Iris",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.819Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.819Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07267"
+	},
+	"email": "bot-jonas@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$kqS+CW4Z2lOxnnL0+ImlAw$3C89tnk2DZayLvh/CPdev+gopxBg7R9RctJUXBdGn+0",
+	"displayName": "Jonas",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.841Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.841Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07268"
+	},
+	"email": "bot-kira@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$LdCZYBXvn1gli7R29U7hUQ$WFMMsJ1+1XMDeTztvZdwlsbwKiAtNpUbImDTEw34Sa4",
+	"displayName": "Kira",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.864Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.864Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84825a0706e44ec07269"
+	},
+	"email": "bot-luca@bots.local",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$AKJgv2/xKUNRfCfrUXx8XA$vbOuc1Qr98RsQZRuvk/gJ5B/8pSEmACPxUcDjbLPBVE",
+	"displayName": "Luca",
+	"role": "user",
+	"isBot": true,
+	"chips": 0,
+	"createdAt": {
+		"$date": "2026-09-20T07:00:18.885Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:00:18.885Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f8133ba4ca0641f6ae"
+	},
+	"email": "alice+1789887736917@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$nPqPR/S7nf//OJueN1b16w$VhQezdE5SjeTQsaa+zacl/KHGsI87HlmKLRuU0AXeUc",
+	"displayName": "Alice",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-20T07:02:16.945Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:02:17.038Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f8133ba4ca0641f6b2"
+	},
+	"email": "bob+1789887736917@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$65BpBcPdjqdbPoSMP6CwIw$ea/RkcsNBkoGu09JwIyYg1jDxBFbuwSTZdKb2ZJvkGo",
+	"displayName": "Bob",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-20T07:02:16.995Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:02:17.05Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf85bb324db485e20fbc5a"
+	},
+	"email": "owner+1789887931115@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$1iuFgIUM5Qeo+mo2EOk5HQ$omqC8lCc8w6MWfH7Jav8n8ZOJtzev/qIeqrB28pdjNM",
+	"displayName": "Owner",
+	"role": "user",
+	"chips": 10000,
+	"createdAt": {
+		"$date": "2026-09-20T07:05:31.146Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:05:31.146Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf86dea5310015dc5f140c"
+	},
+	"email": "owner+1789888222427@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$XZFtv9/GRAioyX6NXnBzKw$3BL8y3J1FP6RQeZkx87jLS4nAmRRtO1qSIw9e9+NZeY",
+	"displayName": "Owner",
+	"role": "user",
+	"chips": 10000,
+	"createdAt": {
+		"$date": "2026-09-20T07:10:22.458Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T07:10:22.458Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"email": "test@gmail.com",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$hihR6djCYQKh6dD14y4DpA$pEEhIqCElQKhHEBg3Ulk2BZWPuS9b+RGf2mUj/2W9HM",
+	"displayName": "test@gmail.com",
+	"role": "user",
+	"chips": 8000,
+	"createdAt": {
+		"$date": "2026-09-20T12:22:39.93Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T12:23:00.402Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafee3f049143252514844a"
+	},
+	"email": "victim+1789914687460@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$Z2/YqKpmGqJfgGytAEiBiQ$jxtzblT5Zg5cfYhh5HnCB8viWW749Dlh3LtODgQExlg",
+	"displayName": "Victim",
+	"role": "user",
+	"chips": 9000,
+	"createdAt": {
+		"$date": "2026-09-20T14:31:27.555Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T14:35:51.348Z"
+	},
+	"ban": {
+		"reason": "Collusion at the table",
+		"bannedAt": {
+			"$date": "2026-09-20T14:35:51.348Z"
+		},
+		"bannedBy": {
+			"$oid": "6aae9ededd53a600ac35a377"
+		},
+		"expiresAt": null
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab0241d4b1f415367ef9f42"
+	},
+	"email": "outsider+1789928451222@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$W1ZRTNbcvq+wrbxfQNAH4g$dmhbWyrYvr1J9eYx9ZH/8TtArpnEXlSr6udPuFR81mc",
+	"displayName": "Outsider",
+	"role": "user",
+	"chips": 10000,
+	"createdAt": {
+		"$date": "2026-09-20T18:21:17.529Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T18:21:17.529Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab026464b1f415367ef9f66"
+	},
+	"email": "outsider+1789929020609@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$ArL39O2joUxHIewxuED4Hw$Wkod4iT7dR90AK7VHpw1ntAz5UvsglznG+MsGsrUuhU",
+	"displayName": "Outsider",
+	"role": "user",
+	"chips": 10000,
+	"createdAt": {
+		"$date": "2026-09-20T18:30:30.792Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T18:30:30.792Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab029b54b1f415367ef9f8b"
+	},
+	"email": "uitest+1789929909@poker.test",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$w1j8k5noFkdOKAv51vOjoQ$K+FrRUMY8yv4BkuKOLr8uhWxV6FenFd3eh7wOcsdAJY",
+	"displayName": "UI Tester",
+	"role": "admin",
+	"chips": 8000,
+	"createdAt": {
+		"$date": "2026-09-20T18:45:09.83Z"
+	},
+	"updatedAt": {
+		"$date": "2026-09-20T18:45:52.442Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"email": "ledat112228@gmail.com",
+	"passwordHash": "$argon2id$v=19$m=19456,p=1,t=2$e3dU+EB5j4KOC8wwU+fD3g$TtTvz8eyn3YCwT3rqabfjgm1Toh93vfmc5YMoZvQFh0",
+	"displayName": "Toikobi401",
+	"role": "user",
+	"chips": 10000,
+	"createdAt": {
+		"$date": "2026-09-29T11:02:47.596Z"
+	},
+	"updatedAt": {
+		"$date": "2026-10-07T01:51:20.757Z"
+	}
+}]
+
