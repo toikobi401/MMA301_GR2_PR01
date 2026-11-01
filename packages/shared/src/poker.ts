@@ -222,6 +222,7 @@ export type LegalActionView = z.infer<typeof legalActionSchema>;
 /** Everything one player is allowed to know about the table right now. */
 export const tableStateSchema = z.object({
   tableId: z.string(),
+  ownerId: z.string().nullable(),
   handId: z.string().nullable(),
   handNumber: z.number().int().nullable(),
   street: streetSchema.nullable(),

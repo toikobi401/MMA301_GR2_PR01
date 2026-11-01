@@ -1,0 +1,370 @@
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { BotDifficulty, SeatView, TableHand } from '@app/shared';
+import { Button, Text } from '@/components/ui';
+import {
+  ActionBar,
+  AddBotSheet,
+  Board,
+  HandLog,
+  PlayerSeat,
+  PotDisplay,
+  TableCentre,
+  TableChat,
+  TableFelt,
+} from '@/components/poker';
+import { tablesApi } from '@/lib/api-client';
+import { useHydrated } from '@/lib/use-hydrated';
+import { useSession } from '@/lib/session';
+import { useTableSocket } from '@/lib/use-table-socket';
+
+export default function TableScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const hydrated = useHydrated();
+  const { user, token, restoring } = useSession();
+  const tableId = typeof id === 'string' ? id : null;
+
+  const { state, status, dealing, messages, handsFinished, act, sendChat, error } =
+    useTableSocket(tableId, token);
+  const [dealError, setDealError] = useState<string | null>(null);
+  const [addingToSeat, setAddingToSeat] = useState<number | null>(null);
+  const [addingBot, setAddingBot] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [hands, setHands] = useState<TableHand[]>([]);
+  const [loadingHands, setLoadingHands] = useState(false);
+  // Unread count resets whenever the log is opened.
+  const [readCount, setReadCount] = useState(0);
+
+  const loadHands = useCallback(async () => {
+    if (!tableId) return;
+    setLoadingHands(true);
+    try {
+      const page = await tablesApi.hands(tableId);
+      setHands(page.items);
+    } catch {
+      // Not seated yet, or the table has no history. Either way the panel
+      // shows its empty state rather than an error nobody can act on.
+      setHands([]);
+    } finally {
+      setLoadingHands(false);
+    }
+  }, [tableId]);
+
+  // Refetch when a hand finishes: that is the moment it joins the record.
+  useEffect(() => {
+    if (handsFinished === 0) return;
+    void loadHands();
+  }, [handsFinished, loadHands]);
+
+  // Clock, recomputed locally between state pushes so the bar drains smoothly
+  // instead of jumping once per server message.
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!state?.actingDeadline) return;
+    const timer = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(timer);
+  }, [state?.actingDeadline]);
+
+  // The prerendered HTML has no URL parameters and no session. Branching on
+  // either before hydration makes the first client render disagree with the
+  // server markup, and React throws it away — error #418. Every branch below
+  // depends on one or the other, so they all wait.
+  if (!hydrated || restoring) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950">
+        <ActivityIndicator size="small" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!tableId) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950 p-6">
+        <Text className="text-center text-white/70">No table selected.</Text>
+        <Button variant="outline" className="mt-4" onPress={() => router.back()}>
+          <Text className="text-white">Back to lobby</Text>
+        </Button>
+      </SafeAreaView>
+    );
+  }
+
+  const activeTableId = tableId;
+
+  if (!token) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-950 p-6">
+        <Text className="text-center text-white/70">Sign in to join a table.</Text>
+        <Button className="mt-4" onPress={() => router.replace('/')}>
+          <Text className="text-primary-foreground">Go to lobby</Text>
+        </Button>
+      </SafeAreaView>
+    );
+  }
+
+  const seats = state?.seats ?? [];
+  const selfSeat = seats.find((seat) => seat.userId === user?.id);
+  const canManageBots = state?.ownerId === user?.id || user?.role === 'admin';
+  const others = seats.filter((seat) => seat.userId !== user?.id);
+
+  // The viewer always sits at the bottom; everyone else spreads across the top.
+  const half = Math.ceil(others.length / 2);
+  const topSeats = others.slice(0, half);
+  const sideSeats = others.slice(half);
+
+  const potTotal = state?.pots.reduce((sum, pot) => sum + pot.amount, 0) ?? 0;
+  const toCall = Math.max(0, (state?.currentBet ?? 0) - (selfSeat?.committed ?? 0));
+  const isMyTurn = state?.actingPlayerId === user?.id;
+
+  const clockRemaining =
+    state?.actingDeadline != null
+      ? Math.max(0, Math.min(1, (state.actingDeadline - now) / 30_000))
+      : undefined;
+
+  async function deal() {
+    setDealError(null);
+    try {
+      await tablesApi.deal(activeTableId);
+    } catch (caught) {
+      setDealError(caught instanceof Error ? caught.message : 'Could not deal');
+    }
+  }
+
+  async function addBot(difficulty: BotDifficulty) {
+    if (addingToSeat === null) return;
+    setAddingBot(true);
+    setDealError(null);
+    try {
+      await tablesApi.addBot(activeTableId, addingToSeat, difficulty);
+      setAddingToSeat(null);
+      // No refresh needed: seating a bot changes the table, which broadcasts.
+    } catch (caught) {
+      setDealError(caught instanceof Error ? caught.message : 'Could not add a bot');
+    } finally {
+      setAddingBot(false);
+    }
+  }
+
+  async function leaveTable() {
+    setLeaving(true);
+    setDealError(null);
+    try {
+      await tablesApi.leave(activeTableId);
+      router.replace('/');
+    } catch (caught) {
+      setDealError(caught instanceof Error ? caught.message : 'Could not leave table');
+    } finally {
+      setLeaving(false);
+    }
+  }
+
+  const handIdle = state !== null && (state.street === null || state.street === 'complete');
+
+  return (
+    <SafeAreaView className="dark flex-1 bg-neutral-950" edges={['top', 'bottom']}>
+      <View className="flex-row items-center justify-between px-4 py-2">
+        <Button variant="ghost" size="sm" loading={leaving} onPress={() => void leaveTable()}>
+          <Text className="text-sm font-medium text-white">Leave table</Text>
+        </Button>
+
+        <View className="flex-row items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => {
+              setLogOpen(true);
+              void loadHands();
+            }}
+          >
+            <Text className="text-sm font-medium text-white">History</Text>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onPress={() => {
+              setChatOpen(true);
+              setReadCount(messages.length);
+            }}
+          >
+            <Text className="text-sm font-medium text-white">
+              Chat{messages.length > readCount ? ` (${messages.length - readCount})` : ''}
+            </Text>
+          </Button>
+
+          {status !== 'open' && (
+            <View className="flex-row items-center gap-1.5">
+              <ActivityIndicator size="small" />
+              <Text variant="caption" className="text-white/50">
+                {status === 'reconnecting' ? 'Reconnecting' : 'Connecting'}
+              </Text>
+            </View>
+          )}
+          {state?.handNumber ? (
+            <Text variant="caption" className="text-white/50">
+              Hand #{state.handNumber}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      <View className="flex-1 px-3 pb-3">
+        <TableFelt className="flex-1">
+          <View className="flex-1 justify-between p-3">
+            <View className="flex-row justify-around">
+              {topSeats.map((seat, index) => (
+                <SeatCard
+                  key={seat.seat}
+                  seat={seat}
+                  dealing={dealing}
+                  dealIndex={index}
+                  dealOrderSize={seats.length}
+                  buttonSeat={state?.buttonSeat ?? null}
+                  clockRemaining={seat.isActing ? clockRemaining : undefined}
+                  onAddBot={canManageBots ? () => setAddingToSeat(seat.seat) : undefined}
+                />
+              ))}
+            </View>
+
+            <TableCentre>
+              {potTotal > 0 && <PotDisplay amount={potTotal} />}
+              <Board cards={state?.board ?? []} />
+              {handIdle && (
+                <Button size="sm" onPress={() => void deal()} className="mt-2">
+                  <Text className="text-sm font-medium text-primary-foreground">Deal</Text>
+                </Button>
+              )}
+            </TableCentre>
+
+            <View className="flex-row items-end justify-around">
+              {sideSeats.map((seat, index) => (
+                <SeatCard
+                  key={seat.seat}
+                  seat={seat}
+                  dealing={dealing}
+                  dealIndex={topSeats.length + index}
+                  dealOrderSize={seats.length}
+                  buttonSeat={state?.buttonSeat ?? null}
+                  clockRemaining={seat.isActing ? clockRemaining : undefined}
+                  onAddBot={canManageBots ? () => setAddingToSeat(seat.seat) : undefined}
+                />
+              ))}
+
+              {selfSeat && (
+                <SeatCard
+                  seat={selfSeat}
+                  dealing={dealing}
+                  dealIndex={others.length}
+                  dealOrderSize={seats.length}
+                  buttonSeat={state?.buttonSeat ?? null}
+                  isSelf
+                  clockRemaining={selfSeat.isActing ? clockRemaining : undefined}
+                />
+              )}
+            </View>
+          </View>
+        </TableFelt>
+      </View>
+
+      <HandLog
+        visible={logOpen}
+        hands={hands}
+        loading={loadingHands}
+        viewerId={user?.id ?? null}
+        onClose={() => setLogOpen(false)}
+        onRefresh={() => void loadHands()}
+      />
+
+      <TableChat
+        visible={chatOpen}
+        messages={messages}
+        viewerId={user?.id ?? null}
+        onSend={sendChat}
+        onClose={() => {
+          setChatOpen(false);
+          setReadCount(messages.length);
+        }}
+      />
+
+      <AddBotSheet
+        visible={addingToSeat !== null}
+        busy={addingBot}
+        onClose={() => setAddingToSeat(null)}
+        onConfirm={(difficulty) => void addBot(difficulty)}
+      />
+
+      <View className="gap-2 border-t border-white/10 bg-neutral-900 px-4 pb-2 pt-3">
+        {(error ?? dealError) && (
+          <Text variant="caption" className="text-center text-destructive">
+            {error ?? dealError}
+          </Text>
+        )}
+
+        <ActionBar
+          actions={state?.legalActions.filter((action) => action.type !== 'post_blind') ?? []}
+          toCall={toCall}
+          potSize={potTotal}
+          onDarkSurface
+          disabled={!isMyTurn || status !== 'open'}
+          onAct={(type, amount) => act(type, amount)}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function SeatCard({
+  seat,
+  dealing,
+  dealIndex,
+  dealOrderSize,
+  buttonSeat,
+  isSelf = false,
+  clockRemaining,
+  onAddBot,
+}: {
+  seat: SeatView;
+  dealing: boolean;
+  dealIndex: number;
+  dealOrderSize: number;
+  buttonSeat: number | null;
+  isSelf?: boolean;
+  clockRemaining?: number;
+  onAddBot?: () => void;
+}) {
+  const inHand = seat.status !== 'sitting_out' || seat.holeCards.length > 0;
+
+  // Face-down placeholders for opponents still in the hand: the server sends
+  // no cards for them, but the table should show that they hold two.
+  const holeCards =
+    seat.holeCards.length > 0
+      ? seat.holeCards
+      : inHand && seat.userId && !isSelf
+        ? [null, null]
+        : [];
+
+  return (
+    <PlayerSeat
+      seat={seat.seat}
+      name={seat.displayName}
+      stack={seat.stack}
+      status={seat.userId ? seat.status : 'empty'}
+      committed={seat.committed}
+      holeCards={holeCards}
+      dealing={dealing}
+      dealIndex={dealIndex}
+      dealOrderSize={dealOrderSize}
+      isActing={seat.isActing}
+      isDealer={buttonSeat === seat.seat}
+      isSelf={isSelf}
+      isBot={seat.isBot}
+      botDifficulty={seat.botDifficulty}
+      isBanned={seat.isBanned}
+      clockRemaining={clockRemaining}
+      onAddBot={seat.userId === null ? onAddBot : undefined}
+    />
+  );
+}
