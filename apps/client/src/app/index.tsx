@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 import { api, apiBaseUrl } from '@/lib/api';
 
 // Placeholder until the lobby lands (task W1-09); proves the client reaches the API.
@@ -19,6 +20,16 @@ export default function HomeScreen() {
       <Text>
         API {apiBaseUrl}: {status}
       </Text>
+      <Link href="/friends" asChild>
+        <Pressable className="mt-4 rounded-lg bg-primary px-5 py-3">
+          <Text className="font-semibold text-primary-foreground">Mở Bạn bè</Text>
+        </Pressable>
+      </Link>
+      <Link href="/leaderboard" asChild>
+        <Pressable className="mt-2 rounded-lg bg-secondary px-5 py-3">
+          <Text className="font-semibold text-secondary-foreground">🏆 Bảng xếp hạng</Text>
+        </Pressable>
+      </Link>
     </View>
   );
 }
