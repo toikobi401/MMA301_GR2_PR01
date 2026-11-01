@@ -100,6 +100,13 @@ export function ActionBar({
       )
     : [];
 
+  // The secondary colours nearly match the bar on the felt, which made these
+  // two read as disabled even on the player's turn.
+  const passiveLabelClass = cn(
+    'text-base font-medium',
+    onDarkSurface ? 'text-white' : 'text-secondary-foreground',
+  );
+
   return (
     <View className={cn('gap-2', className)}>
       {raise && (
@@ -204,21 +211,23 @@ export function ActionBar({
         {canCheck && (
           <Button
             variant="secondary"
-            label="Check"
             disabled={disabled}
             onPress={() => onAct('check', 0)}
-            className="flex-1"
-          />
+            className={cn('flex-1', onDarkSurface && 'bg-white/20')}
+          >
+            <Text className={passiveLabelClass}>Check</Text>
+          </Button>
         )}
 
         {canCall && (
           <Button
             variant="secondary"
-            label={`Call ${formatChips(toCall)}`}
             disabled={disabled}
             onPress={() => onAct('call', 0)}
-            className="flex-1"
-          />
+            className={cn('flex-1', onDarkSurface && 'bg-white/20')}
+          >
+            <Text className={passiveLabelClass}>{`Call ${formatChips(toCall)}`}</Text>
+          </Button>
         )}
 
         {raise && (
