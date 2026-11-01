@@ -2,6 +2,7 @@ export { ActionBar, type ActionBarProps, type LegalAction } from './action-bar';
 export { AddBotSheet, type AddBotSheetProps } from './add-bot-sheet';
 export { BetSlider, type BetSliderProps } from './bet-slider';
 export { Board, type BoardProps } from './board';
+export { BuyInSheet, type BuyInSheetProps } from './buy-in-sheet';
 export { ChipStack, PotDisplay, formatChips, type ChipStackProps } from './chip-stack';
 export { HandLog, type HandLogProps } from './hand-log';
 export { DealtCard, type DealtCardProps } from './dealt-card';

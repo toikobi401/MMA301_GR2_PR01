@@ -1,25 +1,41 @@
 import { Link } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import type { Friend } from '@app/shared';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import type { Friend, UserSearchResult } from '@app/shared';
 import {
   ActionButton,
   EmptyState,
   FriendGroup,
   FriendRow,
 } from '@/components/friends/friends-ui';
-import {
-  friendsTabs,
-  initialFriends,
-  mockPeople,
-  type FriendsTab,
-  type SearchPerson,
-} from '@/lib/friends-mock';
+import { friendsApi } from '@/lib/api-client';
+import { friendsTabs, type FriendsTab } from '@/lib/friends-tabs';
+import { useHydrated } from '@/lib/use-hydrated';
+import { useSession } from '@/lib/session';
 
 export default function FriendsScreen() {
   const [tab, setTab] = useState<FriendsTab>('friends');
-  const [friends, setFriends] = useState<Friend[]>(initialFriends);
+  const hydrated = useHydrated();
+  const { token, restoring } = useSession();
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    if (!token) return;
+    try {
+      setFriends((await friendsApi.list()).items);
+      setError(null);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Không tải được danh sách bạn bè');
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   const accepted = friends.filter((friend) => friend.status === 'accepted');
   const online = accepted.filter((friend) => friend.online);
@@ -27,41 +43,80 @@ export default function FriendsScreen() {
   const incoming = friends.filter((friend) => friend.status === 'pending' && !friend.outgoing);
   const outgoing = friends.filter((friend) => friend.status === 'pending' && friend.outgoing);
 
-  const searchResults = useMemo(() => {
-    const term = query.trim().toLocaleLowerCase();
-    if (term.length < 2) return [];
+  // Waits for a pause in typing, and ignores an answer that arrives after the
+  // query has moved on: searches can finish out of order.
+  useEffect(() => {
+    const term = query.trim();
+    if (!token || term.length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
 
-    const knownNames = new Set(friends.map((friend) => friend.displayName.toLocaleLowerCase()));
-    return mockPeople.filter(
-      (person) =>
-        person.displayName.toLocaleLowerCase().includes(term) &&
-        !knownNames.has(person.displayName.toLocaleLowerCase()),
-    );
-  }, [friends, query]);
+    let stale = false;
+    setSearching(true);
+    const timer = setTimeout(() => {
+      friendsApi
+        .search(term)
+        .then(({ items }) => {
+          if (!stale) setSearchResults(items);
+        })
+        .catch((caught: unknown) => {
+          if (!stale) setError(caught instanceof Error ? caught.message : 'Không tìm được');
+        })
+        .finally(() => {
+          if (!stale) setSearching(false);
+        });
+    }, 300);
+
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
+  }, [query, token]);
+
+  const known = new Set(friends.map((friend) => friend.userId));
+  const people = searchResults.filter((person) => !known.has(person.userId));
+
+  async function run(action: () => Promise<unknown>) {
+    setError(null);
+    try {
+      await action();
+      await refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Không thực hiện được');
+    }
+  }
 
   function removeFriend(userId: string) {
-    setFriends((current) => current.filter((friend) => friend.userId !== userId));
+    void run(() => friendsApi.remove(userId));
   }
 
   function acceptFriend(userId: string) {
-    setFriends((current) =>
-      current.map((friend) =>
-        friend.userId === userId ? { ...friend, status: 'accepted' as const } : friend,
-      ),
+    void run(() => friendsApi.accept(userId));
+  }
+
+  function sendRequest(person: UserSearchResult) {
+    void run(() => friendsApi.request(person.userId));
+    setTab('requests');
+  }
+
+  // Every branch below depends on the session, which the prerendered HTML does
+  // not have; deciding earlier makes hydration disagree with it (React #418).
+  if (!hydrated || restoring) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="small" />
+      </View>
     );
   }
 
-  function sendRequest(person: SearchPerson) {
-    const request: Friend = {
-      userId: person.userId,
-      displayName: person.displayName,
-      status: 'pending',
-      outgoing: true,
-      online: false,
-      createdAt: new Date().toISOString(),
-    };
-    setFriends((current) => [...current, request]);
-    setTab('requests');
+  if (!token) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background p-6">
+        <Text className="text-muted-foreground">Đăng nhập để xem bạn bè.</Text>
+      </View>
+    );
   }
 
   return (
@@ -198,7 +253,7 @@ export default function FriendsScreen() {
               <View className="gap-2">
                 <Text className="font-semibold text-card-foreground">Tìm người chơi</Text>
                 <Text className="text-sm leading-5 text-muted-foreground">
-                  Nhập ít nhất 2 ký tự để tìm trong dữ liệu mẫu.
+                  Nhập ít nhất 2 ký tự để tìm theo tên hiển thị.
                 </Text>
                 <TextInput
                   accessibilityLabel="Tìm theo tên"
@@ -215,14 +270,16 @@ export default function FriendsScreen() {
                   title="Bắt đầu tìm kiếm"
                   description="Gõ ít nhất 2 ký tự để xem danh sách người chơi phù hợp."
                 />
-              ) : searchResults.length === 0 ? (
+              ) : searching ? (
+                <ActivityIndicator size="small" />
+              ) : people.length === 0 ? (
                 <EmptyState
                   title="Không tìm thấy người chơi"
                   description="Thử tìm bằng tên khác. Người đã là bạn hoặc đang có lời mời sẽ không hiện ở đây."
                 />
               ) : (
                 <View>
-                  {searchResults.map((person) => (
+                  {people.map((person) => (
                     <View
                       key={person.userId}
                       className="flex-row items-center justify-between gap-3 border-t border-border py-4"
@@ -248,9 +305,7 @@ export default function FriendsScreen() {
             </View>
           )}
         </View>
-        <Text className="text-center text-xs text-muted-foreground">
-          Dữ liệu bạn bè hiện là dữ liệu mẫu trên thiết bị.
-        </Text>
+        {error && <Text className="text-center text-xs text-destructive">{error}</Text>}
       </View>
     </ScrollView>
   );

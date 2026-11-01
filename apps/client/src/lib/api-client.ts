@@ -1,18 +1,22 @@
 import type {
   BotDifficulty,
+  ChatMessage,
   CreateTableBody,
+  Friend,
+  HandDetail,
+  HandSummary,
+  Leaderboard,
+  LeaderboardScope,
+  LeaveTableResult,
   TableHand,
   TableState,
   TableSummary,
+  UserSearchResult,
   Wallet,
 } from '@app/shared';
 import { api } from './api';
 
-/**
- * Every call a screen makes, in one place.
- *
- * The table and wallet screens use live server endpoints.
- */
+/** Every call a screen makes, in one place. */
 
 // ------------------------------------------------------------------ LIVE
 
@@ -36,19 +40,39 @@ export const tablesApi = {
   /** LIVE: POST /api/v1/tables — moderators only */
   create: (body: CreateTableBody) => api.post<TableSummary>('/api/v1/tables', body),
 
+  /** LIVE: GET /api/v1/tables/code/:code */
+  findByCode: (code: string) =>
+    api.get<TableSummary>(`/api/v1/tables/code/${encodeURIComponent(code.trim())}`),
+
   /** LIVE: POST /api/v1/tables/:id/join */
-  join: (tableId: string, buyIn: number, joinCode?: string) =>
-    api.post<TableState>(`/api/v1/tables/${tableId}/join`, { buyIn, joinCode }),
+  join: (tableId: string, buyIn: number, options?: { seat?: number; joinCode?: string }) =>
+    api.post<TableState>(`/api/v1/tables/${tableId}/join`, { buyIn, ...options }),
 
   /** LIVE: POST /api/v1/tables/:id/leave */
   leave: (tableId: string) =>
-    api.post<{ left: boolean; refunded: number }>(`/api/v1/tables/${tableId}/leave`),
+    api.post<LeaveTableResult>(`/api/v1/tables/${tableId}/leave`),
 
-  /** LIVE: POST /api/v1/tables/:id/rebuy */
-  rebuy: (tableId: string) => api.post<TableState>(`/api/v1/tables/${tableId}/rebuy`),
+  /** LIVE: POST /api/v1/tables/:id/add-chips */
+  addChips: (tableId: string, amount: number) =>
+    api.post<TableState>(`/api/v1/tables/${tableId}/add-chips`, { amount }),
 
-  /** LIVE: POST /api/v1/tables/:id/deal */
-  deal: (tableId: string) => api.post<TableState>(`/api/v1/tables/${tableId}/deal`),
+  /** LIVE: PUT /api/v1/tables/:id/sitting-out */
+  setSittingOut: (tableId: string, sittingOut: boolean) =>
+    api.request<TableState>(`/api/v1/tables/${tableId}/sitting-out`, {
+      method: 'PUT',
+      body: { sittingOut },
+    }),
+
+  /** LIVE: PUT /api/v1/tables/:id/auto-rebuy */
+  setAutoRebuy: (tableId: string, enabled: boolean) =>
+    api.request<TableState>(`/api/v1/tables/${tableId}/auto-rebuy`, {
+      method: 'PUT',
+      body: { enabled },
+    }),
+
+  /** LIVE: GET /api/v1/tables/:id/chat */
+  chat: (tableId: string) =>
+    api.get<{ items: ChatMessage[] }>(`/api/v1/tables/${tableId}/chat`),
 
   /** LIVE: POST /api/v1/tables/:id/bots */
   addBot: (tableId: string, seat: number, difficulty: BotDifficulty) =>
@@ -69,4 +93,37 @@ export const tablesApi = {
       `/api/v1/tables/${tableId}/hands`,
       { query: { limit } },
     ),
+};
+
+export const friendsApi = {
+  /** LIVE: GET /api/v1/friends */
+  list: () => api.get<{ items: Friend[] }>('/api/v1/friends'),
+
+  /** LIVE: POST /api/v1/friends */
+  request: (userId: string) => api.post<Friend>('/api/v1/friends', { userId }),
+
+  /** LIVE: POST /api/v1/friends/:userId/accept */
+  accept: (userId: string) =>
+    api.post<{ accepted: boolean }>(`/api/v1/friends/${userId}/accept`),
+
+  /** LIVE: DELETE /api/v1/friends/:userId */
+  remove: (userId: string) => api.delete<{ removed: boolean }>(`/api/v1/friends/${userId}`),
+
+  /** LIVE: GET /api/v1/users/search */
+  search: (query: string) =>
+    api.get<{ items: UserSearchResult[] }>('/api/v1/users/search', { query: { q: query } }),
+};
+
+export const leaderboardApi = {
+  /** LIVE: GET /api/v1/leaderboard */
+  get: (scope: LeaderboardScope) =>
+    api.get<Leaderboard>('/api/v1/leaderboard', { query: { scope } }),
+};
+
+export const handsApi = {
+  /** LIVE: GET /api/v1/hands */
+  list: () => api.get<{ items: HandSummary[]; nextCursor: string | null }>('/api/v1/hands'),
+
+  /** LIVE: GET /api/v1/hands/:id */
+  detail: (id: string) => api.get<HandDetail>(`/api/v1/hands/${id}`),
 };

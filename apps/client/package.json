@@ -15,7 +15,8 @@
     "web": "expo start --web",
     "prebuild:web": "npm run prepare:dirs",
     "build:web": "expo export --platform web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test \"src/lib/**/*.test.ts\""
   },
   "dependencies": {
     "@app/shared": "*",
@@ -24,6 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "~57.0.31",
+    "expo-audio": "~57.0.5",
     "expo-constants": "~57.0.18",
     "expo-linking": "~57.0.13",
     "expo-router": "~57.0.29",

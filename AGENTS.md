@@ -80,7 +80,11 @@ These are already handled and covered by tests. Do not "simplify" them.
   last on every later street.
 - The big blind keeps an option to raise after callers, so the preflop street
   does not end merely because everyone has matched.
-- An all-in for less than a full raise does not reopen the betting.
+- An all-in for less than a full raise does not reopen the betting: anyone who
+  has already acted may only call or fold.
+- Nobody may raise when no opponent is left who could respond.
+- A bet nobody matched goes back before pots are counted. It was never at risk,
+  so it is neither pot nor winnings.
 - Side pots come from commitment levels. A player can only win, from each
   opponent, up to what they themselves put in.
 
@@ -153,8 +157,11 @@ null otherwise, so passing it through reveals nothing new.
   record would leak live betting to someone who had already folded.
 - Restricted to seated players and moderators. Opening it wider would turn the
   lobby into a database of how everyone plays, which is a different thing.
-- `hand_finished` over the socket is the signal to refetch. It was defined in
-  the protocol from the start and never emitted until now.
+- `hand_finished` over the socket is the signal to refetch, and carries the
+  result the table announces.
+
+The hand in progress reaches the table separately, as `liveActions` on the state.
+That is no leak: it is only what everyone there just watched happen.
 
 ## Static rendering and hydration
 
@@ -165,18 +172,10 @@ another in the browser, and React discards the server markup — error #418.
 Every session- or param-dependent screen gates on `useHydrated()` as well as
 `restoring`. Adding a new one means doing the same.
 
-## Mocked endpoints
+## API calls
 
 `apps/client/src/lib/api-client.ts` is the single list of every call a screen
-makes. Each is marked LIVE or MOCK. A MOCK returns fixtures from
-`mock-api.ts`, which names the exact route that needs building at the top of
-the file.
-
-Still missing on the server, all with contracts already written: friends,
-user search, hand history, leaderboard, and the chat backlog. Sending chat
-already works over the socket; only fetching past messages is mocked.
-
-Replacing a mock is one line in `api-client.ts`. No screen changes.
+makes. Nothing is mocked any more.
 
 ## Sessions
 
@@ -197,3 +196,30 @@ The animation is entirely client-side. The server sends the finished state and
 Driving it from the server — one card per message — would leave the table in a
 half-dealt state if the connection dropped mid-deal, with no way to recover.
 A player joining mid-hand skips the animation and renders immediately.
+
+A board run out with everyone all in works the same way: the server finishes the
+hand in one step, and `useRunOut` shows the streets one at a time, holding back
+the stacks and the winner. `runOutStreets` is shared because the server waits
+that much longer before dealing again.
+
+## Table flow
+
+Every table deals by itself; there is no Deal button. Nothing deals with nobody
+watching, or a table of bots would play on forever.
+
+Who is dealt in is decided in `Table.chooseHandPlayers`:
+
+- A newcomer, or someone returning after missing a hand, waits until the big
+  blind reaches them. With fewer than two others there is no game to wait for.
+- A seat whose last socket closed is away, and is not dealt in. So is one that
+  chose to sit out, or let the clock run out twice in a row.
+- A seat with no chips is not dealt in. It is released once its owner has gone;
+  a bot's is released straight away, because bots never top up.
+
+Leaving during a hand you were dealt into folds you at once and pays you when the
+hand ends, because a seat's stack is not settled until then. Someone who leaves
+must return within 30 minutes with at least what they took, up to the table
+maximum, so a win cannot be banked by rejoining with the minimum.
+
+A private table can be opened only by its owner, a moderator, someone seated
+there, or someone holding its join code. The id alone is not enough.

@@ -16,6 +16,13 @@ import { Table } from './table-manager.js';
  */
 const tables = new Map<string, Table>();
 
+/** Told whenever a hand ends anywhere, however many people are watching it. */
+const anyHandFinishedListeners = new Set<() => void>();
+
+export function onAnyHandFinished(listener: () => void): void {
+  anyHandFinishedListeners.add(listener);
+}
+
 export async function getTable(tableId: string): Promise<Table> {
   const existing = tables.get(tableId);
   if (existing) return existing;
@@ -30,6 +37,9 @@ export async function getTable(tableId: string): Promise<Table> {
   // the clock, so wiring it unconditionally costs nothing and removes a
   // "why is this table's bot not moving" failure mode.
   table.onBotTurn = handleBotTurn;
+  table.onHandFinished(() => {
+    for (const listener of anyHandFinishedListeners) listener();
+  });
   tables.set(tableId, table);
   return table;
 }

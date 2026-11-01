@@ -1,17 +1,26 @@
 import type { FastifyInstance } from 'fastify';
 import { ObjectId } from 'mongodb';
+import { randomInt } from 'node:crypto';
 import {
   addBotBodySchema,
+  addChipsBodySchema,
   canModerate,
   createTableBodySchema,
   joinTableBodySchema,
   setAutoFillBodySchema,
+  setAutoRebuyBodySchema,
+  setSittingOutBodySchema,
+  type ChatMessage,
+  type LeaveTableResult,
   type TableHand,
   type TableSummary,
+  type UserRole,
 } from '@app/shared';
-import { getTable } from '../game/registry.js';
+import { getTable, peekTable } from '../game/registry.js';
 import {
+  chatMessages,
   hands,
+  isDuplicateKeyError,
   pokerTables,
   users,
   type HandDoc,
@@ -21,7 +30,9 @@ import {
 import { AppError } from '../lib/errors.js';
 import { applyChipChange } from './wallet.js';
 
-function toSummary(doc: PokerTableDoc): TableSummary {
+function toSummary(doc: PokerTableDoc, viewerId: string): TableSummary {
+  const viewerIsOwner = doc.ownerId?.toHexString() === viewerId;
+
   return {
     id: doc._id.toHexString(),
     name: doc.name,
@@ -34,6 +45,11 @@ function toSummary(doc: PokerTableDoc): TableSummary {
     isPrivate: doc.isPrivate,
     status: doc.status,
     botCount: doc.seats.filter((seat) => seat.botProfile != null).length,
+    freeSeats: doc.seats.filter((seat) => seat.userId === null).map((seat) => seat.seat),
+    viewerSeated: doc.seats.some((seat) => seat.userId?.toHexString() === viewerId),
+    // A table not in memory has seen no departures since the server started.
+    viewerMinBuyIn: peekTable(doc._id.toHexString())?.minBuyInFor(viewerId) ?? doc.minBuyIn,
+    joinCode: viewerIsOwner ? doc.joinCode : null,
     createdAt: doc.createdAt.toISOString(),
   };
 }
@@ -62,6 +78,33 @@ async function assertOwner(
   if (role === 'admin') return;
   if (doc.ownerId?.toHexString() === userId) return;
   throw AppError.forbidden('Only the table owner can manage bots');
+}
+
+/** No lookalikes, so a code read aloud across a room survives. */
+const JOIN_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+function generateJoinCode(): string {
+  return Array.from(
+    { length: 6 },
+    () => JOIN_CODE_ALPHABET[randomInt(JOIN_CODE_ALPHABET.length)],
+  ).join('');
+}
+
+/**
+ * A private table is for people who were given its code.
+ *
+ * The id alone must not be enough to watch one: ids appear in URLs, which get
+ * pasted around, and the betting is nobody else's business.
+ */
+export function assertCanViewTable(
+  doc: PokerTableDoc,
+  userId: string,
+  role: UserRole | undefined,
+): void {
+  if (!doc.isPrivate || canModerate(role)) return;
+  if (doc.ownerId?.toHexString() === userId) return;
+  if (doc.seats.some((seat) => seat.userId?.toHexString() === userId)) return;
+  throw AppError.forbidden('This table is private');
 }
 
 /**
@@ -129,36 +172,102 @@ export async function tableRoutes(app: FastifyInstance) {
       minBuyIn: body.minBuyIn,
       maxBuyIn: body.maxBuyIn,
       isPrivate: body.isPrivate,
-      joinCode: null,
+      joinCode: body.isPrivate ? generateJoinCode() : null,
       status: 'open',
       seats: emptySeats(body.maxSeats),
       handNumber: 0,
       buttonSeat: 0,
-      autoDeal: false,
       autoFillBots: false,
       autoFillDifficulty: 'medium',
       createdAt: now,
     };
 
-    await pokerTables().insertOne(doc);
+    // The unique index decides: checking first would leave a race window.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await pokerTables().insertOne(doc);
+        break;
+      } catch (error) {
+        if (!body.isPrivate || !isDuplicateKeyError(error) || attempt >= 4) throw error;
+        doc.joinCode = generateJoinCode();
+      }
+    }
+
     reply.status(201);
-    return { ok: true as const, data: toSummary(doc) };
+    return { ok: true as const, data: toSummary(doc, ownerId) };
   });
 
-  app.get('/', async () => {
+  app.get('/', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+    const viewer = new ObjectId(claim);
+
     const docs = await pokerTables()
-      .find({ status: { $ne: 'closed' }, isPrivate: false })
+      .find({
+        status: { $ne: 'closed' },
+        // Private tables stay hidden, except from the people already in them.
+        $or: [{ isPrivate: false }, { ownerId: viewer }, { 'seats.userId': viewer }],
+      })
       .sort({ createdAt: -1 })
       .limit(50)
       .toArray();
 
-    return { ok: true as const, data: { items: docs.map(toSummary), nextCursor: null } };
+    return {
+      ok: true as const,
+      data: { items: docs.map((doc) => toSummary(doc, claim)), nextCursor: null },
+    };
+  });
+
+  /** Finds a private table from the code its owner passed around. */
+  app.get('/code/:code', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { code } = request.params as { code: string };
+    const doc = await pokerTables().findOne({
+      joinCode: code.trim().toUpperCase(),
+      status: { $ne: 'closed' },
+    });
+    if (!doc) throw AppError.notFound('No table has that code');
+
+    return { ok: true as const, data: toSummary(doc, claim) };
   });
 
   app.get('/:id', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
     const { id } = request.params as { id: string };
     const table = await getTable(id);
-    return { ok: true as const, data: table.viewFor(request.claims?.sub ?? null) };
+    assertCanViewTable(table.table, claim, request.claims?.role);
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  /** Recent messages, so opening or reloading a table does not lose the talk. */
+  app.get('/:id/chat', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const table = await getTable(id);
+    assertCanViewTable(table.table, claim, request.claims?.role);
+
+    const docs = await chatMessages()
+      .find({ tableId: table.table._id })
+      .sort({ _id: -1 })
+      .limit(50)
+      .toArray();
+
+    const items: ChatMessage[] = docs.reverse().map((doc) => ({
+      id: doc._id.toHexString(),
+      tableId: id,
+      userId: doc.userId?.toHexString() ?? null,
+      displayName: doc.displayName,
+      body: doc.body,
+      createdAt: doc.createdAt.toISOString(),
+    }));
+
+    return { ok: true as const, data: { items } };
   });
 
   /**
@@ -179,12 +288,15 @@ export async function tableRoutes(app: FastifyInstance) {
     const table = await getTable(id);
     const doc = table.table;
 
-    if (doc.isPrivate && body.joinCode !== doc.joinCode) {
+    if (doc.isPrivate && body.joinCode?.trim().toUpperCase() !== doc.joinCode) {
       throw AppError.forbidden('This table needs a valid join code');
     }
-    if (body.buyIn < doc.minBuyIn || body.buyIn > doc.maxBuyIn) {
+    const minBuyIn = table.minBuyInFor(claim);
+    if (body.buyIn < minBuyIn || body.buyIn > doc.maxBuyIn) {
       throw AppError.badRequest(
-        `Buy-in must be between ${doc.minBuyIn} and ${doc.maxBuyIn}`,
+        minBuyIn > doc.minBuyIn
+          ? `You left this table recently, so you must return with at least ${minBuyIn}`
+          : `Buy-in must be between ${doc.minBuyIn} and ${doc.maxBuyIn}`,
       );
     }
     if (doc.seats.some((seat) => seat.userId?.equals(userId))) {
@@ -213,6 +325,7 @@ export async function tableRoutes(app: FastifyInstance) {
           'seats.$.userId': userId,
           'seats.$.displayName': user.displayName,
           'seats.$.stack': body.buyIn,
+          'seats.$.sittingOut': false,
           'seats.$.joinedAt': new Date(),
         },
       },
@@ -229,11 +342,12 @@ export async function tableRoutes(app: FastifyInstance) {
       seat.userId = userId;
       seat.displayName = user.displayName;
       seat.stack = body.buyIn;
+      seat.sittingOut = false;
       seat.joinedAt = new Date();
     }
 
-    // A second player makes a hand possible.
-    table.startHandIfReady();
+    table.seatTaken(claim);
+    table.seatChanged();
 
     return { ok: true as const, data: table.viewFor(claim) };
   });
@@ -248,16 +362,24 @@ export async function tableRoutes(app: FastifyInstance) {
     const table = await getTable(id);
     const seat = table.table.seats.find((entry) => entry.userId?.equals(userId));
     if (!seat) throw AppError.badRequest('You are not seated at this table');
+    const seatNumber = seat.seat;
 
     const refund = table.leave(claim);
 
+    if (refund === null) {
+      // Folded out of the running hand; the table pays them when it ends.
+      const result: LeaveTableResult = { left: true, refunded: 0, pending: true };
+      return { ok: true as const, data: result };
+    }
+
     await pokerTables().updateOne(
-      { _id: table.table._id, 'seats.seat': seat.seat },
+      { _id: table.table._id, 'seats.seat': seatNumber },
       {
         $set: {
           'seats.$.userId': null,
           'seats.$.displayName': null,
           'seats.$.stack': 0,
+          'seats.$.sittingOut': false,
         },
       },
     );
@@ -266,21 +388,23 @@ export async function tableRoutes(app: FastifyInstance) {
       await applyChipChange(userId, 'cash_out', refund, `table:${id}`);
     }
 
-    return { ok: true as const, data: { left: true, refunded: refund } };
+    const result: LeaveTableResult = { left: true, refunded: refund, pending: false };
+    return { ok: true as const, data: result };
   });
 
   /**
-   * Buys a busted player back in for the table minimum, keeping their seat.
+   * Adds chips to a seat between hands, up to the table maximum.
    *
-   * A seat mid-hand holds its starting stack, so an all-in player cannot get
-   * through here before the hand settles. The debit comes first, and the guard
-   * on the update means two racing requests cannot both top the seat up.
+   * A seat mid-hand holds its starting stack, so nobody in a hand can get
+   * through here. The debit comes first, and the guard on the update means two
+   * racing requests cannot both apply to the same stack.
    */
-  app.post('/:id/rebuy', async (request) => {
+  app.post('/:id/add-chips', async (request) => {
     const claim = request.claims?.sub;
     if (!claim) throw AppError.unauthorized();
 
     const { id } = request.params as { id: string };
+    const { amount } = addChipsBodySchema.parse(request.body);
     const userId = new ObjectId(claim);
 
     const table = await getTable(id);
@@ -288,22 +412,68 @@ export async function tableRoutes(app: FastifyInstance) {
 
     const seat = doc.seats.find((entry) => entry.userId?.equals(userId));
     if (!seat) throw AppError.badRequest('You are not seated at this table');
-    if (seat.stack !== 0) throw AppError.conflict('You still have chips at this table');
+    if (table.isInCurrentHand(claim)) {
+      throw AppError.conflict('Chips can be added once this hand ends');
+    }
 
-    await applyChipChange(userId, 'buy_in', -doc.minBuyIn, `table:${id}`);
+    const before = seat.stack;
+    const after = before + amount;
+    if (after > doc.maxBuyIn) {
+      throw AppError.badRequest(`This table allows at most ${doc.maxBuyIn} on the seat`);
+    }
+    if (after < doc.minBuyIn) {
+      throw AppError.badRequest(`You need at least ${doc.minBuyIn} on the seat`);
+    }
+
+    await applyChipChange(userId, 'buy_in', -amount, `table:${id}`);
 
     const claimed = await pokerTables().updateOne(
-      { _id: doc._id, seats: { $elemMatch: { seat: seat.seat, userId, stack: 0 } } },
-      { $set: { 'seats.$.stack': doc.minBuyIn } },
+      { _id: doc._id, seats: { $elemMatch: { seat: seat.seat, userId, stack: before } } },
+      { $set: { 'seats.$.stack': after } },
     );
 
     if (claimed.modifiedCount !== 1) {
-      await applyChipChange(userId, 'cash_out', doc.minBuyIn, `refund:${id}`);
-      throw AppError.conflict('Could not buy back in; try again');
+      await applyChipChange(userId, 'cash_out', amount, `refund:${id}`);
+      throw AppError.conflict('Could not add chips; try again');
     }
 
-    seat.stack = doc.minBuyIn;
+    seat.stack = after;
     table.seatChanged();
+
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  app.put('/:id/sitting-out', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const { sittingOut } = setSittingOutBodySchema.parse(request.body);
+    const userId = new ObjectId(claim);
+
+    const table = await getTable(id);
+    table.setSittingOut(claim, sittingOut);
+
+    await pokerTables().updateOne(
+      { _id: table.table._id, 'seats.userId': userId },
+      { $set: { 'seats.$.sittingOut': sittingOut } },
+    );
+
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  app.put('/:id/auto-rebuy', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const { enabled } = setAutoRebuyBodySchema.parse(request.body);
+
+    const table = await getTable(id);
+    if (!table.table.seats.some((seat) => seat.userId?.toHexString() === claim)) {
+      throw AppError.badRequest('You are not seated at this table');
+    }
+    table.setAutoRebuy(claim, enabled);
 
     return { ok: true as const, data: table.viewFor(claim) };
   });
@@ -369,9 +539,6 @@ export async function tableRoutes(app: FastifyInstance) {
           'seats.$.stack': buyIn,
           'seats.$.botProfile': { difficulty: body.difficulty },
           'seats.$.joinedAt': new Date(),
-          // Without this the table deals one hand and stops, because nothing
-          // else starts the next one.
-          autoDeal: true,
         },
       },
     );
@@ -386,9 +553,8 @@ export async function tableRoutes(app: FastifyInstance) {
       seat.botProfile = { difficulty: body.difficulty };
       seat.joinedAt = new Date();
     }
-    doc.autoDeal = true;
 
-    table.startHandIfReady();
+    table.seatChanged();
 
     return { ok: true as const, data: table.viewFor(claim) };
   });
@@ -434,6 +600,8 @@ export async function tableRoutes(app: FastifyInstance) {
       },
     );
 
+    table.seatChanged();
+
     return { ok: true as const, data: table.viewFor(claim) };
   });
 
@@ -451,7 +619,6 @@ export async function tableRoutes(app: FastifyInstance) {
 
     doc.autoFillBots = body.enabled;
     doc.autoFillDifficulty = body.difficulty;
-    if (body.enabled) doc.autoDeal = true;
 
     await pokerTables().updateOne(
       { _id: doc._id },
@@ -459,7 +626,6 @@ export async function tableRoutes(app: FastifyInstance) {
         $set: {
           autoFillBots: body.enabled,
           autoFillDifficulty: body.difficulty,
-          ...(body.enabled ? { autoDeal: true } : {}),
         },
       },
     );
@@ -517,19 +683,4 @@ export async function tableRoutes(app: FastifyInstance) {
     };
   });
 
-  /** Deals the next hand. Normally automatic; exposed for testing and demos. */
-  app.post('/:id/deal', async (request) => {
-    const claim = request.claims?.sub;
-    if (!claim) throw AppError.unauthorized();
-
-    const { id } = request.params as { id: string };
-    const table = await getTable(id);
-
-    const started = table.startHandIfReady();
-    if (!started) {
-      throw AppError.badRequest('Cannot deal: a hand is running or too few players are seated');
-    }
-
-    return { ok: true as const, data: table.viewFor(claim) };
-  });
-}
+  /** Deals the next hand. Normally automatic; exposed for testing and demos. */}

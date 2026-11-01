@@ -1,22 +1,52 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View, Pressable } from 'react-native';
-import type { LeaderboardCriterion } from '@/lib/leaderboard-mock';
+import { ActivityIndicator, ScrollView, Text, View, Pressable } from 'react-native';
+import type { LeaderboardCriterion } from '@/lib/leaderboard';
 import {
   LeaderboardTabBar,
   LeaderboardRow,
   Podium,
   SectionDivider,
 } from '@/components/leaderboard/leaderboard-ui';
-import { getMockLeaderboard, leaderboardTabs } from '@/lib/leaderboard-mock';
+import { leaderboardTabs, toRow } from '@/lib/leaderboard';
+import { useHydrated } from '@/lib/use-hydrated';
+import { useLeaderboard } from '@/lib/use-leaderboard';
+import { useSession } from '@/lib/session';
 
 export default function LeaderboardScreen() {
   const [criterion, setCriterion] = useState<LeaderboardCriterion>('net_chips');
 
-  const entries   = getMockLeaderboard(criterion);
+  const hydrated = useHydrated();
+  const { user, token, restoring } = useSession();
+  const { leaderboard, error } = useLeaderboard(criterion, token);
+
+  const entries   = (leaderboard?.entries ?? []).map((entry) => toRow(entry, user?.id));
   const top3      = entries.slice(0, 3);
   const rest      = entries.slice(3);
   const activeTab = leaderboardTabs.find((t) => t.id === criterion)!;
+  // Someone outside the top entries still wants to know where they stand.
+  const viewerBelow =
+    leaderboard?.viewerRank && !entries.some((entry) => entry.isCurrentUser)
+      ? toRow(leaderboard.viewerRank, user?.id)
+      : null;
+
+  // Depends on the session, which the prerendered HTML does not have; deciding
+  // earlier makes hydration disagree with it (React #418).
+  if (!hydrated || restoring) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  }
+
+  if (!token) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background p-6">
+        <Text className="text-muted-foreground">Đăng nhập để xem bảng xếp hạng.</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -52,7 +82,13 @@ export default function LeaderboardScreen() {
         <View className="overflow-hidden rounded-2xl border border-border bg-card">
 
           {/* Podium */}
-          <Podium top3={top3} criterion={criterion} />
+          {top3.length === 3 ? (
+            <Podium top3={top3} criterion={criterion} />
+          ) : entries.length === 0 ? (
+            <Text className="p-6 text-center text-sm text-muted-foreground">
+              {leaderboard ? 'Chưa có ai chơi ván nào.' : 'Đang tải…'}
+            </Text>
+          ) : null}
 
           {/* Divider */}
           <View className="px-4 py-4">
@@ -61,16 +97,20 @@ export default function LeaderboardScreen() {
 
           {/* Rows 4-N */}
           <View className="gap-1 px-3 pb-4">
-            {rest.map((entry) => (
+            {(top3.length === 3 ? rest : entries).map((entry) => (
               <LeaderboardRow key={entry.userId} entry={entry} criterion={criterion} />
             ))}
+            {viewerBelow && (
+              <LeaderboardRow entry={viewerBelow} criterion={criterion} />
+            )}
           </View>
         </View>
 
         {/* ── Footer ──────────────────────────────────────── */}
         <Text className="text-center text-xs text-muted-foreground">
-          Dữ liệu mẫu trên thiết bị · Dòng vàng là tài khoản của bạn
+          Cập nhật trực tiếp sau mỗi ván · Dòng vàng là tài khoản của bạn
         </Text>
+        {error && <Text className="text-center text-xs text-destructive">{error}</Text>}
       </View>
     </ScrollView>
   );

@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from 'react-native';
-import type { MockLeaderboardEntry, LeaderboardCriterion } from '@/lib/leaderboard-mock';
-import { leaderboardTabs } from '@/lib/leaderboard-mock';
+import type { LeaderboardRowEntry, LeaderboardCriterion } from '@/lib/leaderboard';
+import { leaderboardTabs } from '@/lib/leaderboard';
 
 const AVATAR_COLORS = [
   'bg-amber-600', 'bg-emerald-700', 'bg-sky-700',
@@ -52,7 +52,7 @@ export function LeaderboardTabBar({
 }
 
 // ── Score formatting ──────────────────────────────────────────────────────────
-function formatScore(entry: MockLeaderboardEntry, criterion: LeaderboardCriterion): string {
+function formatScore(entry: LeaderboardRowEntry, criterion: LeaderboardCriterion): string {
   if (criterion === 'net_chips') {
     return entry.chips >= 1000
       ? `${(entry.chips / 1000).toFixed(1)}K ♠`
@@ -99,7 +99,7 @@ export function LeaderboardRow({
   entry,
   criterion,
 }: {
-  entry: MockLeaderboardEntry;
+  entry: LeaderboardRowEntry;
   criterion: LeaderboardCriterion;
 }) {
   const me = entry.isCurrentUser;
@@ -171,7 +171,7 @@ function PodiumCard({
   criterion,
   size,
 }: {
-  entry: MockLeaderboardEntry;
+  entry: LeaderboardRowEntry;
   criterion: LeaderboardCriterion;
   size: 'sm' | 'md' | 'lg';
 }) {
@@ -224,7 +224,7 @@ export function Podium({
   top3,
   criterion,
 }: {
-  top3: MockLeaderboardEntry[];
+  top3: LeaderboardRowEntry[];
   criterion: LeaderboardCriterion;
 }) {
   if (top3.length < 3) return null;

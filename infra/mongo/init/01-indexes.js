@@ -240,9 +240,8 @@ collection(
       },
       handNumber: { bsonType: ['int', 'long'] },
       buttonSeat: { bsonType: 'int', minimum: 0 },
-      // Deal the next hand automatically. Off by default, so a table of
-      // humans keeps the existing behaviour; turned on when a bot sits down,
-      // because otherwise a bot table plays one hand and stops forever.
+      // No longer read: every table deals by itself now. Still allowed because
+      // existing documents carry it and the schema rejects unknown fields.
       autoDeal: { bsonType: 'bool' },
       autoFillBots: { bsonType: 'bool' },
       autoFillDifficulty: { enum: ['easy', 'medium', 'hard', 'expert'] },

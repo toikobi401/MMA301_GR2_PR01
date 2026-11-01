@@ -11,8 +11,8 @@ import { cn } from '@/lib/cn';
  */
 export function TableFelt({ className, children, ...props }: ViewProps & { className?: string }) {
   return (
-    <View className={cn('rounded-[40px] bg-felt-rail p-2', className)} {...props}>
-      <View className="flex-1 rounded-[32px] border border-felt-line bg-felt">
+    <View className={cn('rounded-[72px] bg-felt-rail p-2', className)} {...props}>
+      <View className="flex-1 rounded-[64px] border border-felt-line bg-felt">
         {children}
       </View>
     </View>

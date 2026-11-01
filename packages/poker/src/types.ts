@@ -80,6 +80,13 @@ export interface HandState {
   currentBet: number;
   /** Size of the last bet or raise, the minimum for the next raise. */
   lastRaiseSize: number;
+  /**
+   * Who has acted on this street since the last full bet or raise.
+   *
+   * Facing more chips, these players may only call or fold: the extra came
+   * from an all-in too short to reopen the betting.
+   */
+  actedSinceFullRaise: string[];
   smallBlind: number;
   bigBlind: number;
   pots: Pot[];

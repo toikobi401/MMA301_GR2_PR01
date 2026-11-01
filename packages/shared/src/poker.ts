@@ -90,6 +90,13 @@ export const friendRequestBodySchema = z.object({
 });
 export type FriendRequestBody = z.infer<typeof friendRequestBodySchema>;
 
+/** Someone to add. Carries nothing beyond what a table seat already shows. */
+export const userSearchResultSchema = z.object({
+  userId: z.string(),
+  displayName: z.string(),
+});
+export type UserSearchResult = z.infer<typeof userSearchResultSchema>;
+
 // ----------------------------------------------------------------- tables
 
 export const tableSummarySchema = z.object({
@@ -105,6 +112,17 @@ export const tableSummarySchema = z.object({
   status: z.enum(['open', 'in_hand', 'closed']),
   /** How many of the seated players are bots. */
   botCount: z.number().int(),
+  /** Seat numbers still open, so a player can choose where to sit. */
+  freeSeats: z.array(z.number().int()),
+  /** Whether the requesting user already holds a seat here. */
+  viewerSeated: z.boolean(),
+  /**
+   * The least this user may sit down with. Above the table minimum when they
+   * left recently with a bigger stack, so a win cannot be banked by rejoining.
+   */
+  viewerMinBuyIn: z.number().int(),
+  /** Shown to the table's owner only, so they can pass it on. */
+  joinCode: z.string().nullable(),
   createdAt: z.iso.datetime(),
 });
 export type TableSummary = z.infer<typeof tableSummarySchema>;
@@ -135,6 +153,29 @@ export const joinTableBodySchema = z.object({
   joinCode: z.string().optional(),
 });
 export type JoinTableBody = z.infer<typeof joinTableBodySchema>;
+
+export const addChipsBodySchema = z.object({
+  amount: z.number().int().positive(),
+});
+export type AddChipsBody = z.infer<typeof addChipsBodySchema>;
+
+export const setSittingOutBodySchema = z.object({
+  sittingOut: z.boolean(),
+});
+export type SetSittingOutBody = z.infer<typeof setSittingOutBodySchema>;
+
+export const setAutoRebuyBodySchema = z.object({
+  enabled: z.boolean(),
+});
+export type SetAutoRebuyBody = z.infer<typeof setAutoRebuyBodySchema>;
+
+export const leaveTableResultSchema = z.object({
+  left: z.boolean(),
+  refunded: z.number().int(),
+  /** Dealt into the running hand: folded now, chips return when it ends. */
+  pending: z.boolean(),
+});
+export type LeaveTableResult = z.infer<typeof leaveTableResultSchema>;
 
 export const addBotBodySchema = z.object({
   /** Omit to take the first free seat. */
@@ -203,8 +244,32 @@ export const seatViewSchema = z.object({
    * is not stranded, but every action is refused and the table marks them.
    */
   isBanned: z.boolean(),
+  /** Not dealt in: disconnected, or chose to sit out. */
+  isAway: z.boolean(),
+  /** New to the table: not dealt in until the big blind reaches them. */
+  waitingForBigBlind: z.boolean(),
+  /** Whether this seat chose to sit out. False for anyone but the viewer. */
+  sittingOut: z.boolean(),
+  /** Tops up when the stack runs out. False for anyone but the viewer. */
+  autoRebuy: z.boolean(),
+  /** The viewer's own hand so far, e.g. "Two pair". Null for anyone else. */
+  handDescription: z.string().nullable(),
 });
 export type SeatView = z.infer<typeof seatViewSchema>;
+
+/**
+ * One action in the hand being played.
+ *
+ * Public: it happened in front of everyone at the table, and the same broadcast
+ * already moves the chips. Used for seat labels and the live log.
+ */
+export const liveActionSchema = z.object({
+  userId: z.string(),
+  type: actionTypeSchema,
+  amount: z.number().int(),
+  street: streetSchema,
+});
+export type LiveAction = z.infer<typeof liveActionSchema>;
 
 export const potViewSchema = z.object({
   amount: z.number().int(),
@@ -223,19 +288,25 @@ export type LegalActionView = z.infer<typeof legalActionSchema>;
 export const tableStateSchema = z.object({
   tableId: z.string(),
   ownerId: z.string().nullable(),
+  minBuyIn: z.number().int(),
+  maxBuyIn: z.number().int(),
   handId: z.string().nullable(),
   handNumber: z.number().int().nullable(),
   street: streetSchema.nullable(),
   board: z.array(cardSchema),
   buttonSeat: z.number().int().nullable(),
   seats: z.array(seatViewSchema),
+  /** Chips already gathered in the middle; bets on this street sit on the seats. */
   pots: z.array(potViewSchema),
   currentBet: z.number().int(),
+  liveActions: z.array(liveActionSchema),
   actingPlayerId: z.string().nullable(),
   /** Populated only for the player whose turn it is. */
   legalActions: z.array(legalActionSchema),
   /** Unix milliseconds when the acting player's clock expires. */
   actingDeadline: z.number().int().nullable(),
+  /** The acting player's normal clock ran out and they are on their reserve. */
+  actingOnTimeBank: z.boolean(),
 });
 export type TableState = z.infer<typeof tableStateSchema>;
 
@@ -368,6 +439,7 @@ export const leaderboardEntrySchema = z.object({
   displayName: z.string(),
   score: z.number().int(),
   handsPlayed: z.number().int(),
+  handsWon: z.number().int(),
 });
 export type LeaderboardEntry = z.infer<typeof leaderboardEntrySchema>;
 
