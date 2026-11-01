@@ -13,6 +13,8 @@ COPY packages/poker/package.json packages/poker/
 RUN npm install --workspaces --include-workspace-root
 
 ENV NODE_ENV=development
+# File events do not cross a Windows bind mount, so tsx must poll to see edits.
+ENV CHOKIDAR_USEPOLLING=true
 EXPOSE 4000
 
 ENTRYPOINT ["/sbin/tini", "--"]

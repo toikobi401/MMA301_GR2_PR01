@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { applyAction, legalActions, redactForPlayer, startHand } from './hand';
+import { applyAction, foldOutOfTurn, legalActions, redactForPlayer, startHand } from './hand';
 import { ActionType, PlayerStatus, Street, type HandState } from './types';
 import { seededRandom } from './test-helpers';
 
@@ -81,6 +81,155 @@ test('heads-up: the button posts the small blind and acts first preflop', () => 
   assert.equal(state.actingPlayerId, 'btn');
 });
 
+function headsUpHand(buttonStack: number, bigBlindStack: number): HandState {
+  return startHand({
+    handId: 'hu-short',
+    players: [
+      { id: 'btn', seat: 0, stack: buttonStack },
+      { id: 'bb', seat: 1, stack: bigBlindStack },
+    ],
+    buttonSeat: 0,
+    smallBlind: 10,
+    bigBlind: 20,
+    random: seededRandom(7),
+    now: 0,
+  });
+}
+
+test('heads-up: a small blind all in from the blind runs the board out', () => {
+  const state = headsUpHand(10, 3990);
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.actingPlayerId, null);
+  assert.equal(state.board.length, 5);
+  assert.equal(totalChips(state), 4000);
+  // The short stack can only win from the opponent what they put in.
+  assert.ok((state.players.find((p) => p.id === 'btn')?.stack ?? 0) <= 20);
+});
+
+test('heads-up: both players all in from the blinds runs the board out', () => {
+  const state = headsUpHand(10, 15);
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.board.length, 5);
+  assert.equal(totalChips(state), 25);
+});
+
+test('heads-up: a short big blind still leaves the small blind a decision', () => {
+  const state = headsUpHand(1000, 5);
+
+  assert.equal(state.street, Street.Preflop);
+  assert.equal(state.actingPlayerId, 'btn');
+});
+
+test('a short all-in does not reopen raising for a player who already acted', () => {
+  const state = startHand({
+    handId: 'short-all-in',
+    players: [
+      { id: 'a', seat: 0, stack: 1000 },
+      { id: 'b', seat: 1, stack: 1000 },
+      { id: 'c', seat: 2, stack: 1000 },
+      { id: 'd', seat: 3, stack: 130 },
+    ],
+    buttonSeat: 0,
+    smallBlind: 10,
+    bigBlind: 20,
+    random: seededRandom(7),
+    now: 0,
+  });
+
+  applyAction(state, { playerId: 'd', type: ActionType.Call, amount: 0 }, 0);
+  applyAction(state, { playerId: 'a', type: ActionType.Raise, amount: 100 }, 0);
+  applyAction(state, { playerId: 'b', type: ActionType.Fold, amount: 0 }, 0);
+  applyAction(state, { playerId: 'c', type: ActionType.Fold, amount: 0 }, 0);
+  // 30 more on top of an 80 raise: all in, but short of a full raise.
+  applyAction(state, { playerId: 'd', type: ActionType.Raise, amount: 130 }, 0);
+
+  assert.equal(state.actingPlayerId, 'a');
+  assert.deepEqual(
+    legalActions(state, 'a').map((action) => action.type),
+    [ActionType.Fold, ActionType.Call],
+  );
+  assert.throws(() =>
+    applyAction(state, { playerId: 'a', type: ActionType.Raise, amount: 300 }, 0),
+  );
+});
+
+test('a full raise reopens betting for a player who already acted', () => {
+  const state = threeHandedHand([1000, 1000, 1000]);
+  const [first, second, third] = [state.actingPlayerId as string, '', ''];
+  void second;
+  void third;
+
+  applyAction(state, { playerId: first, type: ActionType.Call, amount: 0 }, 0);
+  const next = state.actingPlayerId as string;
+  applyAction(state, { playerId: next, type: ActionType.Raise, amount: 100 }, 0);
+  const after = state.actingPlayerId as string;
+  applyAction(state, { playerId: after, type: ActionType.Call, amount: 0 }, 0);
+
+  assert.equal(state.actingPlayerId, first);
+  assert.ok(legalActions(state, first).some((action) => action.type === ActionType.Raise));
+});
+
+test('no raise is offered when nobody is left who could call it', () => {
+  const state = headsUpHand(100, 1000);
+
+  applyAction(state, { playerId: 'btn', type: ActionType.Raise, amount: 100 }, 0);
+
+  assert.deepEqual(
+    legalActions(state, 'bb').map((action) => action.type),
+    [ActionType.Fold, ActionType.Call],
+  );
+  assert.throws(() =>
+    applyAction(state, { playerId: 'bb', type: ActionType.Raise, amount: 500 }, 0),
+  );
+});
+
+test('an uncalled bet goes back to the bettor before the pot is counted', () => {
+  const state = headsUpHand(1000, 1000);
+
+  applyAction(state, { playerId: 'btn', type: ActionType.Raise, amount: 500 }, 0);
+  applyAction(state, { playerId: 'bb', type: ActionType.Fold, amount: 0 }, 0);
+
+  assert.equal(state.pots.reduce((sum, pot) => sum + pot.amount, 0), 40);
+  assert.equal(state.results?.[0]?.amount, 40);
+  assert.equal(state.players.find((p) => p.id === 'btn')?.stack, 1020);
+  assert.equal(state.players.find((p) => p.id === 'btn')?.totalCommitted, 20);
+  assert.equal(totalChips(state), 2000);
+});
+
+test('the excess over a shorter all-in is returned, not paid out as a pot', () => {
+  const state = headsUpHand(1000, 15);
+
+  applyAction(state, { playerId: 'btn', type: ActionType.Call, amount: 0 }, 0);
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.pots.reduce((sum, pot) => sum + pot.amount, 0), 30);
+  assert.equal(totalChips(state), 1015);
+});
+
+test('a player folded out of turn leaves the actor on the clock', () => {
+  const state = threeHandedHand([1000, 1000, 1000]);
+  const acting = state.actingPlayerId;
+  const other = state.players.find((player) => player.id !== acting) as { id: string };
+
+  foldOutOfTurn(state, other.id);
+
+  assert.equal(state.actingPlayerId, acting);
+  assert.equal(state.players.find((p) => p.id === other.id)?.status, PlayerStatus.Folded);
+  assert.equal(state.actions.at(-1)?.type, ActionType.Fold);
+});
+
+test('folding the last opponent out of turn ends the hand', () => {
+  const state = headsUpHand(1000, 1000);
+
+  foldOutOfTurn(state, 'bb');
+
+  assert.equal(state.street, Street.Complete);
+  assert.equal(state.results?.[0]?.playerId, 'btn');
+  assert.equal(totalChips(state), 2000);
+});
+
 test('rejects an action from a player out of turn', () => {
   const state = threeHandedHand();
   assert.throws(
@@ -152,7 +301,8 @@ test('awards the pot uncontested when everyone folds', () => {
   assert.equal(state.street, Street.Complete);
   assert.equal(state.results?.length, 1);
   assert.equal(state.results?.[0]?.playerId, 'p3');
-  assert.equal(state.results?.[0]?.amount, 30, 'blinds only');
+  // 10 from each blind; the rest of the big blind was never called.
+  assert.equal(state.results?.[0]?.amount, 20, 'matched blinds only');
   assert.equal(state.results?.[0]?.cards, null, 'no showdown means no cards shown');
 
   assert.equal(totalChips(state), startingChips, 'chips are conserved');

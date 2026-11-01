@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TextInput, View } from 'react-native';
 import type { LegalActionView, PlayerActionBody } from '@app/shared';
 import { cn } from '@/lib/cn';
@@ -23,7 +23,10 @@ export interface ActionBarProps {
   onDarkSurface?: boolean;
   /** Chips needed to call. Zero when checking is free. */
   toCall: number;
+  /** Everything in the middle plus the bets in front of the seats. */
   potSize: number;
+  /** The street's highest bet, which a raise is measured from. */
+  currentBet?: number;
   onAct: (type: BettingAction, amount: number) => void;
   disabled?: boolean;
   className?: string;
@@ -40,6 +43,7 @@ export function ActionBar({
   actions,
   toCall,
   potSize,
+  currentBet = 0,
   onAct,
   disabled = false,
   onDarkSurface = false,
@@ -69,6 +73,45 @@ export function ActionBar({
     setAmountText(String(clamped));
   };
 
+  const submitRaise = () => {
+    if (!raise) return;
+    // Clamp at submit time too: pressing this while the field still reads an
+    // unclamped value typed a moment ago (before blur) must never send a
+    // number outside the legal range.
+    const clamped = Math.min(
+      raise.max ?? amount,
+      Math.max(raise.min ?? amount, Math.round(amount)),
+    );
+    onAct(raise.type === 'bet' ? 'bet' : 'raise', clamped);
+  };
+
+  // Keyboard play on the web. Read through a ref so the listener, added once,
+  // always sees this turn's options rather than the ones it was created with.
+  const keys = useRef({ disabled, canFold, canCheck, canCall, onAct, submitRaise });
+  keys.current = { disabled, canFold, canCheck, canCall, onAct, submitRaise };
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      const current = keys.current;
+      if (current.disabled) return;
+
+      const key = event.key.toLowerCase();
+      if (key === 'f' && current.canFold) current.onAct('fold', 0);
+      else if (key === 'c' && current.canCheck) current.onAct('check', 0);
+      else if (key === 'c' && current.canCall) current.onAct('call', 0);
+      else if (key === 'r') current.submitRaise();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   if (actions.length === 0) {
     return (
       <View className={cn('items-center py-4', className)}>
@@ -83,14 +126,17 @@ export function ActionBar({
     );
   }
 
-  // Common bet sizes as fractions of the pot. Anything outside the legal
-  // range is dropped rather than shown disabled.
+  // Common bet sizes as fractions of the pot, measured as the pot would be once
+  // the player has called. Anything outside the legal range is dropped rather
+  // than shown disabled.
+  const sized = (fraction: number) =>
+    currentBet + Math.floor((potSize + toCall) * fraction);
   const presets = raise
     ? (
         [
-          { label: '0.5x pot', value: Math.floor(potSize * 0.5) },
-          { label: '1x pot', value: Math.floor(potSize * 1) },
-          { label: '3x pot', value: Math.floor(potSize * 3) },
+          { label: '½ pot', value: sized(0.5) },
+          { label: '¾ pot', value: sized(0.75) },
+          { label: 'Pot', value: sized(1) },
           { label: 'All in', value: raise.max ?? 0 },
         ] as const
       ).filter(
@@ -99,6 +145,13 @@ export function ActionBar({
           preset.value <= (raise.max ?? Number.MAX_SAFE_INTEGER),
       )
     : [];
+
+  // The secondary colours nearly match the bar on the felt, which made these
+  // two read as disabled even on the player's turn.
+  const passiveLabelClass = cn(
+    'text-base font-medium',
+    onDarkSurface ? 'text-white' : 'text-secondary-foreground',
+  );
 
   return (
     <View className={cn('gap-2', className)}>
@@ -110,7 +163,7 @@ export function ActionBar({
               tone={onDarkSurface ? undefined : 'muted'}
               className={cn(onDarkSurface && 'text-white/60')}
             >
-              Raise to
+              {raise.type === 'bet' ? 'Bet' : 'Raise to'}
             </Text>
             <Text
               variant="numeric"
@@ -204,37 +257,30 @@ export function ActionBar({
         {canCheck && (
           <Button
             variant="secondary"
-            label="Check"
             disabled={disabled}
             onPress={() => onAct('check', 0)}
-            className="flex-1"
-          />
+            className={cn('flex-1', onDarkSurface && 'bg-white/20')}
+          >
+            <Text className={passiveLabelClass}>Check</Text>
+          </Button>
         )}
 
         {canCall && (
           <Button
             variant="secondary"
-            label={`Call ${formatChips(toCall)}`}
             disabled={disabled}
             onPress={() => onAct('call', 0)}
-            className="flex-1"
-          />
+            className={cn('flex-1', onDarkSurface && 'bg-white/20')}
+          >
+            <Text className={passiveLabelClass}>{`Call ${formatChips(toCall)}`}</Text>
+          </Button>
         )}
 
         {raise && (
           <Button
             label={raise.type === 'bet' ? 'Bet' : 'Raise'}
             disabled={disabled}
-            onPress={() => {
-              // Clamp at submit time too: pressing this while the field still
-              // reads an unclamped value typed a moment ago (before blur)
-              // must never send a number outside the legal range.
-              const clamped = Math.min(
-                raise.max ?? amount,
-                Math.max(raise.min ?? amount, Math.round(amount)),
-              );
-              onAct(raise.type === 'bet' ? 'bet' : 'raise', clamped);
-            }}
+            onPress={submitRaise}
             className="flex-1"
           />
         )}

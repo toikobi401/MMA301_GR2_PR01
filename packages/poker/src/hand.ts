@@ -100,6 +100,7 @@ export function startHand(options: StartHandOptions): HandState {
     actingPlayerId: null,
     currentBet: 0,
     lastRaiseSize: bigBlind,
+    actedSinceFullRaise: [],
     smallBlind,
     bigBlind,
     pots: [],
@@ -169,7 +170,34 @@ function postBlinds(state: HandState, order: Player[]): void {
   const afterBigBlind = seatOrderAfter(state, bigBlindPlayer.seat).filter(
     (player) => player.status === PlayerStatus.Active,
   );
-  state.actingPlayerId = (headsUp ? smallBlindPlayer : afterBigBlind[0])?.id ?? null;
+  const first = headsUp ? smallBlindPlayer : afterBigBlind[0];
+
+  // A heads-up small blind can be all in from the blind alone. They cannot
+  // act, and the big blind has nobody left to bet against, so no decision
+  // remains. Handing them the turn would leave the hand waiting forever.
+  if (first?.status !== PlayerStatus.Active) {
+    while (state.street !== Street.River) dealNextStreet(state);
+    finish(state);
+    return;
+  }
+
+  state.actingPlayerId = first.id;
+}
+
+/**
+ * Whether this player's chips could still be raised against anyone.
+ *
+ * Two things close it: nobody else left who could respond, and an all-in too
+ * short to reopen the betting for someone who has already acted.
+ */
+function mayRaise(state: HandState, player: Player): boolean {
+  const someoneCanRespond = state.players.some(
+    (other) => other.id !== player.id && other.status === PlayerStatus.Active,
+  );
+  if (!someoneCanRespond) return false;
+
+  const facingChips = state.currentBet > player.committed;
+  return !(facingChips && state.actedSinceFullRaise.includes(player.id));
 }
 
 /** What the player to act may legally do right now. */
@@ -193,7 +221,7 @@ export function legalActions(state: HandState, playerId: string): LegalAction[] 
   const maxTotal = player.committed + player.stack;
   const minRaiseTotal = state.currentBet + state.lastRaiseSize;
 
-  if (maxTotal > state.currentBet) {
+  if (maxTotal > state.currentBet && mayRaise(state, player)) {
     actions.push({
       type: state.currentBet === 0 ? ActionType.Bet : ActionType.Raise,
       min: Math.min(minRaiseTotal, maxTotal),
@@ -246,6 +274,10 @@ export function applyAction(state: HandState, action: Action, now?: number): Han
 
     case ActionType.Bet:
     case ActionType.Raise: {
+      if (!mayRaise(state, player)) {
+        throw new InvalidActionError(`${action.playerId} may only call or fold`);
+      }
+
       // `amount` is the player's total commitment for this street, not the
       // increment — the convention every poker client uses.
       const target = action.amount;
@@ -269,7 +301,10 @@ export function applyAction(state: HandState, action: Action, now?: number): Han
 
       // An all-in short of a full raise does not reopen betting, so only
       // update the raise size when the raise was legal-sized.
-      if (raiseSize >= state.lastRaiseSize) state.lastRaiseSize = raiseSize;
+      if (raiseSize >= state.lastRaiseSize) {
+        state.lastRaiseSize = raiseSize;
+        state.actedSinceFullRaise = [];
+      }
       state.currentBet = target;
       break;
     }
@@ -278,6 +313,7 @@ export function applyAction(state: HandState, action: Action, now?: number): Han
       throw new InvalidActionError(`Unsupported action ${action.type}`);
   }
 
+  state.actedSinceFullRaise.push(action.playerId);
   state.actions.push({
     playerId: action.playerId,
     type: action.type,
@@ -288,6 +324,33 @@ export function applyAction(state: HandState, action: Action, now?: number): Han
 
   advance(state, now);
   return state;
+}
+
+/**
+ * Folds someone whose turn it is not, for a player who left or was banned.
+ *
+ * The actor stays on the clock: their decision is unchanged by this. The hand
+ * only ends here if it took away the last opponent.
+ */
+export function foldOutOfTurn(state: HandState, playerId: string, now?: number): void {
+  const player = findPlayer(state, playerId);
+  if (state.street === Street.Complete || player.status !== PlayerStatus.Active) return;
+
+  if (state.actingPlayerId === playerId) {
+    applyAction(state, { playerId, type: ActionType.Fold, amount: 0 }, now);
+    return;
+  }
+
+  player.status = PlayerStatus.Folded;
+  state.actions.push({
+    playerId,
+    type: ActionType.Fold,
+    amount: 0,
+    street: state.street,
+    at: (now ?? Date.now()) - state.startedAt,
+  });
+
+  if (livePlayers(state).length <= 1) finish(state, now);
 }
 
 /**
@@ -413,6 +476,7 @@ function dealNextStreet(state: HandState): void {
   }
   state.currentBet = 0;
   state.lastRaiseSize = state.bigBlind;
+  state.actedSinceFullRaise = [];
 
   const index = STREET_ORDER.indexOf(state.street);
   const next = STREET_ORDER[index + 1];
@@ -436,8 +500,25 @@ function dealNextStreet(state: HandState): void {
   state.actingPlayerId = null;
 }
 
+/**
+ * Hands back whatever nobody matched.
+ *
+ * Those chips were never at risk, so counting them would overstate the pot in
+ * the history and on the leaderboard, and pay them out as a win.
+ */
+function returnUncalledBet(state: HandState): void {
+  const [top, next] = [...state.players].sort((a, b) => b.totalCommitted - a.totalCommitted);
+  if (!top || !next || top.status === PlayerStatus.Folded) return;
+
+  const excess = top.totalCommitted - next.totalCommitted;
+  top.stack += excess;
+  top.totalCommitted -= excess;
+  top.committed = Math.max(0, top.committed - excess);
+}
+
 /** Awards the pots and marks the hand complete. */
 function finish(state: HandState, now?: number): void {
+  returnUncalledBet(state);
   state.pots = buildPots(state.players);
   const live = livePlayers(state);
   const results: HandResult[] = [];

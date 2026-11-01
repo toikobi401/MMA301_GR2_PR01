@@ -7,6 +7,9 @@ import { config, isDevelopment } from './config.js';
 import { authPlugin } from './plugins/auth.js';
 import { errorHandler } from './plugins/error-handler.js';
 import { authRoutes } from './routes/auth.js';
+import { friendRoutes, userRoutes } from './routes/friends.js';
+import { handRoutes } from './routes/hands.js';
+import { leaderboardRoutes } from './routes/leaderboard.js';
 import { healthRoutes } from './routes/health.js';
 import { realtimeRoutes } from './routes/realtime.js';
 import { tableRoutes } from './routes/tables.js';
@@ -40,6 +43,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: config.CORS_ORIGINS.includes('*') ? true : config.CORS_ORIGINS,
     credentials: true,
+    // The default is only GET, HEAD and POST, which blocks the rest in browsers
+    // while every non-browser client keeps working.
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
 
   // shortcut: in-memory store, so the limit is per process; move to a shared store if the server ever runs as more than one instance.
@@ -61,6 +67,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(walletRoutes, { prefix: '/api/v1/wallet' });
   await app.register(tableRoutes, { prefix: '/api/v1/tables' });
+  await app.register(friendRoutes, { prefix: '/api/v1/friends' });
+  await app.register(userRoutes, { prefix: '/api/v1/users' });
+  await app.register(handRoutes, { prefix: '/api/v1/hands' });
+  await app.register(leaderboardRoutes, { prefix: '/api/v1/leaderboard' });
   await app.register(realtimeRoutes);
 
   return app;

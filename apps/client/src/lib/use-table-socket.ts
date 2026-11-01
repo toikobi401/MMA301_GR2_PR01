@@ -4,9 +4,13 @@ import {
   serverMessageSchema,
   type ChatMessage,
   type PlayerActionBody,
+  type ServerMessage,
   type TableState,
 } from '@app/shared';
 import { apiBaseUrl } from './api';
+import { tablesApi } from './api-client';
+
+export type HandResultMessage = Extract<ServerMessage, { type: 'hand_finished' }>;
 
 export type ConnectionStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
@@ -23,6 +27,8 @@ export interface UseTableSocket {
    * changes, and a boolean would need resetting, which invites missing one.
    */
   handsFinished: number;
+  /** The latest hand's result, for announcing the winner. */
+  lastResult: HandResultMessage | null;
   act: (type: PlayerActionBody['type'], amount: number) => void;
   sendChat: (body: string) => void;
   error: string | null;
@@ -42,6 +48,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [dealing, setDealing] = useState(false);
   const [handsFinished, setHandsFinished] = useState(0);
+  const [lastResult, setLastResult] = useState<HandResultMessage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
@@ -76,7 +83,24 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     setMessages([]);
     setDealing(false);
     setHandsFinished(0);
+    setLastResult(null);
     setError(null);
+
+    // The socket only carries new messages, so opening or reloading a table
+    // fetches what was said before. Merged by id: a live message can arrive
+    // while this is in flight, and neither copy should be lost.
+    tablesApi
+      .chat(tableId)
+      .then(({ items }) => {
+        if (cancelled) return;
+        setMessages((live) => {
+          const seen = new Set(items.map((item) => item.id));
+          return [...items, ...live.filter((item) => !seen.has(item.id))].slice(-50);
+        });
+      })
+      .catch(() => {
+        // Only the backlog is missing; the table itself still works.
+      });
 
     const connect = () => {
       if (cancelled) return;
@@ -168,6 +192,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
             // The hand is now part of the table's public record. The server
             // sends this after persisting, so a refetch will find it.
             setHandsFinished((count) => count + 1);
+            setLastResult(message);
             return;
           }
 
@@ -244,5 +269,5 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     [tableId, send],
   );
 
-  return { state, status, messages, dealing, handsFinished, act, sendChat, error };
+  return { state, status, messages, dealing, handsFinished, lastResult, act, sendChat, error };
 }

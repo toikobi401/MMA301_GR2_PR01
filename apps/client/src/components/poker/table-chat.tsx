@@ -15,10 +15,8 @@ export interface TableChatProps {
 /**
  * In-game chat.
  *
- * Sending and receiving both run over the live socket — only the backlog on
- * open is missing, because the server has no endpoint to fetch recent
- * messages. Until it does, a player who joins mid-session starts with an
- * empty log rather than the last few lines.
+ * Sending and receiving both run over the live socket. The backlog is fetched
+ * once on opening the table, so reloading does not lose the conversation.
  */
 export function TableChat({ visible, messages, viewerId, onSend, onClose }: TableChatProps) {
   const [draft, setDraft] = useState('');

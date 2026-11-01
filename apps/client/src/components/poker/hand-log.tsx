@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
-import type { TableHand } from '@app/shared';
+import type { LiveAction, SeatView, TableHand } from '@app/shared';
 import { Badge, Button, Tabs, Text } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { CardRow } from './playing-card';
@@ -11,6 +11,9 @@ export interface HandLogProps {
   hands: TableHand[];
   loading: boolean;
   viewerId: string | null;
+  /** The hand being played right now, which is not in the record yet. */
+  liveActions?: LiveAction[];
+  seats?: SeatView[];
   onClose: () => void;
   onRefresh: () => void;
 }
@@ -21,7 +24,7 @@ const ACTION_VERB: Record<string, string> = {
   check: 'checks',
   call: 'calls',
   bet: 'bets',
-  raise: 'raises to',
+  raise: 'raises',
 };
 
 const STREET_LABEL: Record<string, string> = {
@@ -46,6 +49,8 @@ export function HandLog({
   hands,
   loading,
   viewerId,
+  liveActions = [],
+  seats = [],
   onClose,
   onRefresh,
 }: HandLogProps) {
@@ -77,6 +82,23 @@ export function HandLog({
               { value: 'players', label: 'Tendencies' },
             ]}
           />
+
+          {liveActions.length > 0 && (
+            <View className="gap-0.5 rounded-lg border border-primary/30 bg-black/30 p-3">
+              <Text variant="label" className="text-white/50">
+                This hand
+              </Text>
+              {liveActions.map((action, index) => (
+                <Text key={index} variant="caption" className="text-white/70">
+                  <Text variant="caption" className="font-medium">
+                    {seats.find((seat) => seat.userId === action.userId)?.displayName ?? 'Unknown'}
+                  </Text>{' '}
+                  {ACTION_VERB[action.type] ?? action.type}
+                  {action.amount > 0 ? ` ${formatChips(action.amount)}` : ''}
+                </Text>
+              ))}
+            </View>
+          )}
 
           <ScrollView className="max-h-[440px]">
             {loading ? (

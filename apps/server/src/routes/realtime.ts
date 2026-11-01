@@ -4,15 +4,23 @@ import type { WebSocket } from 'ws';
 import {
   clientMessageSchema,
   type JwtClaims,
+  type LeaderboardScope,
   type ServerMessage,
+  type UserRole,
 } from '@app/shared';
-import { getTable, peekTable } from '../game/registry.js';
+import { getTable, onAnyHandFinished, peekTable } from '../game/registry.js';
 import { chatMessages } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
+import { socketClosed, socketOpened } from '../lib/presence.js';
+import { buildLeaderboard } from './leaderboard.js';
+import { assertCanViewTable } from './tables.js';
 
 interface Client {
   socket: WebSocket;
   userId: string;
+  role: UserRole | undefined;
+  /** Set while this socket is watching the leaderboard. */
+  leaderboardScope: LeaderboardScope | null;
   /** Tables this socket is watching. */
   tables: Set<string>;
 }
@@ -31,6 +39,35 @@ const broadcastSubscriptions = new Map<string, () => void>();
 
 /** One hand-finished subscription per table, alongside the broadcast one. */
 const handFinishedSubscriptions = new Map<string, () => void>();
+
+/** Sockets watching the leaderboard, each with the ranking it asked for. */
+const leaderboardWatchers = new Set<Client>();
+
+async function sendLeaderboard(client: Client): Promise<void> {
+  if (!client.leaderboardScope) return;
+  send(client, {
+    type: 'leaderboard',
+    leaderboard: await buildLeaderboard(client.leaderboardScope, client.userId),
+  });
+}
+
+/** Hands end close together at a busy table; one push covers all of them. */
+const LEADERBOARD_PUSH_DELAY_MS = 1000;
+let leaderboardPush: NodeJS.Timeout | null = null;
+
+function scheduleLeaderboardPush(): void {
+  if (leaderboardPush || leaderboardWatchers.size === 0) return;
+
+  leaderboardPush = setTimeout(() => {
+    leaderboardPush = null;
+    for (const client of leaderboardWatchers) {
+      sendLeaderboard(client).catch((error: unknown) => {
+        console.error('Leaderboard push failed', error);
+      });
+    }
+  }, LEADERBOARD_PUSH_DELAY_MS);
+  leaderboardPush.unref?.();
+}
 
 function send(client: Client, message: ServerMessage): void {
   // readyState 1 is OPEN. Writing to a closing socket throws.
@@ -73,8 +110,12 @@ function joinRoom(tableId: string, client: Client): void {
 function leaveRoom(tableId: string, client: Client): void {
   const room = rooms.get(tableId);
   if (!room) return;
-  room.delete(client);
+  if (!room.delete(client)) return;
   client.tables.delete(tableId);
+
+  // A second tab or device can still be holding the seat.
+  const stillHere = [...room].some((member) => member.userId === client.userId);
+  if (!stillHere) peekTable(tableId)?.playerDisconnected(client.userId);
 
   if (room.size === 0) {
     rooms.delete(tableId);
@@ -88,6 +129,8 @@ function leaveRoom(tableId: string, client: Client): void {
 }
 
 export async function realtimeRoutes(app: FastifyInstance) {
+  onAnyHandFinished(scheduleLeaderboardPush);
+
   app.get('/ws', { websocket: true }, (socket, request) => {
     // The token travels as a query parameter: browsers cannot set headers on
     // a WebSocket handshake. It is still verified the same way.
@@ -109,7 +152,24 @@ export async function realtimeRoutes(app: FastifyInstance) {
       return;
     }
 
-    const client: Client = { socket, userId: claims.sub, tables: new Set() };
+    const client: Client = {
+      socket,
+      userId: claims.sub,
+      role: claims.role,
+      leaderboardScope: null,
+      tables: new Set(),
+    };
+    socketOpened(client.userId);
+
+    // `close` follows `error`, and each must count once.
+    let closed = false;
+    const disconnect = () => {
+      if (closed) return;
+      closed = true;
+      socketClosed(client.userId);
+      leaderboardWatchers.delete(client);
+      for (const tableId of [...client.tables]) leaveRoom(tableId, client);
+    };
 
     socket.on('message', (raw: Buffer) => {
       void handleMessage(client, raw).catch((error: unknown) => {
@@ -125,13 +185,8 @@ export async function realtimeRoutes(app: FastifyInstance) {
       });
     });
 
-    socket.on('close', () => {
-      for (const tableId of client.tables) leaveRoom(tableId, client);
-    });
-
-    socket.on('error', () => {
-      for (const tableId of client.tables) leaveRoom(tableId, client);
-    });
+    socket.on('close', disconnect);
+    socket.on('error', disconnect);
   });
 
   async function handleMessage(client: Client, raw: Buffer): Promise<void> {
@@ -161,6 +216,7 @@ export async function realtimeRoutes(app: FastifyInstance) {
       // which is simpler and cannot desynchronise.
       case 'resume': {
         const table = await getTable(message.tableId);
+        assertCanViewTable(table.table, client.userId, client.role);
         joinRoom(message.tableId, client);
 
         if (!broadcastSubscriptions.has(message.tableId)) {
@@ -208,6 +264,9 @@ export async function realtimeRoutes(app: FastifyInstance) {
             }),
           );
         }
+
+        // After the listeners above, so a hand this deals reaches the room.
+        table.playerConnected(client.userId);
 
         send(client, {
           type: 'table_state',
@@ -280,9 +339,16 @@ export async function realtimeRoutes(app: FastifyInstance) {
         return;
       }
 
-      case 'subscribe_leaderboard':
+      case 'subscribe_leaderboard': {
+        client.leaderboardScope = message.scope;
+        leaderboardWatchers.add(client);
+        await sendLeaderboard(client);
+        return;
+      }
+
       case 'unsubscribe_leaderboard': {
-        // Leaderboard streaming is not implemented yet.
+        client.leaderboardScope = null;
+        leaderboardWatchers.delete(client);
         return;
       }
     }

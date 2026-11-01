@@ -128,5 +128,23 @@ export type ServerMessage = z.infer<typeof serverMessageSchema>;
  */
 export const ACTION_TIMEOUT_SECONDS = 30;
 
+/** Reserve a connected player falls back on once when their clock runs out. */
+export const TIME_BANK_SECONDS = 30;
+
+/** Pause between streets when a board is run out with nobody left to bet. */
+export const RUNOUT_STREET_MS = 1200;
+
+/**
+ * How many streets were dealt in one go with no betting between them.
+ *
+ * Both sides need this: the client spaces those streets out, and the server
+ * waits that much longer before dealing the next hand.
+ */
+export function runOutStreets(boardBefore: number, boardAfter: number): number {
+  const dealt = boardAfter - boardBefore;
+  if (dealt === 5) return 3;
+  return dealt === 2 ? 2 : 0;
+}
+
 /** Client heartbeat interval. Proxies and NAT close idle connections. */
 export const PING_INTERVAL_MS = 25_000;

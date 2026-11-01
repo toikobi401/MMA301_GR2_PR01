@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { canModerate, type TableSummary, type UserRole } from '@app/shared';
 import {
@@ -13,7 +13,7 @@ import {
   Tabs,
   Text,
 } from '@/components/ui';
-import { formatChips } from '@/components/poker';
+import { BuyInSheet, formatChips } from '@/components/poker';
 import { tablesApi, walletApi } from '@/lib/api-client';
 import { cn } from '@/lib/cn';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -191,6 +191,18 @@ function TableList({
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  // The table being sat down at, and the code that got us there if it is private.
+  const [buying, setBuying] = useState<{ table: TableSummary; joinCode?: string } | null>(null);
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [findingCode, setFindingCode] = useState(false);
+  const [newTable, setNewTable] = useState({
+    open: false,
+    name: 'Demo table',
+    blinds: '10',
+    seats: '6',
+    visibility: 'public',
+  });
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -211,26 +223,58 @@ function TableList({
     }
   }, []);
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  // On focus, not mount: coming back from a table or the wallet is when the
+  // balance and the seat counts have changed, and this screen stayed mounted.
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
 
-  async function joinTable(tableId: string) {
-    setJoining(tableId);
-    setError(null);
+  function openTable(table: TableSummary, joinCode?: string) {
+    if (table.viewerSeated) {
+      router.push(`/table?id=${table.id}`);
+      return;
+    }
+    setBuyError(null);
+    setBuying({ table, joinCode });
+  }
+
+  async function sitDown(amount: number, seat: number | undefined) {
+    if (!buying) return;
+    const { table, joinCode } = buying;
+
+    setJoining(table.id);
+    setBuyError(null);
     try {
-      await tablesApi.join(tableId, 1000);
-      router.push(`/table?id=${tableId}`);
+      await tablesApi.join(table.id, amount, { seat, joinCode });
+      setBuying(null);
+      router.push(`/table?id=${table.id}`);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Could not join';
       // Already seated is not a failure — go to the table.
       if (message.toLowerCase().includes('already seated')) {
-        router.push(`/table?id=${tableId}`);
+        setBuying(null);
+        router.push(`/table?id=${table.id}`);
       } else {
-        setError(message);
+        setBuyError(message);
       }
     } finally {
       setJoining(null);
+    }
+  }
+
+  async function joinWithCode() {
+    setFindingCode(true);
+    setError(null);
+    try {
+      const table = await tablesApi.findByCode(code);
+      setCode('');
+      openTable(table, code.trim());
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not find that table');
+    } finally {
+      setFindingCode(false);
     }
   }
 
@@ -238,15 +282,18 @@ function TableList({
     setCreating(true);
     setError(null);
     try {
+      const smallBlind = Number(newTable.blinds);
       await tablesApi.create({
-        name: 'Demo table',
-        maxSeats: 6,
-        smallBlind: 10,
-        bigBlind: 20,
-        minBuyIn: 100,
-        maxBuyIn: 10_000,
-        isPrivate: false,
+        name: newTable.name.trim() || 'Table',
+        maxSeats: Number(newTable.seats),
+        smallBlind,
+        bigBlind: smallBlind * 2,
+        // Twenty to five hundred big blinds: deep enough to play, not to bully.
+        minBuyIn: smallBlind * 40,
+        maxBuyIn: smallBlind * 1000,
+        isPrivate: newTable.visibility === 'private',
       });
+      setNewTable((current) => ({ ...current, open: false }));
       await refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not create table');
@@ -280,6 +327,20 @@ function TableList({
         <Button
           variant="outline"
           size="sm"
+          label="Wallet"
+          onPress={() => router.push('/wallet')}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          label="History"
+          onPress={() => router.push('/history')}
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          size="sm"
           label="Friends"
           onPress={() => router.push('/friends')}
           className="flex-1"
@@ -300,9 +361,8 @@ function TableList({
             {canModerate(role) && (
               <Button
                 size="sm"
-                label="Create table"
-                loading={creating}
-                onPress={() => void createTable()}
+                label={newTable.open ? 'Cancel' : 'Create table'}
+                onPress={() => setNewTable((current) => ({ ...current, open: !current.open }))}
               />
             )}
             <Button variant="outline" size="sm" label="Refresh" onPress={() => void refresh()} />
@@ -310,6 +370,48 @@ function TableList({
         </CardHeader>
 
         <CardContent className="gap-0">
+          {newTable.open && (
+            <View className="mb-3 gap-3 rounded-md border border-border p-3">
+              <Input
+                label="Name"
+                value={newTable.name}
+                maxLength={64}
+                onChangeText={(name) => setNewTable((current) => ({ ...current, name }))}
+              />
+              <Tabs
+                value={newTable.blinds}
+                onChange={(blinds) => setNewTable((current) => ({ ...current, blinds }))}
+                options={[
+                  { value: '10', label: '10/20' },
+                  { value: '25', label: '25/50' },
+                  { value: '50', label: '50/100' },
+                ]}
+              />
+              <Tabs
+                value={newTable.seats}
+                onChange={(seats) => setNewTable((current) => ({ ...current, seats }))}
+                options={[
+                  { value: '2', label: '2 seats' },
+                  { value: '6', label: '6 seats' },
+                  { value: '9', label: '9 seats' },
+                ]}
+              />
+              <Tabs
+                value={newTable.visibility}
+                onChange={(visibility) => setNewTable((current) => ({ ...current, visibility }))}
+                options={[
+                  { value: 'public', label: 'Public' },
+                  { value: 'private', label: 'Private' },
+                ]}
+              />
+              <Button
+                label="Open table"
+                loading={creating}
+                onPress={() => void createTable()}
+              />
+            </View>
+          )}
+
           {loading ? (
             <View className="py-6">
               <ActivityIndicator size="small" />
@@ -335,6 +437,7 @@ function TableList({
                   <Text variant="caption" tone="muted">
                     {table.smallBlind}/{table.bigBlind} · {table.seatedCount}/{table.maxSeats}{' '}
                     seated
+                    {table.joinCode ? ` · code ${table.joinCode}` : ''}
                   </Text>
                 </View>
 
@@ -345,9 +448,9 @@ function TableList({
                   />
                   <Button
                     size="sm"
-                    label="Join"
-                    loading={joining === table.id}
-                    onPress={() => void joinTable(table.id)}
+                    label={table.viewerSeated ? 'Open' : 'Join'}
+                    disabled={!table.viewerSeated && table.freeSeats.length === 0}
+                    onPress={() => openTable(table)}
                   />
                 </View>
               </View>
@@ -356,11 +459,47 @@ function TableList({
         </CardContent>
       </Card>
 
+      <View className="flex-row items-end gap-2">
+        <Input
+          label="Private table"
+          placeholder="Join code"
+          autoCapitalize="characters"
+          value={code}
+          onChangeText={setCode}
+          containerClassName="flex-1"
+        />
+        <Button
+          variant="outline"
+          label="Find"
+          disabled={code.trim().length === 0}
+          loading={findingCode}
+          onPress={() => void joinWithCode()}
+        />
+      </View>
+
       {error && (
         <Text variant="caption" tone="destructive">
           {error}
         </Text>
       )}
+
+      <BuyInSheet
+        visible={buying !== null}
+        title={buying ? `Sit down at ${buying.table.name}` : 'Sit down'}
+        min={buying?.table.viewerMinBuyIn ?? 0}
+        max={Math.min(buying?.table.maxBuyIn ?? 0, balance ?? 0)}
+        hint={
+          buying && buying.table.viewerMinBuyIn > buying.table.minBuyIn
+            ? 'You left this table recently, so you return with at least what you took.'
+            : undefined
+        }
+        freeSeats={buying?.table.freeSeats}
+        confirmLabel="Sit down"
+        busy={joining !== null}
+        error={buyError}
+        onClose={() => setBuying(null)}
+        onConfirm={(amount, seat) => void sitDown(amount, seat)}
+      />
 
       {!canModerate(role) && (
         <Text variant="caption" tone="muted" className="text-center">

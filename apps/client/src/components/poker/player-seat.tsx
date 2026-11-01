@@ -32,6 +32,18 @@ export interface PlayerSeatProps {
   botDifficulty?: BotDifficulty | null;
   /** Banned mid-hand: folded, cannot act, leaves when the hand ends. */
   isBanned?: boolean;
+  /** "SB" or "BB" for this hand. */
+  positionLabel?: string | null;
+  /** What they just did this street, e.g. "Raise". */
+  actionLabel?: string | null;
+  /** Why they hold no cards, e.g. "Away". */
+  statusNote?: string | null;
+  /** The viewer's own hand so far, e.g. "Two pair". */
+  handDescription?: string | null;
+  /** On the reserve after the normal clock ran out. */
+  onTimeBank?: boolean;
+  /** A full table on a phone: no avatar, so every seat fits across the screen. */
+  compact?: boolean;
   /** Shown on an empty seat when the viewer owns the table. */
   onAddBot?: () => void;
   /** Fraction of the action clock remaining, 0 to 1. */
@@ -55,6 +67,12 @@ export function PlayerSeat({
   isBot = false,
   botDifficulty = null,
   isBanned = false,
+  positionLabel = null,
+  actionLabel = null,
+  statusNote = null,
+  handDescription = null,
+  onTimeBank = false,
+  compact = false,
   onAddBot,
   clockRemaining,
   className,
@@ -70,13 +88,14 @@ export function PlayerSeat({
           ? { onPress: onAddBot, accessibilityRole: 'button' as const }
           : {})}
         className={cn(
-          'items-center justify-center rounded-lg border border-dashed px-3 py-2',
+          'items-center justify-center rounded-lg border border-dashed',
+          compact ? 'px-1 py-1' : 'px-3 py-2',
           onAddBot ? 'border-white/30 active:bg-white/10' : 'border-white/15',
           className,
         )}
       >
         <Text variant="caption" className={onAddBot ? 'text-white/60' : 'text-white/30'}>
-          {onAddBot ? '+ Add bot' : `Seat ${seat + 1}`}
+          {onAddBot ? (compact ? '+ Bot' : '+ Add bot') : `Seat ${seat + 1}`}
         </Text>
       </Wrapper>
     );
@@ -86,7 +105,7 @@ export function PlayerSeat({
   const allIn = status === 'all_in';
 
   return (
-    <View className={cn('items-center gap-1', className)}>
+    <View className={cn('items-center gap-1', compact && 'max-w-[74px]', className)}>
       {committed > 0 && <ChipStack amount={committed} />}
 
       {holeCards.length > 0 && (
@@ -109,7 +128,8 @@ export function PlayerSeat({
 
       <View
         className={cn(
-          'flex-row items-center gap-2 rounded-lg border px-2.5 py-1.5',
+          'flex-row items-center rounded-lg border',
+          compact ? 'gap-1 px-1 py-1' : 'gap-2 px-2.5 py-1.5',
           isBanned && 'opacity-60',
           // The acting player is the one thing on the table that must be
           // unmissable, so it gets a ring rather than a subtle tint.
@@ -119,20 +139,29 @@ export function PlayerSeat({
         )}
       >
         <View>
-          <Avatar name={name} size="sm" />
-          {isDealer && (
+          {!compact && <Avatar name={name} size="sm" />}
+          {isDealer && !compact && (
             <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-white">
               <Text className="text-[9px] font-bold text-black">D</Text>
             </View>
           )}
         </View>
 
-        <View className="min-w-[56px]">
+        <View className={compact ? 'min-w-0 flex-shrink' : 'min-w-[56px]'}>
           <View className="flex-row items-center gap-1">
-            <Text variant="caption" className="font-medium text-white" numberOfLines={1}>
+            <Text
+              variant="caption"
+              className={cn('font-medium text-white', compact && 'flex-shrink text-xs')}
+              numberOfLines={1}
+            >
               {name}
             </Text>
-            {isBot && (
+            {isDealer && compact && (
+              <View className="h-3.5 w-3.5 items-center justify-center rounded-full bg-white">
+                <Text className="text-[8px] font-bold text-black">D</Text>
+              </View>
+            )}
+            {isBot && !compact && (
               // Small enough not to change the seat's footprint, so the table
               // does not reflow when a bot is swapped for a person.
               <View className="rounded bg-white/15 px-1">
@@ -163,8 +192,39 @@ export function PlayerSeat({
         </View>
       </View>
 
+      {(actionLabel || positionLabel || statusNote) && (
+        <View className="flex-row items-center gap-1">
+          {positionLabel && (
+            <View className="rounded bg-white/15 px-1">
+              <Text className="text-[9px] font-bold text-white/80">{positionLabel}</Text>
+            </View>
+          )}
+          {actionLabel && (
+            <Text variant="caption" className="text-xs font-semibold text-primary">
+              {actionLabel}
+            </Text>
+          )}
+          {statusNote && (
+            <Text variant="caption" className="text-xs text-white/50">
+              {statusNote}
+            </Text>
+          )}
+        </View>
+      )}
+
+      {handDescription && (
+        <Text variant="caption" className="text-xs font-medium text-white/80">
+          {handDescription}
+        </Text>
+      )}
+
       {/* The action clock drains left to right; it turns red in the last
           quarter so a player glancing at the table sees the urgency. */}
+      {isActing && onTimeBank && (
+        <Text variant="caption" className="text-xs font-semibold text-destructive">
+          Time bank
+        </Text>
+      )}
       {isActing && clockRemaining !== undefined && (
         <View className="h-1 w-16 overflow-hidden rounded-full bg-white/15">
           <View

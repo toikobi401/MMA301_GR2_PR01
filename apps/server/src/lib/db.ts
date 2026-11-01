@@ -134,15 +134,7 @@ export interface PokerTableDoc extends Document {
   handNumber: number;
   /** Seat holding the dealer button; advances one occupied seat per hand. */
   buttonSeat: number;
-  /**
-   * Deal the next hand automatically once one finishes.
-   *
-   * Off by default: a table of humans keeps the existing behaviour where a
-   * hand starts only on a join or an explicit deal. Turned on when a bot is
-   * seated, because otherwise a bot table plays one hand and stops forever.
-   */
-  autoDeal?: boolean;
-  /** Fill empty seats with bots between hands. */
+/** Fill empty seats with bots between hands. */
   autoFillBots?: boolean;
   /** Difficulty used for seats the table fills on its own. */
   autoFillDifficulty?: BotDifficulty;
