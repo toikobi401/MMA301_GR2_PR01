@@ -44,6 +44,9 @@ export const tablesApi = {
   leave: (tableId: string) =>
     api.post<{ left: boolean; refunded: number }>(`/api/v1/tables/${tableId}/leave`),
 
+  /** LIVE: POST /api/v1/tables/:id/rebuy */
+  rebuy: (tableId: string) => api.post<TableState>(`/api/v1/tables/${tableId}/rebuy`),
+
   /** LIVE: POST /api/v1/tables/:id/deal */
   deal: (tableId: string) => api.post<TableState>(`/api/v1/tables/${tableId}/deal`),
 

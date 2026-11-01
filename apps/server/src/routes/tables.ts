@@ -270,6 +270,45 @@ export async function tableRoutes(app: FastifyInstance) {
   });
 
   /**
+   * Buys a busted player back in for the table minimum, keeping their seat.
+   *
+   * A seat mid-hand holds its starting stack, so an all-in player cannot get
+   * through here before the hand settles. The debit comes first, and the guard
+   * on the update means two racing requests cannot both top the seat up.
+   */
+  app.post('/:id/rebuy', async (request) => {
+    const claim = request.claims?.sub;
+    if (!claim) throw AppError.unauthorized();
+
+    const { id } = request.params as { id: string };
+    const userId = new ObjectId(claim);
+
+    const table = await getTable(id);
+    const doc = table.table;
+
+    const seat = doc.seats.find((entry) => entry.userId?.equals(userId));
+    if (!seat) throw AppError.badRequest('You are not seated at this table');
+    if (seat.stack !== 0) throw AppError.conflict('You still have chips at this table');
+
+    await applyChipChange(userId, 'buy_in', -doc.minBuyIn, `table:${id}`);
+
+    const claimed = await pokerTables().updateOne(
+      { _id: doc._id, seats: { $elemMatch: { seat: seat.seat, userId, stack: 0 } } },
+      { $set: { 'seats.$.stack': doc.minBuyIn } },
+    );
+
+    if (claimed.modifiedCount !== 1) {
+      await applyChipChange(userId, 'cash_out', doc.minBuyIn, `refund:${id}`);
+      throw AppError.conflict('Could not buy back in; try again');
+    }
+
+    seat.stack = doc.minBuyIn;
+    table.seatChanged();
+
+    return { ok: true as const, data: table.viewFor(claim) };
+  });
+
+  /**
    * Seats a bot.
    *
    * Bots do not go through the wallet: they are given a fixed stack and never

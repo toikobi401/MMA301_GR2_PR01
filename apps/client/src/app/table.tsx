@@ -29,6 +29,7 @@ export default function TableScreen() {
   const { state, status, dealing, messages, handsFinished, act, sendChat, error } =
     useTableSocket(tableId, token);
   const [dealError, setDealError] = useState<string | null>(null);
+  const [rebuying, setRebuying] = useState(false);
   const [addingToSeat, setAddingToSeat] = useState<number | null>(null);
   const [addingBot, setAddingBot] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -148,6 +149,18 @@ export default function TableScreen() {
     }
   }
 
+  async function rebuy() {
+    setRebuying(true);
+    setDealError(null);
+    try {
+      await tablesApi.rebuy(activeTableId);
+    } catch (caught) {
+      setDealError(caught instanceof Error ? caught.message : 'Could not buy back in');
+    } finally {
+      setRebuying(false);
+    }
+  }
+
   async function leaveTable() {
     setLeaving(true);
     setDealError(null);
@@ -162,6 +175,9 @@ export default function TableScreen() {
   }
 
   const handIdle = state !== null && (state.street === null || state.street === 'complete');
+  // All in during a hand also reads as zero, but those chips are still in play.
+  const busted =
+    selfSeat?.stack === 0 && (handIdle || selfSeat.status === 'sitting_out');
 
   return (
     <SafeAreaView className="dark flex-1 bg-neutral-950" edges={['top', 'bottom']}>
@@ -301,6 +317,17 @@ export default function TableScreen() {
           <Text variant="caption" className="text-center text-destructive">
             {error ?? dealError}
           </Text>
+        )}
+
+        {busted && (
+          <View className="flex-row items-center justify-between gap-3">
+            <Text variant="caption" className="flex-1 text-white/70">
+              You are out of chips and will not be dealt in.
+            </Text>
+            <Button size="sm" loading={rebuying} onPress={() => void rebuy()}>
+              <Text className="text-sm font-medium text-primary-foreground">Buy back in</Text>
+            </Button>
+          </View>
         )}
 
         <ActionBar

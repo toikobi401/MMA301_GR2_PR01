@@ -57,6 +57,18 @@ export class Table {
    */
   private readonly bannedThisHand = new Set<string>();
 
+  /** Users with a socket watching this table right now. */
+  private readonly connected = new Set<string>();
+
+  /**
+   * Seated humans who are not here, and so are not dealt in until they return.
+   *
+   * Tracked apart from `connected` because joining happens over REST before
+   * the socket opens: having no socket yet must not cost a player the hand
+   * their join just started.
+   */
+  private readonly away = new Set<string>();
+
   /**
    * Called when a bot seat is on the clock.
    *
@@ -103,7 +115,13 @@ export class Table {
   }
 
   leave(userId: string): number {
-    if (this.hand && this.hand.street !== Street.Complete) {
+    // Only someone dealt in has chips at stake. A player who folded still does:
+    // their seat stack is not settled until the hand finishes.
+    const inHand =
+      this.hand !== null &&
+      this.hand.street !== Street.Complete &&
+      this.hand.players.some((player) => player.id === userId);
+    if (inHand) {
       throw AppError.conflict('Finish the current hand before leaving the table');
     }
 
@@ -114,11 +132,66 @@ export class Table {
     seat.userId = null;
     seat.displayName = null;
     seat.stack = 0;
-    if (this.startHandIfReady()) return refund;
+    this.away.delete(userId);
+    this.seatChanged();
+    return refund;
+  }
+
+  /** Tells watchers a seat changed, dealing if that made a hand possible. */
+  seatChanged(): void {
+    if (this.startHandIfReady()) return;
 
     this.sequence += 1;
     this.emitChange();
-    return refund;
+  }
+
+  playerConnected(userId: string): void {
+    this.connected.add(userId);
+    if (!this.away.delete(userId)) return;
+
+    // The table may have stopped for lack of players. A pending timer means
+    // a showdown is still on screen, and it will deal when that ends.
+    if (this.doc.autoDeal && !this.nextHandTimer) this.startHandIfReady();
+  }
+
+  /** Called when the user's last socket on this table has gone. */
+  playerDisconnected(userId: string): void {
+    this.connected.delete(userId);
+
+    const seat = this.doc.seats.find((entry) => entry.userId?.toHexString() === userId);
+    if (!seat) return;
+
+    this.away.add(userId);
+    // A stack is only zero between hands; mid-hand it holds the starting stack.
+    if (seat.stack === 0) {
+      this.releaseBustedSeat(seat);
+      this.sequence += 1;
+      this.emitChange();
+      void this.persistReleasedSeat(seat.seat, userId);
+    }
+  }
+
+  /** An empty stack that has gone away only blocks the seat from someone else. */
+  private releaseBustedSeat(seat: PokerTableDoc['seats'][number]): void {
+    const userId = seat.userId?.toHexString();
+    if (userId) this.away.delete(userId);
+    seat.userId = null;
+    seat.displayName = null;
+  }
+
+  private async persistReleasedSeat(seat: number, userId: string): Promise<void> {
+    try {
+      await pokerTables().updateOne(
+        {
+          _id: this.doc._id,
+          // Guarded: they may already have sat back down in this seat's place.
+          seats: { $elemMatch: { seat, userId: new ObjectId(userId), stack: 0 } },
+        },
+        { $set: { 'seats.$.userId': null, 'seats.$.displayName': null } },
+      );
+    } catch (error) {
+      console.error('Failed to release seat', error);
+    }
   }
 
   /** Returns an unsubscribe function. */
@@ -155,9 +228,14 @@ export class Table {
     }
   }
 
-  /** Seats occupied by a player with chips behind. */
+  /** Seats occupied by a player with chips behind who is at the table. */
   private seatedPlayers() {
-    return this.doc.seats.filter((seat) => seat.userId !== null && seat.stack > 0);
+    return this.doc.seats.filter(
+      (seat) =>
+        seat.userId !== null &&
+        seat.stack > 0 &&
+        !this.away.has(seat.userId.toHexString()),
+    );
   }
 
   /**
@@ -193,7 +271,14 @@ export class Table {
 
     this.doc.status = 'in_hand';
     this.sequence += 1;
-    this.armActionTimer();
+
+    // The blinds alone can put everyone all in, finishing the hand on the deal.
+    if (streetOf(this.hand) === Street.Complete) {
+      void this.finishHand();
+    } else {
+      this.armActionTimer();
+    }
+
     this.emitChange();
     return true;
   }
@@ -253,6 +338,12 @@ export class Table {
 
       const options = legalActions(this.hand!, actingId).map((option) => option.type);
       const fallback = options.includes(ActionType.Check) ? ActionType.Check : ActionType.Fold;
+
+      // Covers a seat whose socket never opened, such as after a server
+      // restart. Without this they would slow every hand until they bust.
+      if (!this.connected.has(actingId) && !this.botDifficultyFor(actingId)) {
+        this.away.add(actingId);
+      }
 
       try {
         this.act(actingId, fallback, 0);
@@ -364,6 +455,11 @@ export class Table {
         seat.botProfile = null;
       }
       this.bannedThisHand.clear();
+    }
+
+    for (const seat of this.doc.seats) {
+      const seatUser = seat.userId?.toHexString();
+      if (seatUser && seat.stack === 0 && this.away.has(seatUser)) this.releaseBustedSeat(seat);
     }
 
     const potTotal = hand.pots.reduce((sum, pot) => sum + pot.amount, 0);
@@ -532,6 +628,8 @@ export class Table {
     const hand = this.hand;
     const showdown =
       hand?.street === Street.Complete && (hand.results?.some((r) => r.cards) ?? false);
+    // Once settled the seat is the truth: a rebuy changes it after the hand.
+    const settled = hand?.street === Street.Complete;
 
     const seats = this.doc.seats.map((seat) => {
       const userId = seat.userId?.toHexString() ?? null;
@@ -545,7 +643,7 @@ export class Table {
         seat: seat.seat,
         userId,
         displayName: seat.displayName ?? null,
-        stack: player?.stack ?? seat.stack,
+        stack: settled ? seat.stack : (player?.stack ?? seat.stack),
         status: (player?.status ?? (seat.userId ? 'sitting_out' : 'sitting_out')) as
           | 'active'
           | 'folded'

@@ -73,8 +73,12 @@ function joinRoom(tableId: string, client: Client): void {
 function leaveRoom(tableId: string, client: Client): void {
   const room = rooms.get(tableId);
   if (!room) return;
-  room.delete(client);
+  if (!room.delete(client)) return;
   client.tables.delete(tableId);
+
+  // A second tab or device can still be holding the seat.
+  const stillHere = [...room].some((member) => member.userId === client.userId);
+  if (!stillHere) peekTable(tableId)?.playerDisconnected(client.userId);
 
   if (room.size === 0) {
     rooms.delete(tableId);
@@ -208,6 +212,9 @@ export async function realtimeRoutes(app: FastifyInstance) {
             }),
           );
         }
+
+        // After the listeners above, so a hand this deals reaches the room.
+        table.playerConnected(client.userId);
 
         send(client, {
           type: 'table_state',
