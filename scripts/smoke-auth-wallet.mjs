@@ -28,7 +28,7 @@ ok(bad.status === 401, 'wrong password rejected with 401', String(bad.status));
 const login = await call('/api/v1/auth/login', { method: 'POST', body: { email, password: 'password123' } });
 ok(login.status === 200, 'login succeeds', String(login.status));
 let { accessToken, refreshToken } = login.json.data.tokens;
-
+//smoke-auth
 const refreshed = await call('/api/v1/auth/refresh', { method: 'POST', body: { refreshToken } });
 ok(refreshed.status === 200, 'refresh issues a new pair', String(refreshed.status));
 const reused = await call('/api/v1/auth/refresh', { method: 'POST', body: { refreshToken } });
