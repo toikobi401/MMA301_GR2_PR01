@@ -179,7 +179,7 @@ function SeatChoice({
       accessibilityState={{ selected: active }}
       onPress={onPress}
       className={cn(
-        'min-h-[36px] min-w-[36px] items-center justify-center rounded-md border px-2',
+        'min-h-[44px] min-w-[44px] items-center justify-center rounded-md border px-2',
         active ? 'border-primary bg-primary/15' : 'border-white/15',
       )}
     >

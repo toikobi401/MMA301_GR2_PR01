@@ -26,10 +26,13 @@ export default function LobbyScreen() {
   const { user, token, restoring, busy, error, login, register, logout } = useSession();
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-6 items-center">
+    <ScrollView
+      className="flex-1 bg-background"
+      contentContainerClassName="items-center px-4 py-6 sm:px-6"
+    >
       <View className="w-full max-w-[680px] gap-6">
         <View className="flex-row items-start justify-between">
-          <View className="gap-1">
+          <View className="min-w-0 flex-1 gap-1">
             <Text variant="label" tone="muted">
               MMA301 · Group 2
             </Text>
@@ -147,7 +150,7 @@ function SignIn({
 
         {registering && (
           <View className="flex-row items-center gap-3 rounded-md bg-muted px-3 py-2.5">
-            <View className="h-5 w-5 rounded-full border-2 border-white/60 bg-primary" />
+            <View className="w-5 h-5 border-2 rounded-full border-white/60 bg-primary" />
             <Text variant="caption">
               New accounts start with{' '}
               <Text variant="numeric" className="text-sm font-semibold">
@@ -339,34 +342,34 @@ function TableList({
       )}
 
       {/* Everything that is not the table itself lives one tap away. */}
-      <View className="flex-row gap-2">
+      <View className="flex-row flex-wrap gap-2">
         <Button
           variant="outline"
           size="sm"
           label="Wallet"
           onPress={() => router.push('/wallet')}
-          className="flex-1"
+          className="w-[48%] flex-1 sm:w-auto"
         />
         <Button
           variant="outline"
           size="sm"
           label="History"
           onPress={() => router.push('/history')}
-          className="flex-1"
+          className="w-[48%] flex-1 sm:w-auto"
         />
         <Button
           variant="outline"
           size="sm"
           label="Friends"
           onPress={() => router.push('/friends')}
-          className="flex-1"
+          className="w-[48%] flex-1 sm:w-auto"
         />
         <Button
           variant="outline"
           size="sm"
           label="Ranks"
           onPress={() => router.push('/leaderboard')}
-          className="flex-1"
+          className="w-[48%] flex-1 sm:w-auto"
         />
       </View>
 
@@ -387,7 +390,7 @@ function TableList({
 
         <CardContent className="gap-0">
           {newTable.open && (
-            <View className="mb-3 gap-3 rounded-md border border-border p-3">
+            <View className="gap-3 p-3 mb-3 border rounded-md border-border">
               <Input
                 label="Name"
                 value={newTable.name}

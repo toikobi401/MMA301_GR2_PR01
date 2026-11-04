@@ -37,9 +37,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
       <TextInput
         ref={ref}
         accessibilityLabel={label}
-        placeholderTextColor="#9AA3B4"
         className={cn(
-          'min-h-[44px] rounded-md border bg-background px-3 py-2 text-base text-foreground',
+          'min-h-[44px] rounded-md border bg-background px-3 py-2 text-base text-foreground placeholder:text-muted-foreground',
           focused ? 'border-ring' : 'border-input',
           error && 'border-destructive',
           props.editable === false && 'opacity-50',

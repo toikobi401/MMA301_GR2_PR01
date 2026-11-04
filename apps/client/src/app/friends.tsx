@@ -128,7 +128,10 @@ export default function FriendsScreen() {
       <View className="w-full max-w-2xl gap-6">
         <View className="gap-4">
           <Link href="/" asChild>
-            <Pressable accessibilityRole="button" className="self-start rounded-md px-1 py-1">
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-11 self-start justify-center rounded-md px-1"
+            >
               <Text className="font-medium text-primary">‹  Về sảnh</Text>
             </Pressable>
           </Link>
