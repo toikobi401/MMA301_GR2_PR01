@@ -1,0 +1,17 @@
+[{
+	"_id": {
+		"$oid": "6ab0288b4b1f415367ef9f81"
+	},
+	"tableId": {
+		"$oid": "6ab024b94b1f415367ef9f47"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"displayName": "Alice",
+	"body": "fk you",
+	"createdAt": {
+		"$date": "2026-09-20T18:40:11.924Z"
+	}
+}]
+

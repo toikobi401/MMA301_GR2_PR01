@@ -1,0 +1,20 @@
+import '@/global.css';
+
+import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="table" options={{ headerShown: false }} />
+        <Stack.Screen name="wallet" options={{ title: 'Wallet' }} />
+        <Stack.Screen name="wallet/transactions" options={{ title: 'Chip transactions' }} />
+        <Stack.Screen name="history" options={{ title: 'Hand history' }} />
+        <Stack.Screen name="friends" options={{ headerShown: false }} />
+        <Stack.Screen name="leaderboard" options={{ headerShown: false }} />
+      </Stack>
+    </SafeAreaProvider>
+  );
+}

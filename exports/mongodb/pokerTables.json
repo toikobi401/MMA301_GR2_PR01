@@ -1,0 +1,2020 @@
+[{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff7"
+	},
+	"name": "Test table 1789828322679",
+	"ownerId": {
+		"$oid": "6aae9ce28512df3cce434fef"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9ce28512df3cce434fef"
+			},
+			"displayName": "Alice",
+			"stack": 1010,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.813Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9ce28512df3cce434ff3"
+			},
+			"displayName": "Bob",
+			"stack": 990,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.822Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.795Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.795Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.795Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:02.795Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.795Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce435003"
+	},
+	"name": "Test table 1789828344891",
+	"ownerId": {
+		"$oid": "6aae9cf88512df3cce434ffb"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9cf88512df3cce434ffb"
+			},
+			"displayName": "Alice",
+			"stack": 1010,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:24.995Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9cf88512df3cce434fff"
+			},
+			"displayName": "Bob",
+			"stack": 990,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:25.002Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:24.984Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:24.984Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:24.984Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:24.984Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.984Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce43500f"
+	},
+	"name": "Test table 1789828375516",
+	"ownerId": {
+		"$oid": "6aae9d178512df3cce435007"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9d178512df3cce435007"
+			},
+			"displayName": "Alice",
+			"stack": 1010,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.622Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9d178512df3cce43500b"
+			},
+			"displayName": "Bob",
+			"stack": 990,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.629Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.61Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.61Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.61Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:32:55.61Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.61Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce43501b"
+	},
+	"name": "Test table 1789828408690",
+	"ownerId": {
+		"$oid": "6aae9d388512df3cce435013"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9d388512df3cce435013"
+			},
+			"displayName": "Alice",
+			"stack": 1000,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.792Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9d388512df3cce435017"
+			},
+			"displayName": "Bob",
+			"stack": 1000,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.8Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.782Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.782Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.782Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:33:28.782Z"
+			}
+		}
+	],
+	"handNumber": 0,
+	"buttonSeat": 0,
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.782Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a343"
+	},
+	"name": "Test table 1789828455812",
+	"ownerId": {
+		"$oid": "6aae9d67dd53a600ac35a33b"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9d67dd53a600ac35a33b"
+			},
+			"displayName": "Alice",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.925Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9d67dd53a600ac35a33f"
+			},
+			"displayName": "Bob",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.933Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.911Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.911Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.911Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:15.911Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.911Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a34f"
+	},
+	"name": "Test table 1789828479974",
+	"ownerId": {
+		"$oid": "6aae9d80dd53a600ac35a347"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9d80dd53a600ac35a347"
+			},
+			"displayName": "Alice",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.085Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9d80dd53a600ac35a34b"
+			},
+			"displayName": "Bob",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.094Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.072Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.072Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.072Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:34:40.072Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.072Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a35b"
+	},
+	"name": "Test table 1789828505316",
+	"ownerId": {
+		"$oid": "6aae9d99dd53a600ac35a353"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9d99dd53a600ac35a353"
+			},
+			"displayName": "Alice",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.431Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9d99dd53a600ac35a357"
+			},
+			"displayName": "Bob",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.438Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.42Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.42Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.42Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:05.42Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.42Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a367"
+	},
+	"name": "Test table 1789828516444",
+	"ownerId": {
+		"$oid": "6aae9da4dd53a600ac35a35f"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9da4dd53a600ac35a35f"
+			},
+			"displayName": "Alice",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.545Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9da4dd53a600ac35a363"
+			},
+			"displayName": "Bob",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.552Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.534Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.534Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.534Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:16.534Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.534Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a373"
+	},
+	"name": "Test table 1789828528959",
+	"ownerId": {
+		"$oid": "6aae9db0dd53a600ac35a36b"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9db0dd53a600ac35a36b"
+			},
+			"displayName": "Alice",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.059Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9db1dd53a600ac35a36f"
+			},
+			"displayName": "Bob",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.067Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.049Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.049Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.049Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:35:29.049Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:35:29.049Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ee7dd53a600ac35a37b"
+	},
+	"name": "Alice's table",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9ededd53a600ac35a377"
+			},
+			"displayName": "Alice",
+			"stack": 970,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:40:39.959Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9efadd53a600ac35a37d"
+			},
+			"displayName": "Bob",
+			"stack": 1030,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:40:58.599Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaeaf0cdd53a600ac35a390"
+			},
+			"displayName": "test",
+			"stack": 1000,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T15:49:43.517Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:40:39.921Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:40:39.921Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:40:39.921Z"
+			}
+		}
+	],
+	"handNumber": 2,
+	"buttonSeat": 2,
+	"createdAt": {
+		"$date": "2026-09-19T14:40:39.921Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a38c"
+	},
+	"name": "Test table 1789828923650",
+	"ownerId": {
+		"$oid": "6aae9f3bdd53a600ac35a384"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9f3bdd53a600ac35a384"
+			},
+			"displayName": "Alice",
+			"stack": 1020,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.754Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aae9f3bdd53a600ac35a388"
+			},
+			"displayName": "Bob",
+			"stack": 980,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.762Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.746Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.746Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.746Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"joinedAt": {
+				"$date": "2026-09-19T14:42:03.746Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.746Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f9133ba4ca0641f6b6"
+	},
+	"name": "Test table 1789887736917",
+	"ownerId": {
+		"$oid": "6aaf84f8133ba4ca0641f6ae"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aaf84f8133ba4ca0641f6ae"
+			},
+			"displayName": "Alice",
+			"stack": 980,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.047Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84f8133ba4ca0641f6b2"
+			},
+			"displayName": "Bob",
+			"stack": 1020,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.058Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.028Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.028Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.028Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:02:17.028Z"
+			}
+		}
+	],
+	"handNumber": 1,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-20T07:02:17.028Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf85bb324db485e20fbc5e"
+	},
+	"name": "Bot table 1789887931115",
+	"ownerId": {
+		"$oid": "6aaf85bb324db485e20fbc5a"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 500,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07262"
+			},
+			"displayName": "Elena",
+			"stack": 97,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.209Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07267"
+			},
+			"displayName": "Jonas",
+			"stack": 387,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.217Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07268"
+			},
+			"displayName": "Kira",
+			"stack": 1275,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.225Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07261"
+			},
+			"displayName": "Diego",
+			"stack": 2241,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "expert"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.231Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.193Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:05:31.193Z"
+			}
+		}
+	],
+	"handNumber": 18,
+	"buttonSeat": 2,
+	"createdAt": {
+		"$date": "2026-09-20T07:05:31.193Z"
+	},
+	"autoDeal": true
+},
+{
+	"_id": {
+		"$oid": "6aaf86dea5310015dc5f1410"
+	},
+	"name": "Bot table 1789888222427",
+	"ownerId": {
+		"$oid": "6aaf86dea5310015dc5f140c"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 500,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07264"
+			},
+			"displayName": "Greta",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.522Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07267"
+			},
+			"displayName": "Jonas",
+			"stack": 4000,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.531Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07268"
+			},
+			"displayName": "Kira",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.539Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07269"
+			},
+			"displayName": "Luca",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "expert"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.55Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.508Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:10:22.508Z"
+			}
+		}
+	],
+	"handNumber": 25,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-20T07:10:22.508Z"
+	},
+	"autoDeal": true
+},
+{
+	"_id": {
+		"$oid": "6aaf87a5a5310015dc5f1425"
+	},
+	"name": "Alice's table",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9ededd53a600ac35a377"
+			},
+			"displayName": "Alice",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:13:41.999Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07266"
+			},
+			"displayName": "Iris",
+			"stack": 2390,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T07:14:43.095Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aafd00fa5310015dc5f1470"
+			},
+			"displayName": "test@gmail.com",
+			"stack": 10,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T12:22:49.471Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:13:41.982Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:13:41.982Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T07:13:41.982Z"
+			}
+		}
+	],
+	"handNumber": 133,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-20T07:13:41.982Z"
+	},
+	"autoDeal": true
+},
+{
+	"_id": {
+		"$oid": "6aafd024a5310015dc5f1476"
+	},
+	"name": "test@gmail.com's table",
+	"ownerId": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aafd00fa5310015dc5f1470"
+			},
+			"displayName": "test@gmail.com",
+			"stack": 10,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:00.41Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec0725f"
+			},
+			"displayName": "Boris",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:11.358Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07263"
+			},
+			"displayName": "Felix",
+			"stack": 2990,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:17.145Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07260"
+			},
+			"displayName": "Cleo",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "expert"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:19.328Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec0725e"
+			},
+			"displayName": "Ada",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:09.034Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07264"
+			},
+			"displayName": "Greta",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T12:23:06.646Z"
+			}
+		}
+	],
+	"handNumber": 106,
+	"buttonSeat": 2,
+	"createdAt": {
+		"$date": "2026-09-20T12:23:00.394Z"
+	},
+	"autoDeal": true
+},
+{
+	"_id": {
+		"$oid": "6aafee3f049143252514844e"
+	},
+	"name": "Tournament 1789914687460",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "closed",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aafee3f049143252514844a"
+			},
+			"displayName": "Victim",
+			"stack": 1000,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.624Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.608Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.608Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.608Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.608Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T14:31:27.608Z"
+			}
+		}
+	],
+	"handNumber": 0,
+	"buttonSeat": 0,
+	"createdAt": {
+		"$date": "2026-09-20T14:31:27.608Z"
+	},
+	"autoDeal": false,
+	"autoFillBots": false,
+	"closeReason": "Test finished",
+	"closedAt": {
+		"$date": "2026-09-20T14:31:27.726Z"
+	},
+	"closedBy": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab024034b1f415367ef9f3f"
+	},
+	"name": "History 1789928451222",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "closed",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec0725e"
+			},
+			"displayName": "Ada",
+			"stack": 940,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.316Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07266"
+			},
+			"displayName": "Iris",
+			"stack": 1120,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.324Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07260"
+			},
+			"displayName": "Cleo",
+			"stack": 940,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.362Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.303Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.303Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:20:51.303Z"
+			}
+		}
+	],
+	"handNumber": 2,
+	"buttonSeat": 2,
+	"createdAt": {
+		"$date": "2026-09-20T18:20:51.303Z"
+	},
+	"autoDeal": false,
+	"autoFillBots": false,
+	"closeReason": "Test finished",
+	"closedAt": {
+		"$date": "2026-09-20T18:21:17.563Z"
+	},
+	"closedBy": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab024b94b1f415367ef9f47"
+	},
+	"name": "Log demo",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aae9ededd53a600ac35a377"
+			},
+			"displayName": "Alice",
+			"stack": 540,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:25:08.588Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07265"
+			},
+			"displayName": "Hugo",
+			"stack": 4460,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:23:53.815Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec0725f"
+			},
+			"displayName": "Boris",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:23:53.851Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07268"
+			},
+			"displayName": "Kira",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:23:53.886Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": {
+				"$oid": "6abb9ad7ad7a4edb2e17898c"
+			},
+			"displayName": "Toikobi401",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-10-07T01:50:25.007Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:23:53.705Z"
+			}
+		}
+	],
+	"handNumber": 960,
+	"buttonSeat": 0,
+	"createdAt": {
+		"$date": "2026-09-20T18:23:53.705Z"
+	},
+	"autoDeal": true
+},
+{
+	"_id": {
+		"$oid": "6ab0263c4b1f415367ef9f63"
+	},
+	"name": "History 1789929020609",
+	"ownerId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 400,
+	"maxBuyIn": 2000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "closed",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07260"
+			},
+			"displayName": "Cleo",
+			"stack": 970,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "medium"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.684Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07262"
+			},
+			"displayName": "Elena",
+			"stack": 1030,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "hard"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.688Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07266"
+			},
+			"displayName": "Iris",
+			"stack": 1000,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.712Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.676Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.676Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:30:20.676Z"
+			}
+		}
+	],
+	"handNumber": 2,
+	"buttonSeat": 2,
+	"createdAt": {
+		"$date": "2026-09-20T18:30:20.676Z"
+	},
+	"autoDeal": false,
+	"autoFillBots": false,
+	"closeReason": "Test finished",
+	"closedAt": {
+		"$date": "2026-09-20T18:30:30.825Z"
+	},
+	"closedBy": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab029d44b1f415367ef9f92"
+	},
+	"name": "UI Slider Test",
+	"ownerId": {
+		"$oid": "6ab029b54b1f415367ef9f8b"
+	},
+	"maxSeats": 6,
+	"smallBlind": 10,
+	"bigBlind": 20,
+	"minBuyIn": 1000,
+	"maxBuyIn": 4000,
+	"isPrivate": false,
+	"joinCode": null,
+	"status": "open",
+	"seats": [
+		{
+			"seat": 0,
+			"userId": {
+				"$oid": "6ab029b54b1f415367ef9f8b"
+			},
+			"displayName": "UI Tester",
+			"stack": 10,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:45:52.447Z"
+			}
+		},
+		{
+			"seat": 1,
+			"userId": {
+				"$oid": "6aaf84825a0706e44ec07267"
+			},
+			"displayName": "Jonas",
+			"stack": 3990,
+			"sittingOut": false,
+			"botProfile": {
+				"difficulty": "easy"
+			},
+			"joinedAt": {
+				"$date": "2026-09-20T18:45:52.522Z"
+			}
+		},
+		{
+			"seat": 2,
+			"userId": {
+				"$oid": "6abb9ad7ad7a4edb2e17898c"
+			},
+			"displayName": "Toikobi401",
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-29T11:03:31.979Z"
+			}
+		},
+		{
+			"seat": 3,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:45:40.821Z"
+			}
+		},
+		{
+			"seat": 4,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:45:40.821Z"
+			}
+		},
+		{
+			"seat": 5,
+			"userId": null,
+			"displayName": null,
+			"stack": 0,
+			"sittingOut": false,
+			"botProfile": null,
+			"joinedAt": {
+				"$date": "2026-09-20T18:45:40.821Z"
+			}
+		}
+	],
+	"handNumber": 348,
+	"buttonSeat": 1,
+	"createdAt": {
+		"$date": "2026-09-20T18:45:40.821Z"
+	},
+	"autoDeal": true
+}]
+
