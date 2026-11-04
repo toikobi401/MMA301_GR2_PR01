@@ -10,6 +10,39 @@ process.env.JWT_ACCESS_SECRET ??= 'test_access_secret_at_least_32_characters';
 process.env.JWT_REFRESH_SECRET ??= 'test_refresh_secret_at_least_32_characters';
 const { Table } = await import('./table-manager.js');
 
+test('deleting a live table cancels the hand and preserves pre-deal stacks', async () => {
+  const ids = [new ObjectId(), new ObjectId(), new ObjectId()];
+  const table = tableWith(ids);
+  table.startHandIfReady();
+  const actor = table.currentHand!.actingPlayerId!;
+  table.act(actor, 'call', 0);
+  await table.prepareDeletion();
+
+  assert.equal(table.currentHand, null);
+  assert.deepEqual(table.table.seats.map(seat => seat.stack), [1000, 1000, 1000]);
+  assert.equal(table.startHandIfReady(), false);
+  assert.throws(() => table.act(actor, 'check', 0));
+  assert.throws(() => table.leave(actor));
+  table.dispose();
+});
+
+test('a table being deleted never deals again when a watcher reconnects', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  const ids = [new ObjectId(), new ObjectId()];
+  const table = tableWith(ids);
+  try {
+    table.playerConnected(ids[0]!.toHexString());
+    await table.prepareDeletion();
+    table.playerConnected(ids[1]!.toHexString());
+    mock.timers.tick(10_000);
+    assert.equal(table.currentHand, null);
+    assert.equal(table.table.status, 'closed');
+  } finally {
+    table.dispose();
+    mock.timers.reset();
+  }
+});
+
 function tableWith(playerIds: ObjectId[]) {
   return new Table({
     _id: new ObjectId(),

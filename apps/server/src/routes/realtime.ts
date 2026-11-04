@@ -8,7 +8,7 @@ import {
   type ServerMessage,
   type UserRole,
 } from '@app/shared';
-import { getTable, onAnyHandFinished, peekTable } from '../game/registry.js';
+import { getTable, onAnyHandFinished, onTableDeleted, peekTable } from '../game/registry.js';
 import { chatMessages } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
 import { socketClosed, socketOpened } from '../lib/presence.js';
@@ -130,6 +130,12 @@ function leaveRoom(tableId: string, client: Client): void {
 
 export async function realtimeRoutes(app: FastifyInstance) {
   onAnyHandFinished(scheduleLeaderboardPush);
+  onTableDeleted((tableId) => {
+    for (const client of [...(rooms.get(tableId) ?? [])]) {
+      send(client, { type: 'table_deleted', tableId });
+      leaveRoom(tableId, client);
+    }
+  });
 
   app.get('/ws', { websocket: true }, (socket, request) => {
     // The token travels as a query parameter: browsers cannot set headers on
@@ -203,6 +209,7 @@ export async function realtimeRoutes(app: FastifyInstance) {
     }
 
     const message = result.data;
+    if ('tableId' in message) message.tableId = message.tableId.toLowerCase();
 
     switch (message.type) {
       case 'ping': {

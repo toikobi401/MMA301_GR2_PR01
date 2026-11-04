@@ -55,8 +55,11 @@ export default function TableScreen() {
   const { user, token, restoring } = useSession();
   const tableId = typeof id === 'string' ? id : null;
 
-  const { state, status, dealing, messages, handsFinished, lastResult, act, sendChat, error } =
+  const { state, status, dealing, messages, handsFinished, lastResult, act, sendChat, error, deleted } =
     useTableSocket(tableId, token);
+  useEffect(() => {
+    if (hydrated && !restoring && deleted) router.replace('/');
+  }, [hydrated, restoring, deleted]);
   const runOut = useRunOut(state);
   const { width } = useWindowDimensions();
   const [dealError, setDealError] = useState<string | null>(null);

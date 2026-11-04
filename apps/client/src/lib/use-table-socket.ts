@@ -32,6 +32,7 @@ export interface UseTableSocket {
   act: (type: PlayerActionBody['type'], amount: number) => void;
   sendChat: (body: string) => void;
   error: string | null;
+  deleted: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export interface UseTableSocket {
  * it missed.
  */
 export function useTableSocket(tableId: string | null, token: string | null): UseTableSocket {
+  tableId = tableId?.toLowerCase() ?? null;
   const [state, setState] = useState<TableState | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('closed');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -50,6 +52,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
   const [handsFinished, setHandsFinished] = useState(0);
   const [lastResult, setLastResult] = useState<HandResultMessage | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [deleted, setDeleted] = useState(false);
 
   const socketRef = useRef<WebSocket | null>(null);
   const sequenceRef = useRef(0);
@@ -71,6 +74,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     }
 
     let cancelled = false;
+    let removed = false;
     let pingTimer: ReturnType<typeof setInterval> | null = null;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let dealTimer: ReturnType<typeof setTimeout> | null = null;
@@ -85,6 +89,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     setHandsFinished(0);
     setLastResult(null);
     setError(null);
+    setDeleted(false);
 
     // The socket only carries new messages, so opening or reloading a table
     // fetches what was said before. Merged by id: a live message can arrive
@@ -156,6 +161,15 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
         const message = result.data;
 
         switch (message.type) {
+          case 'table_deleted': {
+            if (message.tableId !== tableId) return;
+            removed = true;
+            setDeleted(true);
+            setState(null);
+            setStatus('closed');
+            socket.close();
+            return;
+          }
           case 'table_state': {
             // Out-of-order or duplicate states are ignored rather than
             // applied, so a late broadcast cannot rewind the table.
@@ -207,6 +221,13 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
           }
 
           case 'error': {
+            if (message.code === 'NOT_FOUND') {
+              removed = true;
+              setDeleted(true);
+              setState(null);
+              setStatus('closed');
+              socket.close();
+            }
             setError(message.message);
             return;
           }
@@ -219,7 +240,7 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
       socket.onclose = () => {
         if (pingTimer) clearInterval(pingTimer);
         pingTimer = null;
-        if (cancelled) return;
+        if (cancelled || removed) return;
 
         setStatus('reconnecting');
         attemptRef.current += 1;
@@ -269,5 +290,5 @@ export function useTableSocket(tableId: string | null, token: string | null): Us
     [tableId, send],
   );
 
-  return { state, status, messages, dealing, handsFinished, lastResult, act, sendChat, error };
+  return { state, status, messages, dealing, handsFinished, lastResult, act, sendChat, error, deleted };
 }

@@ -2,6 +2,7 @@ import type {
   BotDifficulty,
   ChatMessage,
   CreateTableBody,
+  DeleteTableResult,
   Friend,
   HandDetail,
   HandSummary,
@@ -39,6 +40,9 @@ export const tablesApi = {
 
   /** LIVE: POST /api/v1/tables — moderators only */
   create: (body: CreateTableBody) => api.post<TableSummary>('/api/v1/tables', body),
+
+  /** LIVE: DELETE /api/v1/tables/:id — admins only; evicts players and refunds stacks. */
+  remove: (tableId: string) => api.delete<DeleteTableResult>(`/api/v1/tables/${tableId}`),
 
   /** LIVE: GET /api/v1/tables/code/:code */
   findByCode: (code: string) =>

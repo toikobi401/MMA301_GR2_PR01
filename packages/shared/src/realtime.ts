@@ -65,6 +65,10 @@ export type ClientMessage = z.infer<typeof clientMessageSchema>;
 
 export const serverMessageSchema = z.discriminatedUnion('type', [
   z.object({
+    type: z.literal('table_deleted'),
+    tableId: z.string(),
+  }),
+  z.object({
     type: z.literal('table_state'),
     /** Monotonic per table. The client ignores anything it has already seen. */
     sequence: z.number().int().nonnegative(),

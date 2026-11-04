@@ -189,6 +189,8 @@ function TableList({
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
   // The table being sat down at, and the code that got us there if it is private.
@@ -299,6 +301,20 @@ function TableList({
       setError(caught instanceof Error ? caught.message : 'Could not create table');
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function deleteTable(id: string) {
+    setDeleting(id);
+    setError(null);
+    try {
+      await tablesApi.remove(id);
+      setConfirmDelete(null);
+      await refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not delete table');
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -426,11 +442,11 @@ function TableList({
               <View
                 key={table.id}
                 className={cn(
-                  'flex-row items-center justify-between py-3',
+                  'gap-3 py-3',
                   index > 0 && 'border-t border-border',
                 )}
               >
-                <View className="flex-1 gap-0.5 pr-3">
+                <View className="gap-0.5">
                   <Text className="font-medium" numberOfLines={1}>
                     {table.name}
                   </Text>
@@ -441,18 +457,45 @@ function TableList({
                   </Text>
                 </View>
 
-                <View className="flex-row items-center gap-2">
+                <View className="flex-row flex-wrap items-center gap-2">
                   <Badge
-                    label={table.status === 'in_hand' ? 'Playing' : 'Open'}
+                    label={table.status === 'in_hand' ? 'Playing' : table.status === 'closed' ? 'Closed' : 'Open'}
                     variant={table.status === 'in_hand' ? 'success' : 'secondary'}
                   />
                   <Button
                     size="sm"
                     label={table.viewerSeated ? 'Open' : 'Join'}
-                    disabled={!table.viewerSeated && table.freeSeats.length === 0}
+                    disabled={table.status === 'closed' || deleting === table.id || (!table.viewerSeated && table.freeSeats.length === 0)}
                     onPress={() => openTable(table)}
                   />
+                  {role === 'admin' && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      label="Delete table"
+                      disabled={deleting !== null}
+                      onPress={() => setConfirmDelete(table.id)}
+                    />
+                  )}
                 </View>
+                {role === 'admin' && confirmDelete === table.id && (
+                  <View className="gap-2 rounded-md border border-border bg-muted p-3">
+                    <Text variant="caption">
+                      Delete {table.name}? All players will return to the lobby and their chips
+                      will be refunded. An unfinished hand will be cancelled. This cannot be undone.
+                    </Text>
+                    <View className="flex-row gap-2">
+                      <Button
+                        variant="destructive" size="sm" label="Confirm delete"
+                        loading={deleting === table.id} onPress={() => void deleteTable(table.id)}
+                      />
+                      <Button
+                        variant="outline" size="sm" label="Cancel" disabled={deleting !== null}
+                        onPress={() => setConfirmDelete(null)}
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
             ))
           )}

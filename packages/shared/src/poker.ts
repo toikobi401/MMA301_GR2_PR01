@@ -127,6 +127,12 @@ export const tableSummarySchema = z.object({
 });
 export type TableSummary = z.infer<typeof tableSummarySchema>;
 
+export const deleteTableResultSchema = z.object({
+  deleted: z.literal(true),
+  tableId: z.string(),
+});
+export type DeleteTableResult = z.infer<typeof deleteTableResultSchema>;
+
 export const createTableBodySchema = z
   .object({
     name: z.string().min(1).max(64),

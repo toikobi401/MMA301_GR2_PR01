@@ -17,6 +17,7 @@ import {
   type UserRole,
 } from '@app/shared';
 import { getTable, peekTable } from '../game/registry.js';
+import { deleteTable } from '../game/delete-table.js';
 import {
   chatMessages,
   hands,
@@ -154,6 +155,37 @@ function toTableHand(doc: HandDoc): TableHand {
 export async function tableRoutes(app: FastifyInstance) {
   app.addHook('onRequest', app.requireAuth);
 
+  // Joining, topping up, leaving and deletion must not cross an await on the same table.
+  const mutations = new Map<string, Promise<void>>();
+  app.addHook('onRoute', (options) => {
+    const methods = Array.isArray(options.method) ? options.method : [options.method];
+    if (!methods.some(method => ['POST', 'PUT', 'DELETE'].includes(method))) return;
+    const handler = options.handler;
+    options.handler = async function (request, reply) {
+      const { id: rawId } = request.params as { id?: string };
+      if (!rawId) return handler.call(this, request, reply);
+      const id = rawId.toLowerCase();
+      const previous = mutations.get(id);
+      let release!: () => void;
+      const current = new Promise<void>(resolve => { release = resolve; });
+      mutations.set(id, current);
+      try {
+        await previous;
+        return await handler.call(this, request, reply);
+      } finally {
+        // Release when work finishes, even if the requesting socket disconnected.
+        release();
+        if (mutations.get(id) === current) mutations.delete(id);
+      }
+    };
+  });
+
+  app.delete('/:id', async (request) => {
+    if (request.claims?.role !== 'admin') throw AppError.forbidden('Only admins can delete tables');
+    const { id } = request.params as { id: string };
+    return { ok: true as const, data: await deleteTable(id) };
+  });
+
   app.post('/', async (request, reply) => {
     const ownerId = request.claims?.sub;
     if (!ownerId || !canModerate(request.claims?.role)) {
@@ -203,7 +235,7 @@ export async function tableRoutes(app: FastifyInstance) {
     const viewer = new ObjectId(claim);
 
     const docs = await pokerTables()
-      .find({
+      .find(request.claims?.role === 'admin' ? {} : {
         status: { $ne: 'closed' },
         // Private tables stay hidden, except from the people already in them.
         $or: [{ isPrivate: false }, { ownerId: viewer }, { 'seats.userId': viewer }],

@@ -124,6 +124,29 @@ export class Table {
 
   /** True while a finished hand is being written; no new hand may start. */
   private finishing = false;
+  private finishingHand: Promise<void> | null = null;
+  private deleting = false;
+
+  get isDeleting(): boolean {
+    return this.deleting;
+  }
+
+  /** Cancel an unfinished deal; seat stacks still hold the pre-deal balances. */
+  async prepareDeletion(): Promise<void> {
+    this.deleting = true;
+    this.clearActionTimer();
+    if (this.nextHandTimer) clearTimeout(this.nextHandTimer);
+    this.nextHandTimer = null;
+    this.onBotTurn = null;
+    // A completed hand may already be paying departing players. Never pay twice.
+    await this.finishingHand;
+    this.hand = null;
+    this.doc.status = 'closed';
+  }
+
+  private assertAvailable(): void {
+    if (this.deleting) throw AppError.conflict('This table is being deleted');
+  }
 
   /**
    * Called when a bot seat is on the clock.
@@ -186,6 +209,7 @@ export class Table {
    * they are folded now and paid out when it ends. Null means that happened.
    */
   leave(userId: string): number | null {
+    this.assertAvailable();
     const seat = this.doc.seats.find((entry) => entry.userId?.toHexString() === userId);
     if (!seat) throw AppError.badRequest('You are not seated at this table');
 
@@ -402,7 +426,7 @@ export class Table {
    * Returns true when a hand actually started.
    */
   startHandIfReady(): boolean {
-    if (this.finishing) return false;
+    if (this.deleting || this.finishing) return false;
     if (this.hand && this.hand.street !== Street.Complete) return false;
 
     const seated = this.seatedPlayers();
@@ -441,7 +465,7 @@ export class Table {
 
     // The blinds alone can put everyone all in, finishing the hand on the deal.
     if (streetOf(this.hand) === Street.Complete) {
-      void this.finishHand();
+      this.finishingHand = this.finishHand();
     } else {
       this.armActionTimer();
     }
@@ -452,6 +476,7 @@ export class Table {
 
   /** Applies one player action, then advances or finishes the hand. */
   act(userId: string, type: string, amount: number): void {
+    this.assertAvailable();
     if (!this.hand || this.hand.street === Street.Complete) {
       throw AppError.badRequest('No hand in progress');
     }
@@ -480,7 +505,7 @@ export class Table {
     this.sequence += 1;
 
     if (streetOf(this.hand) === Street.Complete) {
-      void this.finishHand();
+      this.finishingHand = this.finishHand();
     } else {
       this.armActionTimer();
     }
@@ -509,7 +534,7 @@ export class Table {
     }
 
     this.sequence += 1;
-    if (streetOf(hand) === Street.Complete) void this.finishHand();
+    if (streetOf(hand) === Street.Complete) this.finishingHand = this.finishHand();
     else if (wasActing) this.armActionTimer();
     this.emitChange();
   }
@@ -797,7 +822,7 @@ export class Table {
    * forever. Whoever opens the table next starts it again.
    */
   private scheduleDeal(delayMs: number): void {
-    if (this.finishing || this.nextHandTimer) return;
+    if (this.deleting || this.finishing || this.nextHandTimer) return;
     if (this.hand && this.hand.street !== Street.Complete) return;
 
     this.nextHandTimer = setTimeout(() => {

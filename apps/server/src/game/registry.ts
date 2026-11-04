@@ -15,6 +15,18 @@ import { Table } from './table-manager.js';
  * than discovering later.
  */
 const tables = new Map<string, Table>();
+const loading = new Map<string, Promise<Table>>();
+const tableDeletedListeners = new Set<(tableId: string) => void>();
+
+export function onTableDeleted(listener: (tableId: string) => void): void {
+  tableDeletedListeners.add(listener);
+}
+
+export function notifyTableDeleted(tableId: string): void {
+  for (const listener of tableDeletedListeners) {
+    try { listener(tableId); } catch (error) { console.error('Table deletion listener failed', error); }
+  }
+}
 
 /** Told whenever a hand ends anywhere, however many people are watching it. */
 const anyHandFinishedListeners = new Set<() => void>();
@@ -24,8 +36,21 @@ export function onAnyHandFinished(listener: () => void): void {
 }
 
 export async function getTable(tableId: string): Promise<Table> {
+  tableId = tableId.toLowerCase();
   const existing = tables.get(tableId);
-  if (existing) return existing;
+  if (existing) {
+    if (existing.isDeleting) throw AppError.conflict('This table is being deleted');
+    return existing;
+  }
+
+  const pending = loading.get(tableId);
+  if (pending) return pending;
+  const promise = loadTable(tableId);
+  loading.set(tableId, promise);
+  try { return await promise; } finally { loading.delete(tableId); }
+}
+
+async function loadTable(tableId: string): Promise<Table> {
 
   if (!ObjectId.isValid(tableId)) throw AppError.notFound('Table not found');
 
@@ -45,10 +70,11 @@ export async function getTable(tableId: string): Promise<Table> {
 }
 
 export function peekTable(tableId: string): Table | undefined {
-  return tables.get(tableId);
+  return tables.get(tableId.toLowerCase());
 }
 
 export function releaseTable(tableId: string): void {
+  tableId = tableId.toLowerCase();
   const table = tables.get(tableId);
   if (!table) return;
   cancelPendingTurn(tableId);
