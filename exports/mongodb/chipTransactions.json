@@ -1,0 +1,1066 @@
+[{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff0"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434fef"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.714Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff4"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434ff3"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.758Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff8"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434fef"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9ce28512df3cce434ff7",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.808Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff9"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434ff3"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9ce28512df3cce434ff7",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:02.817Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce434ffc"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434ffb"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.918Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce435000"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434fff"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.953Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce435004"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434ffb"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9cf88512df3cce435003",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.992Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce435005"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434fff"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9cf88512df3cce435003",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:24.999Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce435008"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce435007"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.544Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce43500c"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce43500b"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.579Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce435010"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce435007"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d178512df3cce43500f",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.618Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce435011"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce43500b"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d178512df3cce43500f",
+	"createdAt": {
+		"$date": "2026-09-19T14:32:55.627Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435014"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435013"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.718Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435018"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435017"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.753Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce43501c"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435013"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d388512df3cce43501b",
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.791Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce43501d"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435017"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d388512df3cce43501b",
+	"createdAt": {
+		"$date": "2026-09-19T14:33:28.799Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a33c"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33b"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.84Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a340"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33f"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.877Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a344"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33b"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d67dd53a600ac35a343",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.92Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a345"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33f"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d67dd53a600ac35a343",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:15.929Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a348"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a347"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.004Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a34c"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a34b"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.041Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a350"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a347"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d80dd53a600ac35a34f",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.082Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a351"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a34b"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d80dd53a600ac35a34f",
+	"createdAt": {
+		"$date": "2026-09-19T14:34:40.089Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a354"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a353"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.346Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a358"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a357"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.39Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a35c"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a353"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d99dd53a600ac35a35b",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.427Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a35d"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a357"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9d99dd53a600ac35a35b",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:05.436Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a360"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a35f"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.471Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a364"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a363"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.506Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a368"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a35f"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9da4dd53a600ac35a367",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.542Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a369"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a363"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9da4dd53a600ac35a367",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:16.549Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a36c"
+	},
+	"userId": {
+		"$oid": "6aae9db0dd53a600ac35a36b"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:28.987Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a370"
+	},
+	"userId": {
+		"$oid": "6aae9db1dd53a600ac35a36f"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:29.021Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a374"
+	},
+	"userId": {
+		"$oid": "6aae9db0dd53a600ac35a36b"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9db1dd53a600ac35a373",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:29.056Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a375"
+	},
+	"userId": {
+		"$oid": "6aae9db1dd53a600ac35a36f"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9db1dd53a600ac35a373",
+	"createdAt": {
+		"$date": "2026-09-19T14:35:29.064Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ededd53a600ac35a378"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:40:30.392Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ee7dd53a600ac35a37c"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9ee7dd53a600ac35a37b",
+	"createdAt": {
+		"$date": "2026-09-19T14:40:39.956Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9efadd53a600ac35a37e"
+	},
+	"userId": {
+		"$oid": "6aae9efadd53a600ac35a37d"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:40:58.49Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9efadd53a600ac35a381"
+	},
+	"userId": {
+		"$oid": "6aae9efadd53a600ac35a37d"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9ee7dd53a600ac35a37b",
+	"createdAt": {
+		"$date": "2026-09-19T14:40:58.597Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a385"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a384"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.678Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a389"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a388"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.716Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a38d"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a384"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9f3bdd53a600ac35a38c",
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.751Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a38e"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a388"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9f3bdd53a600ac35a38c",
+	"createdAt": {
+		"$date": "2026-09-19T14:42:03.759Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaeaf0cdd53a600ac35a391"
+	},
+	"userId": {
+		"$oid": "6aaeaf0cdd53a600ac35a390"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-19T15:49:32.617Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaeaf17dd53a600ac35a394"
+	},
+	"userId": {
+		"$oid": "6aaeaf0cdd53a600ac35a390"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aae9ee7dd53a600ac35a37b",
+	"createdAt": {
+		"$date": "2026-09-19T15:49:43.513Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f8133ba4ca0641f6af"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6ae"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T07:02:16.945Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f9133ba4ca0641f6b3"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6b2"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T07:02:16.995Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f9133ba4ca0641f6b7"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6ae"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aaf84f9133ba4ca0641f6b6",
+	"createdAt": {
+		"$date": "2026-09-20T07:02:17.043Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f9133ba4ca0641f6b8"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6b2"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aaf84f9133ba4ca0641f6b6",
+	"createdAt": {
+		"$date": "2026-09-20T07:02:17.053Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf85bb324db485e20fbc5b"
+	},
+	"userId": {
+		"$oid": "6aaf85bb324db485e20fbc5a"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T07:05:31.146Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf86dea5310015dc5f140d"
+	},
+	"userId": {
+		"$oid": "6aaf86dea5310015dc5f140c"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T07:10:22.458Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf87a5a5310015dc5f1426"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 8000,
+	"reference": "table:6aaf87a5a5310015dc5f1425",
+	"createdAt": {
+		"$date": "2026-09-20T07:13:41.995Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafd00fa5310015dc5f1471"
+	},
+	"userId": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T12:22:39.93Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafd019a5310015dc5f1474"
+	},
+	"userId": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aaf87a5a5310015dc5f1425",
+	"createdAt": {
+		"$date": "2026-09-20T12:22:49.468Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafd024a5310015dc5f1477"
+	},
+	"userId": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 8000,
+	"reference": "table:6aafd024a5310015dc5f1476",
+	"createdAt": {
+		"$date": "2026-09-20T12:23:00.405Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafeaa9a5310015dc5f1526"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"kind": "deposit",
+	"amount": 1000,
+	"balanceAfter": 9000,
+	"reference": "simulated",
+	"createdAt": {
+		"$date": "2026-09-20T14:16:09.332Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafee3f049143252514844b"
+	},
+	"userId": {
+		"$oid": "6aafee3f049143252514844a"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T14:31:27.555Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafee3f049143252514844f"
+	},
+	"userId": {
+		"$oid": "6aafee3f049143252514844a"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6aafee3f049143252514844e",
+	"createdAt": {
+		"$date": "2026-09-20T14:31:27.621Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab0241d4b1f415367ef9f43"
+	},
+	"userId": {
+		"$oid": "6ab0241d4b1f415367ef9f42"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T18:21:17.529Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab025044b1f415367ef9f54"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 8000,
+	"reference": "table:6ab024b94b1f415367ef9f47",
+	"createdAt": {
+		"$date": "2026-09-20T18:25:08.585Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab026464b1f415367ef9f67"
+	},
+	"userId": {
+		"$oid": "6ab026464b1f415367ef9f66"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T18:30:30.792Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab029b54b1f415367ef9f8c"
+	},
+	"userId": {
+		"$oid": "6ab029b54b1f415367ef9f8b"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-20T18:45:09.83Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab029e04b1f415367ef9f94"
+	},
+	"userId": {
+		"$oid": "6ab029b54b1f415367ef9f8b"
+	},
+	"kind": "buy_in",
+	"amount": -2000,
+	"balanceAfter": 8000,
+	"reference": "table:6ab029d44b1f415367ef9f92",
+	"createdAt": {
+		"$date": "2026-09-20T18:45:52.444Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6abb9ad7ad7a4edb2e17898d"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "bonus",
+	"amount": 10000,
+	"balanceAfter": 10000,
+	"reference": "welcome",
+	"createdAt": {
+		"$date": "2026-09-29T11:02:47.596Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6abb9b03ad7a4edb2e178990"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 9000,
+	"reference": "table:6ab029d44b1f415367ef9f92",
+	"createdAt": {
+		"$date": "2026-09-29T11:03:31.973Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ac5a560dbc5b6c316e3a127"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "buy_in",
+	"amount": -1000,
+	"balanceAfter": 8000,
+	"reference": "table:6ab024b94b1f415367ef9f47",
+	"createdAt": {
+		"$date": "2026-10-07T01:50:24.997Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ac5a591dbc5b6c316e3a129"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "withdrawal",
+	"amount": -1000,
+	"balanceAfter": 7000,
+	"reference": "simulated",
+	"createdAt": {
+		"$date": "2026-10-07T01:51:13.871Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ac5a596dbc5b6c316e3a12a"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "deposit",
+	"amount": 1000,
+	"balanceAfter": 8000,
+	"reference": "simulated",
+	"createdAt": {
+		"$date": "2026-10-07T01:51:18.817Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ac5a598dbc5b6c316e3a12b"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "deposit",
+	"amount": 1000,
+	"balanceAfter": 9000,
+	"reference": "simulated",
+	"createdAt": {
+		"$date": "2026-10-07T01:51:20.002Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ac5a598dbc5b6c316e3a12c"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"kind": "deposit",
+	"amount": 1000,
+	"balanceAfter": 10000,
+	"reference": "simulated",
+	"createdAt": {
+		"$date": "2026-10-07T01:51:20.759Z"
+	}
+}]
+

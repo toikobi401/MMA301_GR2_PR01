@@ -1,0 +1,273 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  PING_INTERVAL_MS,
+  serverMessageSchema,
+  type ChatMessage,
+  type PlayerActionBody,
+  type ServerMessage,
+  type TableState,
+} from '@app/shared';
+import { apiBaseUrl } from './api';
+import { tablesApi } from './api-client';
+
+export type HandResultMessage = Extract<ServerMessage, { type: 'hand_finished' }>;
+
+export type ConnectionStatus = 'connecting' | 'open' | 'reconnecting' | 'closed';
+
+export interface UseTableSocket {
+  state: TableState | null;
+  status: ConnectionStatus;
+  messages: ChatMessage[];
+  /** True while a fresh hand is being dealt, so the UI can animate. */
+  dealing: boolean;
+  /**
+   * Increments each time a hand finishes.
+   *
+   * A counter rather than a boolean: the table refetches its log when this
+   * changes, and a boolean would need resetting, which invites missing one.
+   */
+  handsFinished: number;
+  /** The latest hand's result, for announcing the winner. */
+  lastResult: HandResultMessage | null;
+  act: (type: PlayerActionBody['type'], amount: number) => void;
+  sendChat: (body: string) => void;
+  error: string | null;
+}
+
+/**
+ * Connects to a table and keeps its state in sync.
+ *
+ * Reconnection is a normal event, not an exception. Phones change networks,
+ * screens lock, and Cloudflare closes idle tunnels — so the socket reconnects
+ * with backoff and asks for a full snapshot rather than trying to replay what
+ * it missed.
+ */
+export function useTableSocket(tableId: string | null, token: string | null): UseTableSocket {
+  const [state, setState] = useState<TableState | null>(null);
+  const [status, setStatus] = useState<ConnectionStatus>('closed');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [dealing, setDealing] = useState(false);
+  const [handsFinished, setHandsFinished] = useState(0);
+  const [lastResult, setLastResult] = useState<HandResultMessage | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const socketRef = useRef<WebSocket | null>(null);
+  const sequenceRef = useRef(0);
+  const attemptRef = useRef(0);
+  const handRef = useRef<string | null>(null);
+  const hasSnapshotRef = useRef(false);
+
+  const send = useCallback((message: unknown) => {
+    const socket = socketRef.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify(message));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!tableId || !token) {
+      setStatus('closed');
+      return;
+    }
+
+    let cancelled = false;
+    let pingTimer: ReturnType<typeof setInterval> | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let dealTimer: ReturnType<typeof setTimeout> | null = null;
+
+    sequenceRef.current = 0;
+    attemptRef.current = 0;
+    handRef.current = null;
+    hasSnapshotRef.current = false;
+    setState(null);
+    setMessages([]);
+    setDealing(false);
+    setHandsFinished(0);
+    setLastResult(null);
+    setError(null);
+
+    // The socket only carries new messages, so opening or reloading a table
+    // fetches what was said before. Merged by id: a live message can arrive
+    // while this is in flight, and neither copy should be lost.
+    tablesApi
+      .chat(tableId)
+      .then(({ items }) => {
+        if (cancelled) return;
+        setMessages((live) => {
+          const seen = new Set(items.map((item) => item.id));
+          return [...items, ...live.filter((item) => !seen.has(item.id))].slice(-50);
+        });
+      })
+      .catch(() => {
+        // Only the backlog is missing; the table itself still works.
+      });
+
+    const connect = () => {
+      if (cancelled) return;
+      setStatus(attemptRef.current === 0 ? 'connecting' : 'reconnecting');
+
+      const url = `${apiBaseUrl.replace(/^http/, 'ws')}/ws?token=${encodeURIComponent(token)}`;
+      const socket = new WebSocket(url);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        if (cancelled) {
+          socket.close();
+          return;
+        }
+        attemptRef.current = 0;
+        setStatus('open');
+        setError(null);
+
+        // `resume` carries the last sequence seen so the server knows this is
+        // a reconnect; it answers with a full snapshot either way.
+        socket.send(
+          JSON.stringify(
+            sequenceRef.current > 0
+              ? { type: 'resume', tableId, lastSequence: sequenceRef.current }
+              : { type: 'subscribe_table', tableId },
+          ),
+        );
+
+        // Cloudflare drops connections idle for about 100 seconds.
+        pingTimer = setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, PING_INTERVAL_MS);
+      };
+
+      socket.onmessage = (event) => {
+        if (cancelled || socketRef.current !== socket) return;
+
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(String(event.data));
+        } catch {
+          setError('Received an invalid table update');
+          return;
+        }
+
+        const result = serverMessageSchema.safeParse(parsed);
+        if (!result.success) {
+          setError('Received an invalid table update');
+          return;
+        }
+        const message = result.data;
+
+        switch (message.type) {
+          case 'table_state': {
+            // Out-of-order or duplicate states are ignored rather than
+            // applied, so a late broadcast cannot rewind the table.
+            if (
+              hasSnapshotRef.current &&
+              message.sequence <= sequenceRef.current
+            ) {
+              return;
+            }
+            sequenceRef.current = message.sequence;
+            hasSnapshotRef.current = true;
+
+            // A new hand id means cards were just dealt. Animate only then;
+            // joining mid-hand should render immediately.
+            const isNewHand =
+              message.state.handId !== null &&
+              message.state.handId !== handRef.current &&
+              message.state.street === 'preflop';
+
+            handRef.current = message.state.handId;
+            setState(message.state);
+
+            if (isNewHand) {
+              setDealing(true);
+              // Long enough for the stagger to finish; after this the cards
+              // are static so later renders do not re-animate them.
+              if (dealTimer) clearTimeout(dealTimer);
+              dealTimer = setTimeout(() => setDealing(false), 1500);
+            }
+            return;
+          }
+
+          case 'hand_finished': {
+            // The hand is now part of the table's public record. The server
+            // sends this after persisting, so a refetch will find it.
+            setHandsFinished((count) => count + 1);
+            setLastResult(message);
+            return;
+          }
+
+          case 'chat': {
+            setMessages((previous) => [...previous.slice(-49), message.message]);
+            return;
+          }
+
+          case 'action_result': {
+            if (!message.ok) setError(message.error ?? 'Action rejected');
+            return;
+          }
+
+          case 'error': {
+            setError(message.message);
+            return;
+          }
+
+          default:
+            return;
+        }
+      };
+
+      socket.onclose = () => {
+        if (pingTimer) clearInterval(pingTimer);
+        pingTimer = null;
+        if (cancelled) return;
+
+        setStatus('reconnecting');
+        attemptRef.current += 1;
+
+        // Exponential backoff, capped. Retrying every 100ms against a server
+        // that is down helps nobody.
+        const delay = Math.min(1000 * 2 ** (attemptRef.current - 1), 15_000);
+        retryTimer = setTimeout(connect, delay);
+      };
+
+      socket.onerror = () => {
+        if (!cancelled) setError('Table connection failed; reconnecting');
+      };
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (pingTimer) clearInterval(pingTimer);
+      if (retryTimer) clearTimeout(retryTimer);
+      if (dealTimer) clearTimeout(dealTimer);
+      socketRef.current?.close();
+      socketRef.current = null;
+    };
+  }, [tableId, token]);
+
+  const act = useCallback(
+    (type: PlayerActionBody['type'], amount: number) => {
+      if (!tableId) return;
+      setError(null);
+      send({
+        type: 'player_action',
+        tableId,
+        requestId: `${Date.now()}`,
+        action: { type, amount },
+      });
+    },
+    [tableId, send],
+  );
+
+  const sendChat = useCallback(
+    (body: string) => {
+      if (!tableId || !body.trim()) return;
+      send({ type: 'chat', tableId, body: body.trim() });
+    },
+    [tableId, send],
+  );
+
+  return { state, status, messages, dealing, handsFinished, lastResult, act, sendChat, error };
+}

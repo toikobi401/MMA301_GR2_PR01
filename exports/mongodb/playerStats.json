@@ -1,0 +1,496 @@
+[{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff1"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434fef"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 30,
+	"netChips": 10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:32.832Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ce28512df3cce434ff5"
+	},
+	"userId": {
+		"$oid": "6aae9ce28512df3cce434ff3"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:32.832Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce434ffd"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434ffb"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 30,
+	"netChips": 10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.009Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9cf88512df3cce435001"
+	},
+	"userId": {
+		"$oid": "6aae9cf88512df3cce434fff"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.009Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce435009"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce435007"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 30,
+	"netChips": 10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.648Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d178512df3cce43500d"
+	},
+	"userId": {
+		"$oid": "6aae9d178512df3cce43500b"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -10,
+	"updatedAt": {
+		"$date": "2026-09-19T14:32:55.648Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435015"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435013"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-19T14:33:28.718Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d388512df3cce435019"
+	},
+	"userId": {
+		"$oid": "6aae9d388512df3cce435017"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-19T14:33:28.753Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a33d"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33b"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:37:45.949Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d67dd53a600ac35a341"
+	},
+	"userId": {
+		"$oid": "6aae9d67dd53a600ac35a33f"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:37:45.949Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a349"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a347"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:37:40.112Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d80dd53a600ac35a34d"
+	},
+	"userId": {
+		"$oid": "6aae9d80dd53a600ac35a34b"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:37:40.112Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a355"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a353"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:05.462Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9d99dd53a600ac35a359"
+	},
+	"userId": {
+		"$oid": "6aae9d99dd53a600ac35a357"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:05.462Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a361"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a35f"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:16.573Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9da4dd53a600ac35a365"
+	},
+	"userId": {
+		"$oid": "6aae9da4dd53a600ac35a363"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:16.573Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a36d"
+	},
+	"userId": {
+		"$oid": "6aae9db0dd53a600ac35a36b"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:29.089Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9db1dd53a600ac35a371"
+	},
+	"userId": {
+		"$oid": "6aae9db1dd53a600ac35a36f"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:35:29.089Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9ededd53a600ac35a379"
+	},
+	"userId": {
+		"$oid": "6aae9ededd53a600ac35a377"
+	},
+	"handsPlayed": 1020,
+	"handsWon": 299,
+	"biggestPot": 2120,
+	"netChips": -1490,
+	"updatedAt": {
+		"$date": "2026-10-07T15:37:24.91Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9efadd53a600ac35a37f"
+	},
+	"userId": {
+		"$oid": "6aae9efadd53a600ac35a37d"
+	},
+	"handsPlayed": 2,
+	"handsWon": 2,
+	"biggestPot": 40,
+	"netChips": 30,
+	"updatedAt": {
+		"$date": "2026-09-19T15:50:43.521Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a386"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a384"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:42:03.784Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aae9f3bdd53a600ac35a38a"
+	},
+	"userId": {
+		"$oid": "6aae9f3bdd53a600ac35a388"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-19T14:42:03.784Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaeaf0cdd53a600ac35a392"
+	},
+	"userId": {
+		"$oid": "6aaeaf0cdd53a600ac35a390"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-19T15:50:43.521Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f8133ba4ca0641f6b0"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6ae"
+	},
+	"handsPlayed": 1,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": -20,
+	"updatedAt": {
+		"$date": "2026-09-20T07:02:17.088Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf84f9133ba4ca0641f6b4"
+	},
+	"userId": {
+		"$oid": "6aaf84f8133ba4ca0641f6b2"
+	},
+	"handsPlayed": 1,
+	"handsWon": 1,
+	"biggestPot": 40,
+	"netChips": 20,
+	"updatedAt": {
+		"$date": "2026-09-20T07:02:17.088Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf85bb324db485e20fbc5c"
+	},
+	"userId": {
+		"$oid": "6aaf85bb324db485e20fbc5a"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-20T07:05:31.146Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aaf86dea5310015dc5f140e"
+	},
+	"userId": {
+		"$oid": "6aaf86dea5310015dc5f140c"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-20T07:10:22.458Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafd00fa5310015dc5f1472"
+	},
+	"userId": {
+		"$oid": "6aafd00fa5310015dc5f1470"
+	},
+	"handsPlayed": 172,
+	"handsWon": 3,
+	"biggestPot": 1410,
+	"netChips": -1980,
+	"updatedAt": {
+		"$date": "2026-09-20T13:29:59.955Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6aafee3f049143252514844c"
+	},
+	"userId": {
+		"$oid": "6aafee3f049143252514844a"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-20T14:31:27.555Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab0241d4b1f415367ef9f44"
+	},
+	"userId": {
+		"$oid": "6ab0241d4b1f415367ef9f42"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-20T18:21:17.529Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab026464b1f415367ef9f68"
+	},
+	"userId": {
+		"$oid": "6ab026464b1f415367ef9f66"
+	},
+	"handsPlayed": 0,
+	"handsWon": 0,
+	"biggestPot": 0,
+	"netChips": 0,
+	"updatedAt": {
+		"$date": "2026-09-20T18:30:30.792Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6ab029b54b1f415367ef9f8d"
+	},
+	"userId": {
+		"$oid": "6ab029b54b1f415367ef9f8b"
+	},
+	"handsPlayed": 348,
+	"handsWon": 68,
+	"biggestPot": 2010,
+	"netChips": -1990,
+	"updatedAt": {
+		"$date": "2026-09-29T17:14:54.325Z"
+	}
+},
+{
+	"_id": {
+		"$oid": "6abb9ad7ad7a4edb2e17898e"
+	},
+	"userId": {
+		"$oid": "6abb9ad7ad7a4edb2e17898c"
+	},
+	"handsPlayed": 767,
+	"handsWon": 169,
+	"biggestPot": 40,
+	"netChips": -2000,
+	"updatedAt": {
+		"$date": "2026-10-07T11:46:51.14Z"
+	}
+}]
+
