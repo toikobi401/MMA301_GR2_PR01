@@ -17,7 +17,7 @@ export function ActionButton({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      className={`rounded-lg px-3 py-2 ${variant === 'primary' ? 'bg-primary' : 'bg-secondary'} ${disabled ? 'opacity-50' : ''}`}
+      className={`min-h-11 items-center justify-center rounded-lg px-3 py-2 ${variant === 'primary' ? 'bg-primary' : 'bg-secondary'} ${disabled ? 'opacity-50' : ''}`}
       disabled={disabled}
       onPress={onPress}
     >

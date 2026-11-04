@@ -17,7 +17,7 @@ const buttonVariants = cva(
         success: 'bg-success active:opacity-90',
       },
       size: {
-        sm: 'min-h-[36px] px-3',
+        sm: 'min-h-[44px] px-3',
         default: 'min-h-[44px] px-4',
         lg: 'min-h-[52px] px-6',
         icon: 'min-h-[44px] w-[44px] px-0',

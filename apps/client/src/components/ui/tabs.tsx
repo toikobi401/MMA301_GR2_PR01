@@ -34,7 +34,7 @@ export function Tabs<T extends string>({ options, value, onChange, className }: 
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
             className={cn(
-              'flex-1 flex-row items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5',
+              'min-h-[44px] flex-1 flex-row items-center justify-center gap-1.5 rounded-sm border px-3 py-1.5',
               active ? 'border-border bg-card' : 'border-transparent',
             )}
           >
