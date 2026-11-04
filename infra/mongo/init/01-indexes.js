@@ -159,7 +159,7 @@ collection(
     properties: {
       userId: { bsonType: 'objectId' },
       kind: {
-        enum: ['deposit', 'withdrawal', 'buy_in', 'cash_out', 'win', 'loss', 'rake', 'bonus'],
+        enum: ['deposit', 'withdrawal', 'buy_in', 'cash_out', 'win', 'loss', 'rake', 'bonus', 'refund'],
       },
       // Positive credits the user, negative debits them.
       amount: { bsonType: ['int', 'long'] },
@@ -169,6 +169,40 @@ collection(
     },
   },
   [{ keys: { userId: 1, createdAt: -1 }, options: { name: 'user_history' } }],
+);
+
+// payOS orders. The status only ever moves forward through a guarded update,
+// so a webhook and a status check racing each other credit the chips once.
+collection(
+  'payments',
+  {
+    bsonType: 'object',
+    required: ['userId', 'kind', 'status', 'orderCode', 'chips', 'amountVnd', 'createdAt', 'updatedAt'],
+    properties: {
+      userId: { bsonType: 'objectId' },
+      kind: { enum: ['deposit', 'withdrawal'] },
+      status: {
+        enum: ['pending', 'paid', 'cancelled', 'expired', 'processing', 'succeeded', 'failed'],
+      },
+      orderCode: { bsonType: ['long', 'int', 'double'] },
+      chips: { bsonType: ['int', 'long'], minimum: 1 },
+      amountVnd: { bsonType: ['int', 'long'], minimum: 1 },
+      paymentLinkId: { bsonType: ['string', 'null'] },
+      checkoutUrl: { bsonType: ['string', 'null'] },
+      payoutId: { bsonType: ['string', 'null'] },
+      bankBin: { bsonType: ['string', 'null'] },
+      accountNumber: { bsonType: ['string', 'null'] },
+      providerReference: { bsonType: ['string', 'null'] },
+      failureReason: { bsonType: ['string', 'null'] },
+      createdAt: { bsonType: 'date' },
+      updatedAt: { bsonType: 'date' },
+      settledAt: { bsonType: ['date', 'null'] },
+    },
+  },
+  [
+    { keys: { orderCode: 1 }, options: { unique: true, name: 'order_code_unique' } },
+    { keys: { userId: 1, createdAt: -1 }, options: { name: 'user_payments' } },
+  ],
 );
 
 // ----------------------------------------------------------------- friends

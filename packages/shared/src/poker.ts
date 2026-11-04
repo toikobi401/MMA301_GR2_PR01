@@ -35,6 +35,8 @@ export const chipTransactionKindSchema = z.enum([
   'loss',
   'rake',
   'bonus',
+  // Chips returned after a payOS payout failed.
+  'refund',
 ]);
 export type ChipTransactionKind = z.infer<typeof chipTransactionKindSchema>;
 

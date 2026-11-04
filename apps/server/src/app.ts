@@ -10,6 +10,7 @@ import { authRoutes } from './routes/auth.js';
 import { friendRoutes, userRoutes } from './routes/friends.js';
 import { handRoutes } from './routes/hands.js';
 import { leaderboardRoutes } from './routes/leaderboard.js';
+import { paymentRoutes } from './routes/payments.js';
 import { healthRoutes } from './routes/health.js';
 import { realtimeRoutes } from './routes/realtime.js';
 import { tableRoutes } from './routes/tables.js';
@@ -66,6 +67,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(walletRoutes, { prefix: '/api/v1/wallet' });
+  await app.register(paymentRoutes, { prefix: '/api/v1/payments' });
   await app.register(tableRoutes, { prefix: '/api/v1/tables' });
   await app.register(friendRoutes, { prefix: '/api/v1/friends' });
   await app.register(userRoutes, { prefix: '/api/v1/users' });

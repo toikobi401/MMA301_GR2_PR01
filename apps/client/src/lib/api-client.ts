@@ -1,13 +1,19 @@
 import type {
   BotDifficulty,
   ChatMessage,
+  CreateDepositBody,
+  CreateDepositResult,
   CreateTableBody,
+  CreateWithdrawalBody,
   Friend,
   HandDetail,
   HandSummary,
   Leaderboard,
   LeaderboardScope,
   LeaveTableResult,
+  Payment,
+  PaymentConfig,
+  PaymentResult,
   TableHand,
   TableState,
   TableSummary,
@@ -35,9 +41,33 @@ export const walletApi = {
   deposit: (amount: number) =>
     api.post<{ balance: number }>('/api/v1/wallet/deposit', { amount }),
 
-  /** LIVE: POST /api/v1/wallet/withdraw */
+  /** LIVE: POST /api/v1/wallet/withdraw — simulated; closed once payOS payouts are configured */
   withdraw: (amount: number) =>
     api.post<{ balance: number }>('/api/v1/wallet/withdraw', { amount }),
+};
+
+export const paymentsApi = {
+  /** LIVE: GET /api/v1/payments/config */
+  config: () => api.get<PaymentConfig>('/api/v1/payments/config'),
+
+  /** LIVE: GET /api/v1/payments */
+  list: (limit = 10) =>
+    api.get<{ items: Payment[] }>('/api/v1/payments', { query: { limit } }),
+
+  /** LIVE: POST /api/v1/payments/payos/deposits */
+  createDeposit: (body: CreateDepositBody) =>
+    api.post<CreateDepositResult>('/api/v1/payments/payos/deposits', body),
+
+  /** LIVE: POST /api/v1/payments/payos/deposits/:orderCode/cancel */
+  cancelDeposit: (orderCode: number) =>
+    api.post<PaymentResult>(`/api/v1/payments/payos/deposits/${orderCode}/cancel`),
+
+  /** LIVE: POST /api/v1/payments/payos/withdrawals */
+  createWithdrawal: (body: CreateWithdrawalBody) =>
+    api.post<PaymentResult>('/api/v1/payments/payos/withdrawals', body),
+
+  /** LIVE: GET /api/v1/payments/payos/:orderCode — also settles it if payOS says it is done */
+  get: (orderCode: number) => api.get<PaymentResult>(`/api/v1/payments/payos/${orderCode}`),
 };
 
 export const tablesApi = {

@@ -75,7 +75,8 @@ export type ChipTransactionKind =
   | 'win'
   | 'loss'
   | 'rake'
-  | 'bonus';
+  | 'bonus'
+  | 'refund';
 
 export interface ChipTransactionDoc extends Document {
   _id: ObjectId;
@@ -85,6 +86,32 @@ export interface ChipTransactionDoc extends Document {
   balanceAfter: number;
   reference: string | null;
   createdAt: Date;
+}
+
+/**
+ * One payOS order. The ledger entry is written in the same transaction that
+ * moves the status, so a payment and its chips can never disagree.
+ */
+export interface PaymentDoc extends Document {
+  _id: ObjectId;
+  userId: ObjectId;
+  kind: 'deposit' | 'withdrawal';
+  status: 'pending' | 'paid' | 'cancelled' | 'expired' | 'processing' | 'succeeded' | 'failed';
+  /** payOS order code for deposits, payout reference number for withdrawals. Unique. */
+  orderCode: number;
+  chips: number;
+  amountVnd: number;
+  paymentLinkId: string | null;
+  checkoutUrl: string | null;
+  payoutId: string | null;
+  bankBin: string | null;
+  accountNumber: string | null;
+  /** payOS's bank transaction reference once money has moved. */
+  providerReference: string | null;
+  failureReason: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  settledAt: Date | null;
 }
 
 export interface FriendshipDoc extends Document {
@@ -204,6 +231,7 @@ export const refreshTokens = (): Collection<RefreshTokenDoc> =>
   db().collection<RefreshTokenDoc>('refreshTokens');
 export const chipTransactions = (): Collection<ChipTransactionDoc> =>
   db().collection<ChipTransactionDoc>('chipTransactions');
+export const payments = (): Collection<PaymentDoc> => db().collection<PaymentDoc>('payments');
 export const friendships = (): Collection<FriendshipDoc> =>
   db().collection<FriendshipDoc>('friendships');
 export const pokerTables = (): Collection<PokerTableDoc> =>

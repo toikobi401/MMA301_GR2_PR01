@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
 /**
+ * Compose passes an unset variable as an empty string, so "" means absent.
+ */
+const optionalSecret = z
+  .string()
+  .optional()
+  .transform((value) => (value && value.trim() ? value.trim() : undefined));
+
+/**
  * Server environment contract.
  * Validated once at boot so a missing variable fails loudly instead of
  * surfacing as a confusing runtime error later.
@@ -32,6 +40,26 @@ export const serverEnvSchema = z.object({
    * upgrade URLs are derived from it.
    */
   PUBLIC_URL: z.string().default('http://localhost:4000'),
+
+  /**
+   * payOS payment channel (kênh thu), used for deposits. Leave all three
+   * empty to keep the simulated deposit endpoint instead.
+   */
+  PAYOS_CLIENT_ID: optionalSecret,
+  PAYOS_API_KEY: optionalSecret,
+  PAYOS_CHECKSUM_KEY: optionalSecret,
+
+  /**
+   * payOS payout channel (kênh chi), used for withdrawals. payOS issues it
+   * separately from the payment channel, with its own three keys. Leave empty
+   * to keep the simulated withdrawal endpoint.
+   */
+  PAYOS_PAYOUT_CLIENT_ID: optionalSecret,
+  PAYOS_PAYOUT_API_KEY: optionalSecret,
+  PAYOS_PAYOUT_CHECKSUM_KEY: optionalSecret,
+
+  /** Price of one chip in VND. 10 means 1,000 chips cost 10,000 ₫. */
+  PAYOS_VND_PER_CHIP: z.coerce.number().int().positive().default(10),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

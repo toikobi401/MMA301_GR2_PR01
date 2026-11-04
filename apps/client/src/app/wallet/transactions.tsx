@@ -29,6 +29,7 @@ const KINDS: Record<ChipTransaction['kind'], string> = {
   loss: 'Lost',
   rake: 'Rake',
   bonus: 'Bonus',
+  refund: 'Refund',
 };
 
 const FILTERS = [
@@ -122,7 +123,7 @@ export default function WalletTransactionsScreen() {
           <CardHeader>
             <CardTitle>Transaction history</CardTitle>
             <Text variant="caption" tone="muted">
-              Play chips only. No real-money payments are processed.
+              Every chip movement, including payOS top-ups and cash-outs.
             </Text>
           </CardHeader>
           <CardContent className="gap-4">

@@ -177,6 +177,25 @@ Every session- or param-dependent screen gates on `useHydrated()` as well as
 `apps/client/src/lib/api-client.ts` is the single list of every call a screen
 makes. Nothing is mocked any more.
 
+## Payments (payOS)
+
+Deposits and withdrawals go through payOS once its keys are set; with no keys
+the old simulated `/wallet/deposit` and `/wallet/withdraw` stay open, and they
+close as soon as the matching payOS channel is configured.
+
+- Chips are credited only when payOS says the order is paid — a verified
+  webhook, or the server asking payOS in `GET /payments/payos/:orderCode`.
+  Never because the client came back from checkout.
+- The status change and the ledger entry share one Mongo transaction, guarded
+  on the old status, so a webhook and a status check racing each other credit
+  once.
+- A withdrawal debits the chips first, then requests the payout. Chips are
+  refunded only when payOS definitely refused it; a timeout leaves it
+  `processing` until a status check finds out, because refunding blind can
+  pay twice.
+- The payout channel (kênh chi) has its own three keys, separate from the
+  payment channel (kênh thu).
+
 ## Sessions
 
 The refresh token is persisted — the keychain on device, `localStorage` on

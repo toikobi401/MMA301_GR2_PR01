@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { ObjectId } from 'mongodb';
+import { ObjectId, type ClientSession } from 'mongodb';
 import {
   depositBodySchema,
   withdrawBodySchema,
@@ -13,6 +13,7 @@ import {
   type ChipTransactionKind,
 } from '../lib/db.js';
 import { AppError } from '../lib/errors.js';
+import { payosDepositsEnabled, payosWithdrawalsEnabled } from '../lib/payos.js';
 
 function toTransaction(doc: ChipTransactionDoc): ChipTransaction {
   return {
@@ -42,19 +43,21 @@ async function applyChipChange(
   kind: ChipTransactionKind,
   amount: number,
   reference: string | null,
+  /** Pass one to make the change part of a larger transaction. */
+  session?: ClientSession,
 ): Promise<{ balance: number; transaction: ChipTransaction }> {
   const guard = amount < 0 ? { chips: { $gte: -amount } } : {};
 
   const updated = await users().findOneAndUpdate(
     { _id: userId, ...guard },
     { $inc: { chips: amount }, $set: { updatedAt: new Date() } },
-    { returnDocument: 'after' },
+    { returnDocument: 'after', session },
   );
 
   if (!updated) {
     // Either the account is gone or the guard rejected the debit. Tell them
     // apart so the error is accurate.
-    const exists = await users().countDocuments({ _id: userId }, { limit: 1 });
+    const exists = await users().countDocuments({ _id: userId }, { limit: 1, session });
     if (exists === 0) throw AppError.notFound('Account not found');
     throw AppError.badRequest('Insufficient chips');
   }
@@ -69,7 +72,7 @@ async function applyChipChange(
     createdAt: new Date(),
   };
 
-  await chipTransactions().insertOne(doc);
+  await chipTransactions().insertOne(doc, { session });
 
   return { balance: updated.chips, transaction: toTransaction(doc) };
 }
@@ -100,10 +103,16 @@ export async function walletRoutes(app: FastifyInstance) {
   /**
    * Simulated deposit. No real money is involved anywhere in this system;
    * the endpoint credits play chips so the flow can be demonstrated.
+   *
+   * Once payOS is configured this is closed: otherwise anyone could skip
+   * checkout and mint chips for free.
    */
   app.post('/deposit', async (request) => {
     const claim = request.claims?.sub;
     if (!claim) throw AppError.unauthorized();
+    if (payosDepositsEnabled()) {
+      throw AppError.forbidden('Deposits go through payOS: POST /api/v1/payments/payos/deposits');
+    }
 
     const body = depositBodySchema.parse(request.body);
     const result = await applyChipChange(
@@ -119,6 +128,9 @@ export async function walletRoutes(app: FastifyInstance) {
   app.post('/withdraw', async (request) => {
     const claim = request.claims?.sub;
     if (!claim) throw AppError.unauthorized();
+    if (payosWithdrawalsEnabled()) {
+      throw AppError.forbidden('Withdrawals go through payOS: POST /api/v1/payments/payos/withdrawals');
+    }
 
     const body = withdrawBodySchema.parse(request.body);
     const result = await applyChipChange(
